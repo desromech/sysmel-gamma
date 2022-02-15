@@ -1,0 +1,2749 @@
+Created by PLY version 3.11 (http://www.dabeaz.com/ply)
+
+Unused terminals:
+
+    BYTE_ARRAY_LEFT_BRACKET
+    DICTIONARY_ARRAY_LEFT_CURLY_BRACKET
+    SEMICOLON
+
+Grammar
+
+Rule 0     S' -> expressionList
+Rule 1     expressionList -> optionalExpression
+Rule 2     expressionList -> expressionList DOT optionalExpression
+Rule 3     optionalExpression -> <empty>
+Rule 4     optionalExpression -> expression
+Rule 5     primaryTerm -> literal
+Rule 6     primaryTerm -> block
+Rule 7     primaryTerm -> LEFT_PARENT expression RIGHT_PARENT
+Rule 8     primaryExpression -> primaryTerm
+Rule 9     primaryExpression -> QUOTE primaryTerm
+Rule 10    primaryExpression -> QUASI_QUOTE primaryTerm
+Rule 11    primaryExpression -> QUASI_UNQUOTE primaryTerm
+Rule 12    primaryExpression -> SPLICE primaryTerm
+Rule 13    primaryExpression -> primaryExpression LEFT_PARENT expressionList RIGHT_PARENT
+Rule 14    primaryExpression -> primaryExpression LEFT_BRACKET expressionList RIGHT_BRACKET
+Rule 15    primaryExpression -> primaryExpression block
+Rule 16    blockClosureHeader -> blockArguments blockResultType BAR
+Rule 17    optionalBlockClosureHeader -> blockClosureHeader
+Rule 18    optionalBlockClosureHeader -> <empty>
+Rule 19    block -> LEFT_CURLY_BRACKET optionalBlockClosureHeader expressionList RIGHT_CURLY_BRACKET
+Rule 20    blockArguments -> <empty>
+Rule 21    blockArguments -> blockArguments blockArgument
+Rule 22    optionalBlockArgumentType -> <empty>
+Rule 23    optionalBlockArgumentType -> LEFT_PARENT expression RIGHT_PARENT
+Rule 24    blockArgument -> COLON optionalBlockArgumentType expandableIdentifier
+Rule 25    blockResultType -> <empty>
+Rule 26    blockResultType -> COLON_COLON primaryExpression
+Rule 27    expandableIdentifier -> IDENTIFIER
+Rule 28    expandableIdentifier -> QUASI_UNQUOTE primaryTerm
+Rule 29    prefixUnaryExpression -> primaryExpression
+Rule 30    prefixUnaryExpression -> anyPrefixOperator prefixUnaryExpression
+Rule 31    binaryExpression -> prefixUnaryExpression
+Rule 32    binaryExpression -> binaryExpression anyOperator prefixUnaryExpression
+Rule 33    chainExpression -> binaryExpression
+Rule 34    lowPrecedenceExpression -> chainExpression
+Rule 35    lowPrecedenceExpression -> lowPrecedenceExpression lowPrecedenceOperator chainExpression
+Rule 36    lowPrecedenceOperator -> COLON_COLON anyOperator
+Rule 37    assignmentExpression -> lowPrecedenceExpression
+Rule 38    assignmentExpression -> lowPrecedenceExpression ASSIGNMENT assignmentExpression
+Rule 39    commaExpressionContent -> assignmentExpression
+Rule 40    commaExpressionContent -> commaExpressionContent COMMA assignmentExpression
+Rule 41    commaExpression -> commaExpressionContent
+Rule 42    commaExpression -> commaExpressionContent COMMA
+Rule 43    expression -> commaExpression
+Rule 44    literal -> FLOAT
+Rule 45    literal -> INTEGER
+Rule 46    literal -> CHARACTER
+Rule 47    literal -> STRING
+Rule 48    literal -> SYMBOL_IDENTIFIER
+Rule 49    literal -> SYMBOL_KEYWORD
+Rule 50    literal -> SYMBOL_OPERATOR
+Rule 51    literal -> SYMBOL_STRING
+Rule 52    literal -> LITERAL_ARRAY_LEFT_PARENT literalArrayElements RIGHT_PARENT
+Rule 53    literalArrayElements -> <empty>
+Rule 54    literalArrayElements -> literalArrayElements literalArrayElement
+Rule 55    literalArrayElement -> literal
+Rule 56    literalArrayElement -> IDENTIFIER
+Rule 57    literalArrayElement -> anyKeyword
+Rule 58    literalArrayElement -> anyOperator
+Rule 59    literalArrayElement -> LEFT_PARENT literalArrayElements RIGHT_PARENT
+Rule 60    anyOperator -> OPERATOR
+Rule 61    anyOperator -> BAR
+Rule 62    anyOperator -> LESS_THAN
+Rule 63    anyOperator -> GREATER_THAN
+Rule 64    anyPrefixOperator -> OPERATOR
+Rule 65    anyKeyword -> KEYWORD
+Rule 66    anyKeyword -> MULTI_KEYWORD
+
+Terminals, with rules where they appear
+
+ASSIGNMENT           : 38
+BAR                  : 16 61
+BYTE_ARRAY_LEFT_BRACKET : 
+CHARACTER            : 46
+COLON                : 24
+COLON_COLON          : 26 36
+COMMA                : 40 42
+DICTIONARY_ARRAY_LEFT_CURLY_BRACKET : 
+DOT                  : 2
+FLOAT                : 44
+GREATER_THAN         : 63
+IDENTIFIER           : 27 56
+INTEGER              : 45
+KEYWORD              : 65
+LEFT_BRACKET         : 14
+LEFT_CURLY_BRACKET   : 19
+LEFT_PARENT          : 7 13 23 59
+LESS_THAN            : 62
+LITERAL_ARRAY_LEFT_PARENT : 52
+MULTI_KEYWORD        : 66
+OPERATOR             : 60 64
+QUASI_QUOTE          : 10
+QUASI_UNQUOTE        : 11 28
+QUOTE                : 9
+RIGHT_BRACKET        : 14
+RIGHT_CURLY_BRACKET  : 19
+RIGHT_PARENT         : 7 13 23 52 59
+SEMICOLON            : 
+SPLICE               : 12
+STRING               : 47
+SYMBOL_IDENTIFIER    : 48
+SYMBOL_KEYWORD       : 49
+SYMBOL_OPERATOR      : 50
+SYMBOL_STRING        : 51
+error                : 
+
+Nonterminals, with rules where they appear
+
+anyKeyword           : 57
+anyOperator          : 32 36 58
+anyPrefixOperator    : 30
+assignmentExpression : 38 39 40
+binaryExpression     : 32 33
+block                : 6 15
+blockArgument        : 21
+blockArguments       : 16 21
+blockClosureHeader   : 17
+blockResultType      : 16
+chainExpression      : 34 35
+commaExpression      : 43
+commaExpressionContent : 40 41 42
+expandableIdentifier : 24
+expression           : 4 7 23
+expressionList       : 2 13 14 19 0
+literal              : 5 55
+literalArrayElement  : 54
+literalArrayElements : 52 54 59
+lowPrecedenceExpression : 35 37 38
+lowPrecedenceOperator : 35
+optionalBlockArgumentType : 24
+optionalBlockClosureHeader : 19
+optionalExpression   : 1 2
+prefixUnaryExpression : 30 31 32
+primaryExpression    : 13 14 15 26 29
+primaryTerm          : 8 9 10 11 12 28
+
+Parsing method: LALR
+
+state 0
+
+    (0) S' -> . expressionList
+    (1) expressionList -> . optionalExpression
+    (2) expressionList -> . expressionList DOT optionalExpression
+    (3) optionalExpression -> .
+    (4) optionalExpression -> . expression
+    (43) expression -> . commaExpression
+    (41) commaExpression -> . commaExpressionContent
+    (42) commaExpression -> . commaExpressionContent COMMA
+    (39) commaExpressionContent -> . assignmentExpression
+    (40) commaExpressionContent -> . commaExpressionContent COMMA assignmentExpression
+    (37) assignmentExpression -> . lowPrecedenceExpression
+    (38) assignmentExpression -> . lowPrecedenceExpression ASSIGNMENT assignmentExpression
+    (34) lowPrecedenceExpression -> . chainExpression
+    (35) lowPrecedenceExpression -> . lowPrecedenceExpression lowPrecedenceOperator chainExpression
+    (33) chainExpression -> . binaryExpression
+    (31) binaryExpression -> . prefixUnaryExpression
+    (32) binaryExpression -> . binaryExpression anyOperator prefixUnaryExpression
+    (29) prefixUnaryExpression -> . primaryExpression
+    (30) prefixUnaryExpression -> . anyPrefixOperator prefixUnaryExpression
+    (8) primaryExpression -> . primaryTerm
+    (9) primaryExpression -> . QUOTE primaryTerm
+    (10) primaryExpression -> . QUASI_QUOTE primaryTerm
+    (11) primaryExpression -> . QUASI_UNQUOTE primaryTerm
+    (12) primaryExpression -> . SPLICE primaryTerm
+    (13) primaryExpression -> . primaryExpression LEFT_PARENT expressionList RIGHT_PARENT
+    (14) primaryExpression -> . primaryExpression LEFT_BRACKET expressionList RIGHT_BRACKET
+    (15) primaryExpression -> . primaryExpression block
+    (64) anyPrefixOperator -> . OPERATOR
+    (5) primaryTerm -> . literal
+    (6) primaryTerm -> . block
+    (7) primaryTerm -> . LEFT_PARENT expression RIGHT_PARENT
+    (44) literal -> . FLOAT
+    (45) literal -> . INTEGER
+    (46) literal -> . CHARACTER
+    (47) literal -> . STRING
+    (48) literal -> . SYMBOL_IDENTIFIER
+    (49) literal -> . SYMBOL_KEYWORD
+    (50) literal -> . SYMBOL_OPERATOR
+    (51) literal -> . SYMBOL_STRING
+    (52) literal -> . LITERAL_ARRAY_LEFT_PARENT literalArrayElements RIGHT_PARENT
+    (19) block -> . LEFT_CURLY_BRACKET optionalBlockClosureHeader expressionList RIGHT_CURLY_BRACKET
+
+    DOT             reduce using rule 3 (optionalExpression -> .)
+    $end            reduce using rule 3 (optionalExpression -> .)
+    QUOTE           shift and go to state 14
+    QUASI_QUOTE     shift and go to state 15
+    QUASI_UNQUOTE   shift and go to state 16
+    SPLICE          shift and go to state 17
+    OPERATOR        shift and go to state 20
+    LEFT_PARENT     shift and go to state 18
+    FLOAT           shift and go to state 22
+    INTEGER         shift and go to state 23
+    CHARACTER       shift and go to state 24
+    STRING          shift and go to state 25
+    SYMBOL_IDENTIFIER shift and go to state 26
+    SYMBOL_KEYWORD  shift and go to state 27
+    SYMBOL_OPERATOR shift and go to state 28
+    SYMBOL_STRING   shift and go to state 29
+    LITERAL_ARRAY_LEFT_PARENT shift and go to state 30
+    LEFT_CURLY_BRACKET shift and go to state 31
+
+    expressionList                 shift and go to state 1
+    optionalExpression             shift and go to state 2
+    expression                     shift and go to state 3
+    commaExpression                shift and go to state 4
+    commaExpressionContent         shift and go to state 5
+    assignmentExpression           shift and go to state 6
+    lowPrecedenceExpression        shift and go to state 7
+    chainExpression                shift and go to state 8
+    binaryExpression               shift and go to state 9
+    prefixUnaryExpression          shift and go to state 10
+    primaryExpression              shift and go to state 11
+    anyPrefixOperator              shift and go to state 12
+    primaryTerm                    shift and go to state 13
+    block                          shift and go to state 19
+    literal                        shift and go to state 21
+
+state 1
+
+    (0) S' -> expressionList .
+    (2) expressionList -> expressionList . DOT optionalExpression
+
+    DOT             shift and go to state 32
+
+
+state 2
+
+    (1) expressionList -> optionalExpression .
+
+    DOT             reduce using rule 1 (expressionList -> optionalExpression .)
+    $end            reduce using rule 1 (expressionList -> optionalExpression .)
+    RIGHT_PARENT    reduce using rule 1 (expressionList -> optionalExpression .)
+    RIGHT_BRACKET   reduce using rule 1 (expressionList -> optionalExpression .)
+    RIGHT_CURLY_BRACKET reduce using rule 1 (expressionList -> optionalExpression .)
+
+
+state 3
+
+    (4) optionalExpression -> expression .
+
+    DOT             reduce using rule 4 (optionalExpression -> expression .)
+    $end            reduce using rule 4 (optionalExpression -> expression .)
+    RIGHT_PARENT    reduce using rule 4 (optionalExpression -> expression .)
+    RIGHT_BRACKET   reduce using rule 4 (optionalExpression -> expression .)
+    RIGHT_CURLY_BRACKET reduce using rule 4 (optionalExpression -> expression .)
+
+
+state 4
+
+    (43) expression -> commaExpression .
+
+    DOT             reduce using rule 43 (expression -> commaExpression .)
+    $end            reduce using rule 43 (expression -> commaExpression .)
+    RIGHT_PARENT    reduce using rule 43 (expression -> commaExpression .)
+    RIGHT_BRACKET   reduce using rule 43 (expression -> commaExpression .)
+    RIGHT_CURLY_BRACKET reduce using rule 43 (expression -> commaExpression .)
+
+
+state 5
+
+    (41) commaExpression -> commaExpressionContent .
+    (42) commaExpression -> commaExpressionContent . COMMA
+    (40) commaExpressionContent -> commaExpressionContent . COMMA assignmentExpression
+
+    DOT             reduce using rule 41 (commaExpression -> commaExpressionContent .)
+    $end            reduce using rule 41 (commaExpression -> commaExpressionContent .)
+    RIGHT_PARENT    reduce using rule 41 (commaExpression -> commaExpressionContent .)
+    RIGHT_BRACKET   reduce using rule 41 (commaExpression -> commaExpressionContent .)
+    RIGHT_CURLY_BRACKET reduce using rule 41 (commaExpression -> commaExpressionContent .)
+    COMMA           shift and go to state 33
+
+
+state 6
+
+    (39) commaExpressionContent -> assignmentExpression .
+
+    COMMA           reduce using rule 39 (commaExpressionContent -> assignmentExpression .)
+    DOT             reduce using rule 39 (commaExpressionContent -> assignmentExpression .)
+    $end            reduce using rule 39 (commaExpressionContent -> assignmentExpression .)
+    RIGHT_PARENT    reduce using rule 39 (commaExpressionContent -> assignmentExpression .)
+    RIGHT_BRACKET   reduce using rule 39 (commaExpressionContent -> assignmentExpression .)
+    RIGHT_CURLY_BRACKET reduce using rule 39 (commaExpressionContent -> assignmentExpression .)
+
+
+state 7
+
+    (37) assignmentExpression -> lowPrecedenceExpression .
+    (38) assignmentExpression -> lowPrecedenceExpression . ASSIGNMENT assignmentExpression
+    (35) lowPrecedenceExpression -> lowPrecedenceExpression . lowPrecedenceOperator chainExpression
+    (36) lowPrecedenceOperator -> . COLON_COLON anyOperator
+
+    COMMA           reduce using rule 37 (assignmentExpression -> lowPrecedenceExpression .)
+    DOT             reduce using rule 37 (assignmentExpression -> lowPrecedenceExpression .)
+    $end            reduce using rule 37 (assignmentExpression -> lowPrecedenceExpression .)
+    RIGHT_PARENT    reduce using rule 37 (assignmentExpression -> lowPrecedenceExpression .)
+    RIGHT_BRACKET   reduce using rule 37 (assignmentExpression -> lowPrecedenceExpression .)
+    RIGHT_CURLY_BRACKET reduce using rule 37 (assignmentExpression -> lowPrecedenceExpression .)
+    ASSIGNMENT      shift and go to state 34
+    COLON_COLON     shift and go to state 36
+
+    lowPrecedenceOperator          shift and go to state 35
+
+state 8
+
+    (34) lowPrecedenceExpression -> chainExpression .
+
+    ASSIGNMENT      reduce using rule 34 (lowPrecedenceExpression -> chainExpression .)
+    COLON_COLON     reduce using rule 34 (lowPrecedenceExpression -> chainExpression .)
+    COMMA           reduce using rule 34 (lowPrecedenceExpression -> chainExpression .)
+    DOT             reduce using rule 34 (lowPrecedenceExpression -> chainExpression .)
+    $end            reduce using rule 34 (lowPrecedenceExpression -> chainExpression .)
+    RIGHT_PARENT    reduce using rule 34 (lowPrecedenceExpression -> chainExpression .)
+    RIGHT_BRACKET   reduce using rule 34 (lowPrecedenceExpression -> chainExpression .)
+    RIGHT_CURLY_BRACKET reduce using rule 34 (lowPrecedenceExpression -> chainExpression .)
+
+
+state 9
+
+    (33) chainExpression -> binaryExpression .
+    (32) binaryExpression -> binaryExpression . anyOperator prefixUnaryExpression
+    (60) anyOperator -> . OPERATOR
+    (61) anyOperator -> . BAR
+    (62) anyOperator -> . LESS_THAN
+    (63) anyOperator -> . GREATER_THAN
+
+    ASSIGNMENT      reduce using rule 33 (chainExpression -> binaryExpression .)
+    COLON_COLON     reduce using rule 33 (chainExpression -> binaryExpression .)
+    COMMA           reduce using rule 33 (chainExpression -> binaryExpression .)
+    DOT             reduce using rule 33 (chainExpression -> binaryExpression .)
+    $end            reduce using rule 33 (chainExpression -> binaryExpression .)
+    RIGHT_PARENT    reduce using rule 33 (chainExpression -> binaryExpression .)
+    RIGHT_BRACKET   reduce using rule 33 (chainExpression -> binaryExpression .)
+    RIGHT_CURLY_BRACKET reduce using rule 33 (chainExpression -> binaryExpression .)
+    OPERATOR        shift and go to state 38
+    BAR             shift and go to state 39
+    LESS_THAN       shift and go to state 40
+    GREATER_THAN    shift and go to state 41
+
+    anyOperator                    shift and go to state 37
+
+state 10
+
+    (31) binaryExpression -> prefixUnaryExpression .
+
+    OPERATOR        reduce using rule 31 (binaryExpression -> prefixUnaryExpression .)
+    BAR             reduce using rule 31 (binaryExpression -> prefixUnaryExpression .)
+    LESS_THAN       reduce using rule 31 (binaryExpression -> prefixUnaryExpression .)
+    GREATER_THAN    reduce using rule 31 (binaryExpression -> prefixUnaryExpression .)
+    ASSIGNMENT      reduce using rule 31 (binaryExpression -> prefixUnaryExpression .)
+    COLON_COLON     reduce using rule 31 (binaryExpression -> prefixUnaryExpression .)
+    COMMA           reduce using rule 31 (binaryExpression -> prefixUnaryExpression .)
+    DOT             reduce using rule 31 (binaryExpression -> prefixUnaryExpression .)
+    $end            reduce using rule 31 (binaryExpression -> prefixUnaryExpression .)
+    RIGHT_PARENT    reduce using rule 31 (binaryExpression -> prefixUnaryExpression .)
+    RIGHT_BRACKET   reduce using rule 31 (binaryExpression -> prefixUnaryExpression .)
+    RIGHT_CURLY_BRACKET reduce using rule 31 (binaryExpression -> prefixUnaryExpression .)
+
+
+state 11
+
+    (29) prefixUnaryExpression -> primaryExpression .
+    (13) primaryExpression -> primaryExpression . LEFT_PARENT expressionList RIGHT_PARENT
+    (14) primaryExpression -> primaryExpression . LEFT_BRACKET expressionList RIGHT_BRACKET
+    (15) primaryExpression -> primaryExpression . block
+    (19) block -> . LEFT_CURLY_BRACKET optionalBlockClosureHeader expressionList RIGHT_CURLY_BRACKET
+
+    OPERATOR        reduce using rule 29 (prefixUnaryExpression -> primaryExpression .)
+    BAR             reduce using rule 29 (prefixUnaryExpression -> primaryExpression .)
+    LESS_THAN       reduce using rule 29 (prefixUnaryExpression -> primaryExpression .)
+    GREATER_THAN    reduce using rule 29 (prefixUnaryExpression -> primaryExpression .)
+    ASSIGNMENT      reduce using rule 29 (prefixUnaryExpression -> primaryExpression .)
+    COLON_COLON     reduce using rule 29 (prefixUnaryExpression -> primaryExpression .)
+    COMMA           reduce using rule 29 (prefixUnaryExpression -> primaryExpression .)
+    DOT             reduce using rule 29 (prefixUnaryExpression -> primaryExpression .)
+    $end            reduce using rule 29 (prefixUnaryExpression -> primaryExpression .)
+    RIGHT_PARENT    reduce using rule 29 (prefixUnaryExpression -> primaryExpression .)
+    RIGHT_BRACKET   reduce using rule 29 (prefixUnaryExpression -> primaryExpression .)
+    RIGHT_CURLY_BRACKET reduce using rule 29 (prefixUnaryExpression -> primaryExpression .)
+    LEFT_PARENT     shift and go to state 42
+    LEFT_BRACKET    shift and go to state 43
+    LEFT_CURLY_BRACKET shift and go to state 31
+
+    block                          shift and go to state 44
+
+state 12
+
+    (30) prefixUnaryExpression -> anyPrefixOperator . prefixUnaryExpression
+    (29) prefixUnaryExpression -> . primaryExpression
+    (30) prefixUnaryExpression -> . anyPrefixOperator prefixUnaryExpression
+    (8) primaryExpression -> . primaryTerm
+    (9) primaryExpression -> . QUOTE primaryTerm
+    (10) primaryExpression -> . QUASI_QUOTE primaryTerm
+    (11) primaryExpression -> . QUASI_UNQUOTE primaryTerm
+    (12) primaryExpression -> . SPLICE primaryTerm
+    (13) primaryExpression -> . primaryExpression LEFT_PARENT expressionList RIGHT_PARENT
+    (14) primaryExpression -> . primaryExpression LEFT_BRACKET expressionList RIGHT_BRACKET
+    (15) primaryExpression -> . primaryExpression block
+    (64) anyPrefixOperator -> . OPERATOR
+    (5) primaryTerm -> . literal
+    (6) primaryTerm -> . block
+    (7) primaryTerm -> . LEFT_PARENT expression RIGHT_PARENT
+    (44) literal -> . FLOAT
+    (45) literal -> . INTEGER
+    (46) literal -> . CHARACTER
+    (47) literal -> . STRING
+    (48) literal -> . SYMBOL_IDENTIFIER
+    (49) literal -> . SYMBOL_KEYWORD
+    (50) literal -> . SYMBOL_OPERATOR
+    (51) literal -> . SYMBOL_STRING
+    (52) literal -> . LITERAL_ARRAY_LEFT_PARENT literalArrayElements RIGHT_PARENT
+    (19) block -> . LEFT_CURLY_BRACKET optionalBlockClosureHeader expressionList RIGHT_CURLY_BRACKET
+
+    QUOTE           shift and go to state 14
+    QUASI_QUOTE     shift and go to state 15
+    QUASI_UNQUOTE   shift and go to state 16
+    SPLICE          shift and go to state 17
+    OPERATOR        shift and go to state 20
+    LEFT_PARENT     shift and go to state 18
+    FLOAT           shift and go to state 22
+    INTEGER         shift and go to state 23
+    CHARACTER       shift and go to state 24
+    STRING          shift and go to state 25
+    SYMBOL_IDENTIFIER shift and go to state 26
+    SYMBOL_KEYWORD  shift and go to state 27
+    SYMBOL_OPERATOR shift and go to state 28
+    SYMBOL_STRING   shift and go to state 29
+    LITERAL_ARRAY_LEFT_PARENT shift and go to state 30
+    LEFT_CURLY_BRACKET shift and go to state 31
+
+    anyPrefixOperator              shift and go to state 12
+    prefixUnaryExpression          shift and go to state 45
+    primaryExpression              shift and go to state 11
+    primaryTerm                    shift and go to state 13
+    block                          shift and go to state 19
+    literal                        shift and go to state 21
+
+state 13
+
+    (8) primaryExpression -> primaryTerm .
+
+    LEFT_PARENT     reduce using rule 8 (primaryExpression -> primaryTerm .)
+    LEFT_BRACKET    reduce using rule 8 (primaryExpression -> primaryTerm .)
+    LEFT_CURLY_BRACKET reduce using rule 8 (primaryExpression -> primaryTerm .)
+    OPERATOR        reduce using rule 8 (primaryExpression -> primaryTerm .)
+    BAR             reduce using rule 8 (primaryExpression -> primaryTerm .)
+    LESS_THAN       reduce using rule 8 (primaryExpression -> primaryTerm .)
+    GREATER_THAN    reduce using rule 8 (primaryExpression -> primaryTerm .)
+    ASSIGNMENT      reduce using rule 8 (primaryExpression -> primaryTerm .)
+    COLON_COLON     reduce using rule 8 (primaryExpression -> primaryTerm .)
+    COMMA           reduce using rule 8 (primaryExpression -> primaryTerm .)
+    DOT             reduce using rule 8 (primaryExpression -> primaryTerm .)
+    $end            reduce using rule 8 (primaryExpression -> primaryTerm .)
+    RIGHT_PARENT    reduce using rule 8 (primaryExpression -> primaryTerm .)
+    RIGHT_BRACKET   reduce using rule 8 (primaryExpression -> primaryTerm .)
+    RIGHT_CURLY_BRACKET reduce using rule 8 (primaryExpression -> primaryTerm .)
+
+
+state 14
+
+    (9) primaryExpression -> QUOTE . primaryTerm
+    (5) primaryTerm -> . literal
+    (6) primaryTerm -> . block
+    (7) primaryTerm -> . LEFT_PARENT expression RIGHT_PARENT
+    (44) literal -> . FLOAT
+    (45) literal -> . INTEGER
+    (46) literal -> . CHARACTER
+    (47) literal -> . STRING
+    (48) literal -> . SYMBOL_IDENTIFIER
+    (49) literal -> . SYMBOL_KEYWORD
+    (50) literal -> . SYMBOL_OPERATOR
+    (51) literal -> . SYMBOL_STRING
+    (52) literal -> . LITERAL_ARRAY_LEFT_PARENT literalArrayElements RIGHT_PARENT
+    (19) block -> . LEFT_CURLY_BRACKET optionalBlockClosureHeader expressionList RIGHT_CURLY_BRACKET
+
+    LEFT_PARENT     shift and go to state 18
+    FLOAT           shift and go to state 22
+    INTEGER         shift and go to state 23
+    CHARACTER       shift and go to state 24
+    STRING          shift and go to state 25
+    SYMBOL_IDENTIFIER shift and go to state 26
+    SYMBOL_KEYWORD  shift and go to state 27
+    SYMBOL_OPERATOR shift and go to state 28
+    SYMBOL_STRING   shift and go to state 29
+    LITERAL_ARRAY_LEFT_PARENT shift and go to state 30
+    LEFT_CURLY_BRACKET shift and go to state 31
+
+    primaryTerm                    shift and go to state 46
+    literal                        shift and go to state 21
+    block                          shift and go to state 19
+
+state 15
+
+    (10) primaryExpression -> QUASI_QUOTE . primaryTerm
+    (5) primaryTerm -> . literal
+    (6) primaryTerm -> . block
+    (7) primaryTerm -> . LEFT_PARENT expression RIGHT_PARENT
+    (44) literal -> . FLOAT
+    (45) literal -> . INTEGER
+    (46) literal -> . CHARACTER
+    (47) literal -> . STRING
+    (48) literal -> . SYMBOL_IDENTIFIER
+    (49) literal -> . SYMBOL_KEYWORD
+    (50) literal -> . SYMBOL_OPERATOR
+    (51) literal -> . SYMBOL_STRING
+    (52) literal -> . LITERAL_ARRAY_LEFT_PARENT literalArrayElements RIGHT_PARENT
+    (19) block -> . LEFT_CURLY_BRACKET optionalBlockClosureHeader expressionList RIGHT_CURLY_BRACKET
+
+    LEFT_PARENT     shift and go to state 18
+    FLOAT           shift and go to state 22
+    INTEGER         shift and go to state 23
+    CHARACTER       shift and go to state 24
+    STRING          shift and go to state 25
+    SYMBOL_IDENTIFIER shift and go to state 26
+    SYMBOL_KEYWORD  shift and go to state 27
+    SYMBOL_OPERATOR shift and go to state 28
+    SYMBOL_STRING   shift and go to state 29
+    LITERAL_ARRAY_LEFT_PARENT shift and go to state 30
+    LEFT_CURLY_BRACKET shift and go to state 31
+
+    primaryTerm                    shift and go to state 47
+    literal                        shift and go to state 21
+    block                          shift and go to state 19
+
+state 16
+
+    (11) primaryExpression -> QUASI_UNQUOTE . primaryTerm
+    (5) primaryTerm -> . literal
+    (6) primaryTerm -> . block
+    (7) primaryTerm -> . LEFT_PARENT expression RIGHT_PARENT
+    (44) literal -> . FLOAT
+    (45) literal -> . INTEGER
+    (46) literal -> . CHARACTER
+    (47) literal -> . STRING
+    (48) literal -> . SYMBOL_IDENTIFIER
+    (49) literal -> . SYMBOL_KEYWORD
+    (50) literal -> . SYMBOL_OPERATOR
+    (51) literal -> . SYMBOL_STRING
+    (52) literal -> . LITERAL_ARRAY_LEFT_PARENT literalArrayElements RIGHT_PARENT
+    (19) block -> . LEFT_CURLY_BRACKET optionalBlockClosureHeader expressionList RIGHT_CURLY_BRACKET
+
+    LEFT_PARENT     shift and go to state 18
+    FLOAT           shift and go to state 22
+    INTEGER         shift and go to state 23
+    CHARACTER       shift and go to state 24
+    STRING          shift and go to state 25
+    SYMBOL_IDENTIFIER shift and go to state 26
+    SYMBOL_KEYWORD  shift and go to state 27
+    SYMBOL_OPERATOR shift and go to state 28
+    SYMBOL_STRING   shift and go to state 29
+    LITERAL_ARRAY_LEFT_PARENT shift and go to state 30
+    LEFT_CURLY_BRACKET shift and go to state 31
+
+    primaryTerm                    shift and go to state 48
+    literal                        shift and go to state 21
+    block                          shift and go to state 19
+
+state 17
+
+    (12) primaryExpression -> SPLICE . primaryTerm
+    (5) primaryTerm -> . literal
+    (6) primaryTerm -> . block
+    (7) primaryTerm -> . LEFT_PARENT expression RIGHT_PARENT
+    (44) literal -> . FLOAT
+    (45) literal -> . INTEGER
+    (46) literal -> . CHARACTER
+    (47) literal -> . STRING
+    (48) literal -> . SYMBOL_IDENTIFIER
+    (49) literal -> . SYMBOL_KEYWORD
+    (50) literal -> . SYMBOL_OPERATOR
+    (51) literal -> . SYMBOL_STRING
+    (52) literal -> . LITERAL_ARRAY_LEFT_PARENT literalArrayElements RIGHT_PARENT
+    (19) block -> . LEFT_CURLY_BRACKET optionalBlockClosureHeader expressionList RIGHT_CURLY_BRACKET
+
+    LEFT_PARENT     shift and go to state 18
+    FLOAT           shift and go to state 22
+    INTEGER         shift and go to state 23
+    CHARACTER       shift and go to state 24
+    STRING          shift and go to state 25
+    SYMBOL_IDENTIFIER shift and go to state 26
+    SYMBOL_KEYWORD  shift and go to state 27
+    SYMBOL_OPERATOR shift and go to state 28
+    SYMBOL_STRING   shift and go to state 29
+    LITERAL_ARRAY_LEFT_PARENT shift and go to state 30
+    LEFT_CURLY_BRACKET shift and go to state 31
+
+    primaryTerm                    shift and go to state 49
+    literal                        shift and go to state 21
+    block                          shift and go to state 19
+
+state 18
+
+    (7) primaryTerm -> LEFT_PARENT . expression RIGHT_PARENT
+    (43) expression -> . commaExpression
+    (41) commaExpression -> . commaExpressionContent
+    (42) commaExpression -> . commaExpressionContent COMMA
+    (39) commaExpressionContent -> . assignmentExpression
+    (40) commaExpressionContent -> . commaExpressionContent COMMA assignmentExpression
+    (37) assignmentExpression -> . lowPrecedenceExpression
+    (38) assignmentExpression -> . lowPrecedenceExpression ASSIGNMENT assignmentExpression
+    (34) lowPrecedenceExpression -> . chainExpression
+    (35) lowPrecedenceExpression -> . lowPrecedenceExpression lowPrecedenceOperator chainExpression
+    (33) chainExpression -> . binaryExpression
+    (31) binaryExpression -> . prefixUnaryExpression
+    (32) binaryExpression -> . binaryExpression anyOperator prefixUnaryExpression
+    (29) prefixUnaryExpression -> . primaryExpression
+    (30) prefixUnaryExpression -> . anyPrefixOperator prefixUnaryExpression
+    (8) primaryExpression -> . primaryTerm
+    (9) primaryExpression -> . QUOTE primaryTerm
+    (10) primaryExpression -> . QUASI_QUOTE primaryTerm
+    (11) primaryExpression -> . QUASI_UNQUOTE primaryTerm
+    (12) primaryExpression -> . SPLICE primaryTerm
+    (13) primaryExpression -> . primaryExpression LEFT_PARENT expressionList RIGHT_PARENT
+    (14) primaryExpression -> . primaryExpression LEFT_BRACKET expressionList RIGHT_BRACKET
+    (15) primaryExpression -> . primaryExpression block
+    (64) anyPrefixOperator -> . OPERATOR
+    (5) primaryTerm -> . literal
+    (6) primaryTerm -> . block
+    (7) primaryTerm -> . LEFT_PARENT expression RIGHT_PARENT
+    (44) literal -> . FLOAT
+    (45) literal -> . INTEGER
+    (46) literal -> . CHARACTER
+    (47) literal -> . STRING
+    (48) literal -> . SYMBOL_IDENTIFIER
+    (49) literal -> . SYMBOL_KEYWORD
+    (50) literal -> . SYMBOL_OPERATOR
+    (51) literal -> . SYMBOL_STRING
+    (52) literal -> . LITERAL_ARRAY_LEFT_PARENT literalArrayElements RIGHT_PARENT
+    (19) block -> . LEFT_CURLY_BRACKET optionalBlockClosureHeader expressionList RIGHT_CURLY_BRACKET
+
+    QUOTE           shift and go to state 14
+    QUASI_QUOTE     shift and go to state 15
+    QUASI_UNQUOTE   shift and go to state 16
+    SPLICE          shift and go to state 17
+    OPERATOR        shift and go to state 20
+    LEFT_PARENT     shift and go to state 18
+    FLOAT           shift and go to state 22
+    INTEGER         shift and go to state 23
+    CHARACTER       shift and go to state 24
+    STRING          shift and go to state 25
+    SYMBOL_IDENTIFIER shift and go to state 26
+    SYMBOL_KEYWORD  shift and go to state 27
+    SYMBOL_OPERATOR shift and go to state 28
+    SYMBOL_STRING   shift and go to state 29
+    LITERAL_ARRAY_LEFT_PARENT shift and go to state 30
+    LEFT_CURLY_BRACKET shift and go to state 31
+
+    expression                     shift and go to state 50
+    commaExpression                shift and go to state 4
+    commaExpressionContent         shift and go to state 5
+    assignmentExpression           shift and go to state 6
+    lowPrecedenceExpression        shift and go to state 7
+    chainExpression                shift and go to state 8
+    binaryExpression               shift and go to state 9
+    prefixUnaryExpression          shift and go to state 10
+    primaryExpression              shift and go to state 11
+    anyPrefixOperator              shift and go to state 12
+    primaryTerm                    shift and go to state 13
+    block                          shift and go to state 19
+    literal                        shift and go to state 21
+
+state 19
+
+    (6) primaryTerm -> block .
+
+    LEFT_PARENT     reduce using rule 6 (primaryTerm -> block .)
+    LEFT_BRACKET    reduce using rule 6 (primaryTerm -> block .)
+    LEFT_CURLY_BRACKET reduce using rule 6 (primaryTerm -> block .)
+    OPERATOR        reduce using rule 6 (primaryTerm -> block .)
+    BAR             reduce using rule 6 (primaryTerm -> block .)
+    LESS_THAN       reduce using rule 6 (primaryTerm -> block .)
+    GREATER_THAN    reduce using rule 6 (primaryTerm -> block .)
+    ASSIGNMENT      reduce using rule 6 (primaryTerm -> block .)
+    COLON_COLON     reduce using rule 6 (primaryTerm -> block .)
+    COMMA           reduce using rule 6 (primaryTerm -> block .)
+    DOT             reduce using rule 6 (primaryTerm -> block .)
+    $end            reduce using rule 6 (primaryTerm -> block .)
+    RIGHT_PARENT    reduce using rule 6 (primaryTerm -> block .)
+    RIGHT_BRACKET   reduce using rule 6 (primaryTerm -> block .)
+    RIGHT_CURLY_BRACKET reduce using rule 6 (primaryTerm -> block .)
+    COLON           reduce using rule 6 (primaryTerm -> block .)
+
+
+state 20
+
+    (64) anyPrefixOperator -> OPERATOR .
+
+    QUOTE           reduce using rule 64 (anyPrefixOperator -> OPERATOR .)
+    QUASI_QUOTE     reduce using rule 64 (anyPrefixOperator -> OPERATOR .)
+    QUASI_UNQUOTE   reduce using rule 64 (anyPrefixOperator -> OPERATOR .)
+    SPLICE          reduce using rule 64 (anyPrefixOperator -> OPERATOR .)
+    OPERATOR        reduce using rule 64 (anyPrefixOperator -> OPERATOR .)
+    LEFT_PARENT     reduce using rule 64 (anyPrefixOperator -> OPERATOR .)
+    FLOAT           reduce using rule 64 (anyPrefixOperator -> OPERATOR .)
+    INTEGER         reduce using rule 64 (anyPrefixOperator -> OPERATOR .)
+    CHARACTER       reduce using rule 64 (anyPrefixOperator -> OPERATOR .)
+    STRING          reduce using rule 64 (anyPrefixOperator -> OPERATOR .)
+    SYMBOL_IDENTIFIER reduce using rule 64 (anyPrefixOperator -> OPERATOR .)
+    SYMBOL_KEYWORD  reduce using rule 64 (anyPrefixOperator -> OPERATOR .)
+    SYMBOL_OPERATOR reduce using rule 64 (anyPrefixOperator -> OPERATOR .)
+    SYMBOL_STRING   reduce using rule 64 (anyPrefixOperator -> OPERATOR .)
+    LITERAL_ARRAY_LEFT_PARENT reduce using rule 64 (anyPrefixOperator -> OPERATOR .)
+    LEFT_CURLY_BRACKET reduce using rule 64 (anyPrefixOperator -> OPERATOR .)
+
+
+state 21
+
+    (5) primaryTerm -> literal .
+
+    LEFT_PARENT     reduce using rule 5 (primaryTerm -> literal .)
+    LEFT_BRACKET    reduce using rule 5 (primaryTerm -> literal .)
+    LEFT_CURLY_BRACKET reduce using rule 5 (primaryTerm -> literal .)
+    OPERATOR        reduce using rule 5 (primaryTerm -> literal .)
+    BAR             reduce using rule 5 (primaryTerm -> literal .)
+    LESS_THAN       reduce using rule 5 (primaryTerm -> literal .)
+    GREATER_THAN    reduce using rule 5 (primaryTerm -> literal .)
+    ASSIGNMENT      reduce using rule 5 (primaryTerm -> literal .)
+    COLON_COLON     reduce using rule 5 (primaryTerm -> literal .)
+    COMMA           reduce using rule 5 (primaryTerm -> literal .)
+    DOT             reduce using rule 5 (primaryTerm -> literal .)
+    $end            reduce using rule 5 (primaryTerm -> literal .)
+    RIGHT_PARENT    reduce using rule 5 (primaryTerm -> literal .)
+    RIGHT_BRACKET   reduce using rule 5 (primaryTerm -> literal .)
+    RIGHT_CURLY_BRACKET reduce using rule 5 (primaryTerm -> literal .)
+    COLON           reduce using rule 5 (primaryTerm -> literal .)
+
+
+state 22
+
+    (44) literal -> FLOAT .
+
+    LEFT_PARENT     reduce using rule 44 (literal -> FLOAT .)
+    LEFT_BRACKET    reduce using rule 44 (literal -> FLOAT .)
+    LEFT_CURLY_BRACKET reduce using rule 44 (literal -> FLOAT .)
+    OPERATOR        reduce using rule 44 (literal -> FLOAT .)
+    BAR             reduce using rule 44 (literal -> FLOAT .)
+    LESS_THAN       reduce using rule 44 (literal -> FLOAT .)
+    GREATER_THAN    reduce using rule 44 (literal -> FLOAT .)
+    ASSIGNMENT      reduce using rule 44 (literal -> FLOAT .)
+    COLON_COLON     reduce using rule 44 (literal -> FLOAT .)
+    COMMA           reduce using rule 44 (literal -> FLOAT .)
+    DOT             reduce using rule 44 (literal -> FLOAT .)
+    $end            reduce using rule 44 (literal -> FLOAT .)
+    RIGHT_PARENT    reduce using rule 44 (literal -> FLOAT .)
+    RIGHT_BRACKET   reduce using rule 44 (literal -> FLOAT .)
+    RIGHT_CURLY_BRACKET reduce using rule 44 (literal -> FLOAT .)
+    IDENTIFIER      reduce using rule 44 (literal -> FLOAT .)
+    FLOAT           reduce using rule 44 (literal -> FLOAT .)
+    INTEGER         reduce using rule 44 (literal -> FLOAT .)
+    CHARACTER       reduce using rule 44 (literal -> FLOAT .)
+    STRING          reduce using rule 44 (literal -> FLOAT .)
+    SYMBOL_IDENTIFIER reduce using rule 44 (literal -> FLOAT .)
+    SYMBOL_KEYWORD  reduce using rule 44 (literal -> FLOAT .)
+    SYMBOL_OPERATOR reduce using rule 44 (literal -> FLOAT .)
+    SYMBOL_STRING   reduce using rule 44 (literal -> FLOAT .)
+    LITERAL_ARRAY_LEFT_PARENT reduce using rule 44 (literal -> FLOAT .)
+    KEYWORD         reduce using rule 44 (literal -> FLOAT .)
+    MULTI_KEYWORD   reduce using rule 44 (literal -> FLOAT .)
+    COLON           reduce using rule 44 (literal -> FLOAT .)
+
+
+state 23
+
+    (45) literal -> INTEGER .
+
+    LEFT_PARENT     reduce using rule 45 (literal -> INTEGER .)
+    LEFT_BRACKET    reduce using rule 45 (literal -> INTEGER .)
+    LEFT_CURLY_BRACKET reduce using rule 45 (literal -> INTEGER .)
+    OPERATOR        reduce using rule 45 (literal -> INTEGER .)
+    BAR             reduce using rule 45 (literal -> INTEGER .)
+    LESS_THAN       reduce using rule 45 (literal -> INTEGER .)
+    GREATER_THAN    reduce using rule 45 (literal -> INTEGER .)
+    ASSIGNMENT      reduce using rule 45 (literal -> INTEGER .)
+    COLON_COLON     reduce using rule 45 (literal -> INTEGER .)
+    COMMA           reduce using rule 45 (literal -> INTEGER .)
+    DOT             reduce using rule 45 (literal -> INTEGER .)
+    $end            reduce using rule 45 (literal -> INTEGER .)
+    RIGHT_PARENT    reduce using rule 45 (literal -> INTEGER .)
+    RIGHT_BRACKET   reduce using rule 45 (literal -> INTEGER .)
+    RIGHT_CURLY_BRACKET reduce using rule 45 (literal -> INTEGER .)
+    IDENTIFIER      reduce using rule 45 (literal -> INTEGER .)
+    FLOAT           reduce using rule 45 (literal -> INTEGER .)
+    INTEGER         reduce using rule 45 (literal -> INTEGER .)
+    CHARACTER       reduce using rule 45 (literal -> INTEGER .)
+    STRING          reduce using rule 45 (literal -> INTEGER .)
+    SYMBOL_IDENTIFIER reduce using rule 45 (literal -> INTEGER .)
+    SYMBOL_KEYWORD  reduce using rule 45 (literal -> INTEGER .)
+    SYMBOL_OPERATOR reduce using rule 45 (literal -> INTEGER .)
+    SYMBOL_STRING   reduce using rule 45 (literal -> INTEGER .)
+    LITERAL_ARRAY_LEFT_PARENT reduce using rule 45 (literal -> INTEGER .)
+    KEYWORD         reduce using rule 45 (literal -> INTEGER .)
+    MULTI_KEYWORD   reduce using rule 45 (literal -> INTEGER .)
+    COLON           reduce using rule 45 (literal -> INTEGER .)
+
+
+state 24
+
+    (46) literal -> CHARACTER .
+
+    LEFT_PARENT     reduce using rule 46 (literal -> CHARACTER .)
+    LEFT_BRACKET    reduce using rule 46 (literal -> CHARACTER .)
+    LEFT_CURLY_BRACKET reduce using rule 46 (literal -> CHARACTER .)
+    OPERATOR        reduce using rule 46 (literal -> CHARACTER .)
+    BAR             reduce using rule 46 (literal -> CHARACTER .)
+    LESS_THAN       reduce using rule 46 (literal -> CHARACTER .)
+    GREATER_THAN    reduce using rule 46 (literal -> CHARACTER .)
+    ASSIGNMENT      reduce using rule 46 (literal -> CHARACTER .)
+    COLON_COLON     reduce using rule 46 (literal -> CHARACTER .)
+    COMMA           reduce using rule 46 (literal -> CHARACTER .)
+    DOT             reduce using rule 46 (literal -> CHARACTER .)
+    $end            reduce using rule 46 (literal -> CHARACTER .)
+    RIGHT_PARENT    reduce using rule 46 (literal -> CHARACTER .)
+    RIGHT_BRACKET   reduce using rule 46 (literal -> CHARACTER .)
+    RIGHT_CURLY_BRACKET reduce using rule 46 (literal -> CHARACTER .)
+    IDENTIFIER      reduce using rule 46 (literal -> CHARACTER .)
+    FLOAT           reduce using rule 46 (literal -> CHARACTER .)
+    INTEGER         reduce using rule 46 (literal -> CHARACTER .)
+    CHARACTER       reduce using rule 46 (literal -> CHARACTER .)
+    STRING          reduce using rule 46 (literal -> CHARACTER .)
+    SYMBOL_IDENTIFIER reduce using rule 46 (literal -> CHARACTER .)
+    SYMBOL_KEYWORD  reduce using rule 46 (literal -> CHARACTER .)
+    SYMBOL_OPERATOR reduce using rule 46 (literal -> CHARACTER .)
+    SYMBOL_STRING   reduce using rule 46 (literal -> CHARACTER .)
+    LITERAL_ARRAY_LEFT_PARENT reduce using rule 46 (literal -> CHARACTER .)
+    KEYWORD         reduce using rule 46 (literal -> CHARACTER .)
+    MULTI_KEYWORD   reduce using rule 46 (literal -> CHARACTER .)
+    COLON           reduce using rule 46 (literal -> CHARACTER .)
+
+
+state 25
+
+    (47) literal -> STRING .
+
+    LEFT_PARENT     reduce using rule 47 (literal -> STRING .)
+    LEFT_BRACKET    reduce using rule 47 (literal -> STRING .)
+    LEFT_CURLY_BRACKET reduce using rule 47 (literal -> STRING .)
+    OPERATOR        reduce using rule 47 (literal -> STRING .)
+    BAR             reduce using rule 47 (literal -> STRING .)
+    LESS_THAN       reduce using rule 47 (literal -> STRING .)
+    GREATER_THAN    reduce using rule 47 (literal -> STRING .)
+    ASSIGNMENT      reduce using rule 47 (literal -> STRING .)
+    COLON_COLON     reduce using rule 47 (literal -> STRING .)
+    COMMA           reduce using rule 47 (literal -> STRING .)
+    DOT             reduce using rule 47 (literal -> STRING .)
+    $end            reduce using rule 47 (literal -> STRING .)
+    RIGHT_PARENT    reduce using rule 47 (literal -> STRING .)
+    RIGHT_BRACKET   reduce using rule 47 (literal -> STRING .)
+    RIGHT_CURLY_BRACKET reduce using rule 47 (literal -> STRING .)
+    IDENTIFIER      reduce using rule 47 (literal -> STRING .)
+    FLOAT           reduce using rule 47 (literal -> STRING .)
+    INTEGER         reduce using rule 47 (literal -> STRING .)
+    CHARACTER       reduce using rule 47 (literal -> STRING .)
+    STRING          reduce using rule 47 (literal -> STRING .)
+    SYMBOL_IDENTIFIER reduce using rule 47 (literal -> STRING .)
+    SYMBOL_KEYWORD  reduce using rule 47 (literal -> STRING .)
+    SYMBOL_OPERATOR reduce using rule 47 (literal -> STRING .)
+    SYMBOL_STRING   reduce using rule 47 (literal -> STRING .)
+    LITERAL_ARRAY_LEFT_PARENT reduce using rule 47 (literal -> STRING .)
+    KEYWORD         reduce using rule 47 (literal -> STRING .)
+    MULTI_KEYWORD   reduce using rule 47 (literal -> STRING .)
+    COLON           reduce using rule 47 (literal -> STRING .)
+
+
+state 26
+
+    (48) literal -> SYMBOL_IDENTIFIER .
+
+    LEFT_PARENT     reduce using rule 48 (literal -> SYMBOL_IDENTIFIER .)
+    LEFT_BRACKET    reduce using rule 48 (literal -> SYMBOL_IDENTIFIER .)
+    LEFT_CURLY_BRACKET reduce using rule 48 (literal -> SYMBOL_IDENTIFIER .)
+    OPERATOR        reduce using rule 48 (literal -> SYMBOL_IDENTIFIER .)
+    BAR             reduce using rule 48 (literal -> SYMBOL_IDENTIFIER .)
+    LESS_THAN       reduce using rule 48 (literal -> SYMBOL_IDENTIFIER .)
+    GREATER_THAN    reduce using rule 48 (literal -> SYMBOL_IDENTIFIER .)
+    ASSIGNMENT      reduce using rule 48 (literal -> SYMBOL_IDENTIFIER .)
+    COLON_COLON     reduce using rule 48 (literal -> SYMBOL_IDENTIFIER .)
+    COMMA           reduce using rule 48 (literal -> SYMBOL_IDENTIFIER .)
+    DOT             reduce using rule 48 (literal -> SYMBOL_IDENTIFIER .)
+    $end            reduce using rule 48 (literal -> SYMBOL_IDENTIFIER .)
+    RIGHT_PARENT    reduce using rule 48 (literal -> SYMBOL_IDENTIFIER .)
+    RIGHT_BRACKET   reduce using rule 48 (literal -> SYMBOL_IDENTIFIER .)
+    RIGHT_CURLY_BRACKET reduce using rule 48 (literal -> SYMBOL_IDENTIFIER .)
+    IDENTIFIER      reduce using rule 48 (literal -> SYMBOL_IDENTIFIER .)
+    FLOAT           reduce using rule 48 (literal -> SYMBOL_IDENTIFIER .)
+    INTEGER         reduce using rule 48 (literal -> SYMBOL_IDENTIFIER .)
+    CHARACTER       reduce using rule 48 (literal -> SYMBOL_IDENTIFIER .)
+    STRING          reduce using rule 48 (literal -> SYMBOL_IDENTIFIER .)
+    SYMBOL_IDENTIFIER reduce using rule 48 (literal -> SYMBOL_IDENTIFIER .)
+    SYMBOL_KEYWORD  reduce using rule 48 (literal -> SYMBOL_IDENTIFIER .)
+    SYMBOL_OPERATOR reduce using rule 48 (literal -> SYMBOL_IDENTIFIER .)
+    SYMBOL_STRING   reduce using rule 48 (literal -> SYMBOL_IDENTIFIER .)
+    LITERAL_ARRAY_LEFT_PARENT reduce using rule 48 (literal -> SYMBOL_IDENTIFIER .)
+    KEYWORD         reduce using rule 48 (literal -> SYMBOL_IDENTIFIER .)
+    MULTI_KEYWORD   reduce using rule 48 (literal -> SYMBOL_IDENTIFIER .)
+    COLON           reduce using rule 48 (literal -> SYMBOL_IDENTIFIER .)
+
+
+state 27
+
+    (49) literal -> SYMBOL_KEYWORD .
+
+    LEFT_PARENT     reduce using rule 49 (literal -> SYMBOL_KEYWORD .)
+    LEFT_BRACKET    reduce using rule 49 (literal -> SYMBOL_KEYWORD .)
+    LEFT_CURLY_BRACKET reduce using rule 49 (literal -> SYMBOL_KEYWORD .)
+    OPERATOR        reduce using rule 49 (literal -> SYMBOL_KEYWORD .)
+    BAR             reduce using rule 49 (literal -> SYMBOL_KEYWORD .)
+    LESS_THAN       reduce using rule 49 (literal -> SYMBOL_KEYWORD .)
+    GREATER_THAN    reduce using rule 49 (literal -> SYMBOL_KEYWORD .)
+    ASSIGNMENT      reduce using rule 49 (literal -> SYMBOL_KEYWORD .)
+    COLON_COLON     reduce using rule 49 (literal -> SYMBOL_KEYWORD .)
+    COMMA           reduce using rule 49 (literal -> SYMBOL_KEYWORD .)
+    DOT             reduce using rule 49 (literal -> SYMBOL_KEYWORD .)
+    $end            reduce using rule 49 (literal -> SYMBOL_KEYWORD .)
+    RIGHT_PARENT    reduce using rule 49 (literal -> SYMBOL_KEYWORD .)
+    RIGHT_BRACKET   reduce using rule 49 (literal -> SYMBOL_KEYWORD .)
+    RIGHT_CURLY_BRACKET reduce using rule 49 (literal -> SYMBOL_KEYWORD .)
+    IDENTIFIER      reduce using rule 49 (literal -> SYMBOL_KEYWORD .)
+    FLOAT           reduce using rule 49 (literal -> SYMBOL_KEYWORD .)
+    INTEGER         reduce using rule 49 (literal -> SYMBOL_KEYWORD .)
+    CHARACTER       reduce using rule 49 (literal -> SYMBOL_KEYWORD .)
+    STRING          reduce using rule 49 (literal -> SYMBOL_KEYWORD .)
+    SYMBOL_IDENTIFIER reduce using rule 49 (literal -> SYMBOL_KEYWORD .)
+    SYMBOL_KEYWORD  reduce using rule 49 (literal -> SYMBOL_KEYWORD .)
+    SYMBOL_OPERATOR reduce using rule 49 (literal -> SYMBOL_KEYWORD .)
+    SYMBOL_STRING   reduce using rule 49 (literal -> SYMBOL_KEYWORD .)
+    LITERAL_ARRAY_LEFT_PARENT reduce using rule 49 (literal -> SYMBOL_KEYWORD .)
+    KEYWORD         reduce using rule 49 (literal -> SYMBOL_KEYWORD .)
+    MULTI_KEYWORD   reduce using rule 49 (literal -> SYMBOL_KEYWORD .)
+    COLON           reduce using rule 49 (literal -> SYMBOL_KEYWORD .)
+
+
+state 28
+
+    (50) literal -> SYMBOL_OPERATOR .
+
+    LEFT_PARENT     reduce using rule 50 (literal -> SYMBOL_OPERATOR .)
+    LEFT_BRACKET    reduce using rule 50 (literal -> SYMBOL_OPERATOR .)
+    LEFT_CURLY_BRACKET reduce using rule 50 (literal -> SYMBOL_OPERATOR .)
+    OPERATOR        reduce using rule 50 (literal -> SYMBOL_OPERATOR .)
+    BAR             reduce using rule 50 (literal -> SYMBOL_OPERATOR .)
+    LESS_THAN       reduce using rule 50 (literal -> SYMBOL_OPERATOR .)
+    GREATER_THAN    reduce using rule 50 (literal -> SYMBOL_OPERATOR .)
+    ASSIGNMENT      reduce using rule 50 (literal -> SYMBOL_OPERATOR .)
+    COLON_COLON     reduce using rule 50 (literal -> SYMBOL_OPERATOR .)
+    COMMA           reduce using rule 50 (literal -> SYMBOL_OPERATOR .)
+    DOT             reduce using rule 50 (literal -> SYMBOL_OPERATOR .)
+    $end            reduce using rule 50 (literal -> SYMBOL_OPERATOR .)
+    RIGHT_PARENT    reduce using rule 50 (literal -> SYMBOL_OPERATOR .)
+    RIGHT_BRACKET   reduce using rule 50 (literal -> SYMBOL_OPERATOR .)
+    RIGHT_CURLY_BRACKET reduce using rule 50 (literal -> SYMBOL_OPERATOR .)
+    IDENTIFIER      reduce using rule 50 (literal -> SYMBOL_OPERATOR .)
+    FLOAT           reduce using rule 50 (literal -> SYMBOL_OPERATOR .)
+    INTEGER         reduce using rule 50 (literal -> SYMBOL_OPERATOR .)
+    CHARACTER       reduce using rule 50 (literal -> SYMBOL_OPERATOR .)
+    STRING          reduce using rule 50 (literal -> SYMBOL_OPERATOR .)
+    SYMBOL_IDENTIFIER reduce using rule 50 (literal -> SYMBOL_OPERATOR .)
+    SYMBOL_KEYWORD  reduce using rule 50 (literal -> SYMBOL_OPERATOR .)
+    SYMBOL_OPERATOR reduce using rule 50 (literal -> SYMBOL_OPERATOR .)
+    SYMBOL_STRING   reduce using rule 50 (literal -> SYMBOL_OPERATOR .)
+    LITERAL_ARRAY_LEFT_PARENT reduce using rule 50 (literal -> SYMBOL_OPERATOR .)
+    KEYWORD         reduce using rule 50 (literal -> SYMBOL_OPERATOR .)
+    MULTI_KEYWORD   reduce using rule 50 (literal -> SYMBOL_OPERATOR .)
+    COLON           reduce using rule 50 (literal -> SYMBOL_OPERATOR .)
+
+
+state 29
+
+    (51) literal -> SYMBOL_STRING .
+
+    LEFT_PARENT     reduce using rule 51 (literal -> SYMBOL_STRING .)
+    LEFT_BRACKET    reduce using rule 51 (literal -> SYMBOL_STRING .)
+    LEFT_CURLY_BRACKET reduce using rule 51 (literal -> SYMBOL_STRING .)
+    OPERATOR        reduce using rule 51 (literal -> SYMBOL_STRING .)
+    BAR             reduce using rule 51 (literal -> SYMBOL_STRING .)
+    LESS_THAN       reduce using rule 51 (literal -> SYMBOL_STRING .)
+    GREATER_THAN    reduce using rule 51 (literal -> SYMBOL_STRING .)
+    ASSIGNMENT      reduce using rule 51 (literal -> SYMBOL_STRING .)
+    COLON_COLON     reduce using rule 51 (literal -> SYMBOL_STRING .)
+    COMMA           reduce using rule 51 (literal -> SYMBOL_STRING .)
+    DOT             reduce using rule 51 (literal -> SYMBOL_STRING .)
+    $end            reduce using rule 51 (literal -> SYMBOL_STRING .)
+    RIGHT_PARENT    reduce using rule 51 (literal -> SYMBOL_STRING .)
+    RIGHT_BRACKET   reduce using rule 51 (literal -> SYMBOL_STRING .)
+    RIGHT_CURLY_BRACKET reduce using rule 51 (literal -> SYMBOL_STRING .)
+    IDENTIFIER      reduce using rule 51 (literal -> SYMBOL_STRING .)
+    FLOAT           reduce using rule 51 (literal -> SYMBOL_STRING .)
+    INTEGER         reduce using rule 51 (literal -> SYMBOL_STRING .)
+    CHARACTER       reduce using rule 51 (literal -> SYMBOL_STRING .)
+    STRING          reduce using rule 51 (literal -> SYMBOL_STRING .)
+    SYMBOL_IDENTIFIER reduce using rule 51 (literal -> SYMBOL_STRING .)
+    SYMBOL_KEYWORD  reduce using rule 51 (literal -> SYMBOL_STRING .)
+    SYMBOL_OPERATOR reduce using rule 51 (literal -> SYMBOL_STRING .)
+    SYMBOL_STRING   reduce using rule 51 (literal -> SYMBOL_STRING .)
+    LITERAL_ARRAY_LEFT_PARENT reduce using rule 51 (literal -> SYMBOL_STRING .)
+    KEYWORD         reduce using rule 51 (literal -> SYMBOL_STRING .)
+    MULTI_KEYWORD   reduce using rule 51 (literal -> SYMBOL_STRING .)
+    COLON           reduce using rule 51 (literal -> SYMBOL_STRING .)
+
+
+state 30
+
+    (52) literal -> LITERAL_ARRAY_LEFT_PARENT . literalArrayElements RIGHT_PARENT
+    (53) literalArrayElements -> .
+    (54) literalArrayElements -> . literalArrayElements literalArrayElement
+
+    RIGHT_PARENT    reduce using rule 53 (literalArrayElements -> .)
+    IDENTIFIER      reduce using rule 53 (literalArrayElements -> .)
+    LEFT_PARENT     reduce using rule 53 (literalArrayElements -> .)
+    FLOAT           reduce using rule 53 (literalArrayElements -> .)
+    INTEGER         reduce using rule 53 (literalArrayElements -> .)
+    CHARACTER       reduce using rule 53 (literalArrayElements -> .)
+    STRING          reduce using rule 53 (literalArrayElements -> .)
+    SYMBOL_IDENTIFIER reduce using rule 53 (literalArrayElements -> .)
+    SYMBOL_KEYWORD  reduce using rule 53 (literalArrayElements -> .)
+    SYMBOL_OPERATOR reduce using rule 53 (literalArrayElements -> .)
+    SYMBOL_STRING   reduce using rule 53 (literalArrayElements -> .)
+    LITERAL_ARRAY_LEFT_PARENT reduce using rule 53 (literalArrayElements -> .)
+    KEYWORD         reduce using rule 53 (literalArrayElements -> .)
+    MULTI_KEYWORD   reduce using rule 53 (literalArrayElements -> .)
+    OPERATOR        reduce using rule 53 (literalArrayElements -> .)
+    BAR             reduce using rule 53 (literalArrayElements -> .)
+    LESS_THAN       reduce using rule 53 (literalArrayElements -> .)
+    GREATER_THAN    reduce using rule 53 (literalArrayElements -> .)
+
+    literalArrayElements           shift and go to state 51
+
+state 31
+
+    (19) block -> LEFT_CURLY_BRACKET . optionalBlockClosureHeader expressionList RIGHT_CURLY_BRACKET
+    (17) optionalBlockClosureHeader -> . blockClosureHeader
+    (18) optionalBlockClosureHeader -> .
+    (16) blockClosureHeader -> . blockArguments blockResultType BAR
+    (20) blockArguments -> .
+    (21) blockArguments -> . blockArguments blockArgument
+
+    QUOTE           reduce using rule 18 (optionalBlockClosureHeader -> .)
+    QUASI_QUOTE     reduce using rule 18 (optionalBlockClosureHeader -> .)
+    QUASI_UNQUOTE   reduce using rule 18 (optionalBlockClosureHeader -> .)
+    SPLICE          reduce using rule 18 (optionalBlockClosureHeader -> .)
+    OPERATOR        reduce using rule 18 (optionalBlockClosureHeader -> .)
+    LEFT_PARENT     reduce using rule 18 (optionalBlockClosureHeader -> .)
+    FLOAT           reduce using rule 18 (optionalBlockClosureHeader -> .)
+    INTEGER         reduce using rule 18 (optionalBlockClosureHeader -> .)
+    CHARACTER       reduce using rule 18 (optionalBlockClosureHeader -> .)
+    STRING          reduce using rule 18 (optionalBlockClosureHeader -> .)
+    SYMBOL_IDENTIFIER reduce using rule 18 (optionalBlockClosureHeader -> .)
+    SYMBOL_KEYWORD  reduce using rule 18 (optionalBlockClosureHeader -> .)
+    SYMBOL_OPERATOR reduce using rule 18 (optionalBlockClosureHeader -> .)
+    SYMBOL_STRING   reduce using rule 18 (optionalBlockClosureHeader -> .)
+    LITERAL_ARRAY_LEFT_PARENT reduce using rule 18 (optionalBlockClosureHeader -> .)
+    LEFT_CURLY_BRACKET reduce using rule 18 (optionalBlockClosureHeader -> .)
+    RIGHT_CURLY_BRACKET reduce using rule 18 (optionalBlockClosureHeader -> .)
+    DOT             reduce using rule 18 (optionalBlockClosureHeader -> .)
+    COLON_COLON     reduce using rule 20 (blockArguments -> .)
+    COLON           reduce using rule 20 (blockArguments -> .)
+    BAR             reduce using rule 20 (blockArguments -> .)
+
+    optionalBlockClosureHeader     shift and go to state 52
+    blockClosureHeader             shift and go to state 53
+    blockArguments                 shift and go to state 54
+
+state 32
+
+    (2) expressionList -> expressionList DOT . optionalExpression
+    (3) optionalExpression -> .
+    (4) optionalExpression -> . expression
+    (43) expression -> . commaExpression
+    (41) commaExpression -> . commaExpressionContent
+    (42) commaExpression -> . commaExpressionContent COMMA
+    (39) commaExpressionContent -> . assignmentExpression
+    (40) commaExpressionContent -> . commaExpressionContent COMMA assignmentExpression
+    (37) assignmentExpression -> . lowPrecedenceExpression
+    (38) assignmentExpression -> . lowPrecedenceExpression ASSIGNMENT assignmentExpression
+    (34) lowPrecedenceExpression -> . chainExpression
+    (35) lowPrecedenceExpression -> . lowPrecedenceExpression lowPrecedenceOperator chainExpression
+    (33) chainExpression -> . binaryExpression
+    (31) binaryExpression -> . prefixUnaryExpression
+    (32) binaryExpression -> . binaryExpression anyOperator prefixUnaryExpression
+    (29) prefixUnaryExpression -> . primaryExpression
+    (30) prefixUnaryExpression -> . anyPrefixOperator prefixUnaryExpression
+    (8) primaryExpression -> . primaryTerm
+    (9) primaryExpression -> . QUOTE primaryTerm
+    (10) primaryExpression -> . QUASI_QUOTE primaryTerm
+    (11) primaryExpression -> . QUASI_UNQUOTE primaryTerm
+    (12) primaryExpression -> . SPLICE primaryTerm
+    (13) primaryExpression -> . primaryExpression LEFT_PARENT expressionList RIGHT_PARENT
+    (14) primaryExpression -> . primaryExpression LEFT_BRACKET expressionList RIGHT_BRACKET
+    (15) primaryExpression -> . primaryExpression block
+    (64) anyPrefixOperator -> . OPERATOR
+    (5) primaryTerm -> . literal
+    (6) primaryTerm -> . block
+    (7) primaryTerm -> . LEFT_PARENT expression RIGHT_PARENT
+    (44) literal -> . FLOAT
+    (45) literal -> . INTEGER
+    (46) literal -> . CHARACTER
+    (47) literal -> . STRING
+    (48) literal -> . SYMBOL_IDENTIFIER
+    (49) literal -> . SYMBOL_KEYWORD
+    (50) literal -> . SYMBOL_OPERATOR
+    (51) literal -> . SYMBOL_STRING
+    (52) literal -> . LITERAL_ARRAY_LEFT_PARENT literalArrayElements RIGHT_PARENT
+    (19) block -> . LEFT_CURLY_BRACKET optionalBlockClosureHeader expressionList RIGHT_CURLY_BRACKET
+
+    DOT             reduce using rule 3 (optionalExpression -> .)
+    $end            reduce using rule 3 (optionalExpression -> .)
+    RIGHT_PARENT    reduce using rule 3 (optionalExpression -> .)
+    RIGHT_BRACKET   reduce using rule 3 (optionalExpression -> .)
+    RIGHT_CURLY_BRACKET reduce using rule 3 (optionalExpression -> .)
+    QUOTE           shift and go to state 14
+    QUASI_QUOTE     shift and go to state 15
+    QUASI_UNQUOTE   shift and go to state 16
+    SPLICE          shift and go to state 17
+    OPERATOR        shift and go to state 20
+    LEFT_PARENT     shift and go to state 18
+    FLOAT           shift and go to state 22
+    INTEGER         shift and go to state 23
+    CHARACTER       shift and go to state 24
+    STRING          shift and go to state 25
+    SYMBOL_IDENTIFIER shift and go to state 26
+    SYMBOL_KEYWORD  shift and go to state 27
+    SYMBOL_OPERATOR shift and go to state 28
+    SYMBOL_STRING   shift and go to state 29
+    LITERAL_ARRAY_LEFT_PARENT shift and go to state 30
+    LEFT_CURLY_BRACKET shift and go to state 31
+
+    optionalExpression             shift and go to state 55
+    expression                     shift and go to state 3
+    commaExpression                shift and go to state 4
+    commaExpressionContent         shift and go to state 5
+    assignmentExpression           shift and go to state 6
+    lowPrecedenceExpression        shift and go to state 7
+    chainExpression                shift and go to state 8
+    binaryExpression               shift and go to state 9
+    prefixUnaryExpression          shift and go to state 10
+    primaryExpression              shift and go to state 11
+    anyPrefixOperator              shift and go to state 12
+    primaryTerm                    shift and go to state 13
+    block                          shift and go to state 19
+    literal                        shift and go to state 21
+
+state 33
+
+    (42) commaExpression -> commaExpressionContent COMMA .
+    (40) commaExpressionContent -> commaExpressionContent COMMA . assignmentExpression
+    (37) assignmentExpression -> . lowPrecedenceExpression
+    (38) assignmentExpression -> . lowPrecedenceExpression ASSIGNMENT assignmentExpression
+    (34) lowPrecedenceExpression -> . chainExpression
+    (35) lowPrecedenceExpression -> . lowPrecedenceExpression lowPrecedenceOperator chainExpression
+    (33) chainExpression -> . binaryExpression
+    (31) binaryExpression -> . prefixUnaryExpression
+    (32) binaryExpression -> . binaryExpression anyOperator prefixUnaryExpression
+    (29) prefixUnaryExpression -> . primaryExpression
+    (30) prefixUnaryExpression -> . anyPrefixOperator prefixUnaryExpression
+    (8) primaryExpression -> . primaryTerm
+    (9) primaryExpression -> . QUOTE primaryTerm
+    (10) primaryExpression -> . QUASI_QUOTE primaryTerm
+    (11) primaryExpression -> . QUASI_UNQUOTE primaryTerm
+    (12) primaryExpression -> . SPLICE primaryTerm
+    (13) primaryExpression -> . primaryExpression LEFT_PARENT expressionList RIGHT_PARENT
+    (14) primaryExpression -> . primaryExpression LEFT_BRACKET expressionList RIGHT_BRACKET
+    (15) primaryExpression -> . primaryExpression block
+    (64) anyPrefixOperator -> . OPERATOR
+    (5) primaryTerm -> . literal
+    (6) primaryTerm -> . block
+    (7) primaryTerm -> . LEFT_PARENT expression RIGHT_PARENT
+    (44) literal -> . FLOAT
+    (45) literal -> . INTEGER
+    (46) literal -> . CHARACTER
+    (47) literal -> . STRING
+    (48) literal -> . SYMBOL_IDENTIFIER
+    (49) literal -> . SYMBOL_KEYWORD
+    (50) literal -> . SYMBOL_OPERATOR
+    (51) literal -> . SYMBOL_STRING
+    (52) literal -> . LITERAL_ARRAY_LEFT_PARENT literalArrayElements RIGHT_PARENT
+    (19) block -> . LEFT_CURLY_BRACKET optionalBlockClosureHeader expressionList RIGHT_CURLY_BRACKET
+
+    DOT             reduce using rule 42 (commaExpression -> commaExpressionContent COMMA .)
+    $end            reduce using rule 42 (commaExpression -> commaExpressionContent COMMA .)
+    RIGHT_PARENT    reduce using rule 42 (commaExpression -> commaExpressionContent COMMA .)
+    RIGHT_BRACKET   reduce using rule 42 (commaExpression -> commaExpressionContent COMMA .)
+    RIGHT_CURLY_BRACKET reduce using rule 42 (commaExpression -> commaExpressionContent COMMA .)
+    QUOTE           shift and go to state 14
+    QUASI_QUOTE     shift and go to state 15
+    QUASI_UNQUOTE   shift and go to state 16
+    SPLICE          shift and go to state 17
+    OPERATOR        shift and go to state 20
+    LEFT_PARENT     shift and go to state 18
+    FLOAT           shift and go to state 22
+    INTEGER         shift and go to state 23
+    CHARACTER       shift and go to state 24
+    STRING          shift and go to state 25
+    SYMBOL_IDENTIFIER shift and go to state 26
+    SYMBOL_KEYWORD  shift and go to state 27
+    SYMBOL_OPERATOR shift and go to state 28
+    SYMBOL_STRING   shift and go to state 29
+    LITERAL_ARRAY_LEFT_PARENT shift and go to state 30
+    LEFT_CURLY_BRACKET shift and go to state 31
+
+    assignmentExpression           shift and go to state 56
+    lowPrecedenceExpression        shift and go to state 7
+    chainExpression                shift and go to state 8
+    binaryExpression               shift and go to state 9
+    prefixUnaryExpression          shift and go to state 10
+    primaryExpression              shift and go to state 11
+    anyPrefixOperator              shift and go to state 12
+    primaryTerm                    shift and go to state 13
+    block                          shift and go to state 19
+    literal                        shift and go to state 21
+
+state 34
+
+    (38) assignmentExpression -> lowPrecedenceExpression ASSIGNMENT . assignmentExpression
+    (37) assignmentExpression -> . lowPrecedenceExpression
+    (38) assignmentExpression -> . lowPrecedenceExpression ASSIGNMENT assignmentExpression
+    (34) lowPrecedenceExpression -> . chainExpression
+    (35) lowPrecedenceExpression -> . lowPrecedenceExpression lowPrecedenceOperator chainExpression
+    (33) chainExpression -> . binaryExpression
+    (31) binaryExpression -> . prefixUnaryExpression
+    (32) binaryExpression -> . binaryExpression anyOperator prefixUnaryExpression
+    (29) prefixUnaryExpression -> . primaryExpression
+    (30) prefixUnaryExpression -> . anyPrefixOperator prefixUnaryExpression
+    (8) primaryExpression -> . primaryTerm
+    (9) primaryExpression -> . QUOTE primaryTerm
+    (10) primaryExpression -> . QUASI_QUOTE primaryTerm
+    (11) primaryExpression -> . QUASI_UNQUOTE primaryTerm
+    (12) primaryExpression -> . SPLICE primaryTerm
+    (13) primaryExpression -> . primaryExpression LEFT_PARENT expressionList RIGHT_PARENT
+    (14) primaryExpression -> . primaryExpression LEFT_BRACKET expressionList RIGHT_BRACKET
+    (15) primaryExpression -> . primaryExpression block
+    (64) anyPrefixOperator -> . OPERATOR
+    (5) primaryTerm -> . literal
+    (6) primaryTerm -> . block
+    (7) primaryTerm -> . LEFT_PARENT expression RIGHT_PARENT
+    (44) literal -> . FLOAT
+    (45) literal -> . INTEGER
+    (46) literal -> . CHARACTER
+    (47) literal -> . STRING
+    (48) literal -> . SYMBOL_IDENTIFIER
+    (49) literal -> . SYMBOL_KEYWORD
+    (50) literal -> . SYMBOL_OPERATOR
+    (51) literal -> . SYMBOL_STRING
+    (52) literal -> . LITERAL_ARRAY_LEFT_PARENT literalArrayElements RIGHT_PARENT
+    (19) block -> . LEFT_CURLY_BRACKET optionalBlockClosureHeader expressionList RIGHT_CURLY_BRACKET
+
+    QUOTE           shift and go to state 14
+    QUASI_QUOTE     shift and go to state 15
+    QUASI_UNQUOTE   shift and go to state 16
+    SPLICE          shift and go to state 17
+    OPERATOR        shift and go to state 20
+    LEFT_PARENT     shift and go to state 18
+    FLOAT           shift and go to state 22
+    INTEGER         shift and go to state 23
+    CHARACTER       shift and go to state 24
+    STRING          shift and go to state 25
+    SYMBOL_IDENTIFIER shift and go to state 26
+    SYMBOL_KEYWORD  shift and go to state 27
+    SYMBOL_OPERATOR shift and go to state 28
+    SYMBOL_STRING   shift and go to state 29
+    LITERAL_ARRAY_LEFT_PARENT shift and go to state 30
+    LEFT_CURLY_BRACKET shift and go to state 31
+
+    lowPrecedenceExpression        shift and go to state 7
+    assignmentExpression           shift and go to state 57
+    chainExpression                shift and go to state 8
+    binaryExpression               shift and go to state 9
+    prefixUnaryExpression          shift and go to state 10
+    primaryExpression              shift and go to state 11
+    anyPrefixOperator              shift and go to state 12
+    primaryTerm                    shift and go to state 13
+    block                          shift and go to state 19
+    literal                        shift and go to state 21
+
+state 35
+
+    (35) lowPrecedenceExpression -> lowPrecedenceExpression lowPrecedenceOperator . chainExpression
+    (33) chainExpression -> . binaryExpression
+    (31) binaryExpression -> . prefixUnaryExpression
+    (32) binaryExpression -> . binaryExpression anyOperator prefixUnaryExpression
+    (29) prefixUnaryExpression -> . primaryExpression
+    (30) prefixUnaryExpression -> . anyPrefixOperator prefixUnaryExpression
+    (8) primaryExpression -> . primaryTerm
+    (9) primaryExpression -> . QUOTE primaryTerm
+    (10) primaryExpression -> . QUASI_QUOTE primaryTerm
+    (11) primaryExpression -> . QUASI_UNQUOTE primaryTerm
+    (12) primaryExpression -> . SPLICE primaryTerm
+    (13) primaryExpression -> . primaryExpression LEFT_PARENT expressionList RIGHT_PARENT
+    (14) primaryExpression -> . primaryExpression LEFT_BRACKET expressionList RIGHT_BRACKET
+    (15) primaryExpression -> . primaryExpression block
+    (64) anyPrefixOperator -> . OPERATOR
+    (5) primaryTerm -> . literal
+    (6) primaryTerm -> . block
+    (7) primaryTerm -> . LEFT_PARENT expression RIGHT_PARENT
+    (44) literal -> . FLOAT
+    (45) literal -> . INTEGER
+    (46) literal -> . CHARACTER
+    (47) literal -> . STRING
+    (48) literal -> . SYMBOL_IDENTIFIER
+    (49) literal -> . SYMBOL_KEYWORD
+    (50) literal -> . SYMBOL_OPERATOR
+    (51) literal -> . SYMBOL_STRING
+    (52) literal -> . LITERAL_ARRAY_LEFT_PARENT literalArrayElements RIGHT_PARENT
+    (19) block -> . LEFT_CURLY_BRACKET optionalBlockClosureHeader expressionList RIGHT_CURLY_BRACKET
+
+    QUOTE           shift and go to state 14
+    QUASI_QUOTE     shift and go to state 15
+    QUASI_UNQUOTE   shift and go to state 16
+    SPLICE          shift and go to state 17
+    OPERATOR        shift and go to state 20
+    LEFT_PARENT     shift and go to state 18
+    FLOAT           shift and go to state 22
+    INTEGER         shift and go to state 23
+    CHARACTER       shift and go to state 24
+    STRING          shift and go to state 25
+    SYMBOL_IDENTIFIER shift and go to state 26
+    SYMBOL_KEYWORD  shift and go to state 27
+    SYMBOL_OPERATOR shift and go to state 28
+    SYMBOL_STRING   shift and go to state 29
+    LITERAL_ARRAY_LEFT_PARENT shift and go to state 30
+    LEFT_CURLY_BRACKET shift and go to state 31
+
+    chainExpression                shift and go to state 58
+    binaryExpression               shift and go to state 9
+    prefixUnaryExpression          shift and go to state 10
+    primaryExpression              shift and go to state 11
+    anyPrefixOperator              shift and go to state 12
+    primaryTerm                    shift and go to state 13
+    block                          shift and go to state 19
+    literal                        shift and go to state 21
+
+state 36
+
+    (36) lowPrecedenceOperator -> COLON_COLON . anyOperator
+    (60) anyOperator -> . OPERATOR
+    (61) anyOperator -> . BAR
+    (62) anyOperator -> . LESS_THAN
+    (63) anyOperator -> . GREATER_THAN
+
+    OPERATOR        shift and go to state 38
+    BAR             shift and go to state 39
+    LESS_THAN       shift and go to state 40
+    GREATER_THAN    shift and go to state 41
+
+    anyOperator                    shift and go to state 59
+
+state 37
+
+    (32) binaryExpression -> binaryExpression anyOperator . prefixUnaryExpression
+    (29) prefixUnaryExpression -> . primaryExpression
+    (30) prefixUnaryExpression -> . anyPrefixOperator prefixUnaryExpression
+    (8) primaryExpression -> . primaryTerm
+    (9) primaryExpression -> . QUOTE primaryTerm
+    (10) primaryExpression -> . QUASI_QUOTE primaryTerm
+    (11) primaryExpression -> . QUASI_UNQUOTE primaryTerm
+    (12) primaryExpression -> . SPLICE primaryTerm
+    (13) primaryExpression -> . primaryExpression LEFT_PARENT expressionList RIGHT_PARENT
+    (14) primaryExpression -> . primaryExpression LEFT_BRACKET expressionList RIGHT_BRACKET
+    (15) primaryExpression -> . primaryExpression block
+    (64) anyPrefixOperator -> . OPERATOR
+    (5) primaryTerm -> . literal
+    (6) primaryTerm -> . block
+    (7) primaryTerm -> . LEFT_PARENT expression RIGHT_PARENT
+    (44) literal -> . FLOAT
+    (45) literal -> . INTEGER
+    (46) literal -> . CHARACTER
+    (47) literal -> . STRING
+    (48) literal -> . SYMBOL_IDENTIFIER
+    (49) literal -> . SYMBOL_KEYWORD
+    (50) literal -> . SYMBOL_OPERATOR
+    (51) literal -> . SYMBOL_STRING
+    (52) literal -> . LITERAL_ARRAY_LEFT_PARENT literalArrayElements RIGHT_PARENT
+    (19) block -> . LEFT_CURLY_BRACKET optionalBlockClosureHeader expressionList RIGHT_CURLY_BRACKET
+
+    QUOTE           shift and go to state 14
+    QUASI_QUOTE     shift and go to state 15
+    QUASI_UNQUOTE   shift and go to state 16
+    SPLICE          shift and go to state 17
+    OPERATOR        shift and go to state 20
+    LEFT_PARENT     shift and go to state 18
+    FLOAT           shift and go to state 22
+    INTEGER         shift and go to state 23
+    CHARACTER       shift and go to state 24
+    STRING          shift and go to state 25
+    SYMBOL_IDENTIFIER shift and go to state 26
+    SYMBOL_KEYWORD  shift and go to state 27
+    SYMBOL_OPERATOR shift and go to state 28
+    SYMBOL_STRING   shift and go to state 29
+    LITERAL_ARRAY_LEFT_PARENT shift and go to state 30
+    LEFT_CURLY_BRACKET shift and go to state 31
+
+    prefixUnaryExpression          shift and go to state 60
+    primaryExpression              shift and go to state 11
+    anyPrefixOperator              shift and go to state 12
+    primaryTerm                    shift and go to state 13
+    block                          shift and go to state 19
+    literal                        shift and go to state 21
+
+state 38
+
+    (60) anyOperator -> OPERATOR .
+
+    QUOTE           reduce using rule 60 (anyOperator -> OPERATOR .)
+    QUASI_QUOTE     reduce using rule 60 (anyOperator -> OPERATOR .)
+    QUASI_UNQUOTE   reduce using rule 60 (anyOperator -> OPERATOR .)
+    SPLICE          reduce using rule 60 (anyOperator -> OPERATOR .)
+    OPERATOR        reduce using rule 60 (anyOperator -> OPERATOR .)
+    LEFT_PARENT     reduce using rule 60 (anyOperator -> OPERATOR .)
+    FLOAT           reduce using rule 60 (anyOperator -> OPERATOR .)
+    INTEGER         reduce using rule 60 (anyOperator -> OPERATOR .)
+    CHARACTER       reduce using rule 60 (anyOperator -> OPERATOR .)
+    STRING          reduce using rule 60 (anyOperator -> OPERATOR .)
+    SYMBOL_IDENTIFIER reduce using rule 60 (anyOperator -> OPERATOR .)
+    SYMBOL_KEYWORD  reduce using rule 60 (anyOperator -> OPERATOR .)
+    SYMBOL_OPERATOR reduce using rule 60 (anyOperator -> OPERATOR .)
+    SYMBOL_STRING   reduce using rule 60 (anyOperator -> OPERATOR .)
+    LITERAL_ARRAY_LEFT_PARENT reduce using rule 60 (anyOperator -> OPERATOR .)
+    LEFT_CURLY_BRACKET reduce using rule 60 (anyOperator -> OPERATOR .)
+    RIGHT_PARENT    reduce using rule 60 (anyOperator -> OPERATOR .)
+    IDENTIFIER      reduce using rule 60 (anyOperator -> OPERATOR .)
+    KEYWORD         reduce using rule 60 (anyOperator -> OPERATOR .)
+    MULTI_KEYWORD   reduce using rule 60 (anyOperator -> OPERATOR .)
+    BAR             reduce using rule 60 (anyOperator -> OPERATOR .)
+    LESS_THAN       reduce using rule 60 (anyOperator -> OPERATOR .)
+    GREATER_THAN    reduce using rule 60 (anyOperator -> OPERATOR .)
+
+
+state 39
+
+    (61) anyOperator -> BAR .
+
+    QUOTE           reduce using rule 61 (anyOperator -> BAR .)
+    QUASI_QUOTE     reduce using rule 61 (anyOperator -> BAR .)
+    QUASI_UNQUOTE   reduce using rule 61 (anyOperator -> BAR .)
+    SPLICE          reduce using rule 61 (anyOperator -> BAR .)
+    OPERATOR        reduce using rule 61 (anyOperator -> BAR .)
+    LEFT_PARENT     reduce using rule 61 (anyOperator -> BAR .)
+    FLOAT           reduce using rule 61 (anyOperator -> BAR .)
+    INTEGER         reduce using rule 61 (anyOperator -> BAR .)
+    CHARACTER       reduce using rule 61 (anyOperator -> BAR .)
+    STRING          reduce using rule 61 (anyOperator -> BAR .)
+    SYMBOL_IDENTIFIER reduce using rule 61 (anyOperator -> BAR .)
+    SYMBOL_KEYWORD  reduce using rule 61 (anyOperator -> BAR .)
+    SYMBOL_OPERATOR reduce using rule 61 (anyOperator -> BAR .)
+    SYMBOL_STRING   reduce using rule 61 (anyOperator -> BAR .)
+    LITERAL_ARRAY_LEFT_PARENT reduce using rule 61 (anyOperator -> BAR .)
+    LEFT_CURLY_BRACKET reduce using rule 61 (anyOperator -> BAR .)
+    RIGHT_PARENT    reduce using rule 61 (anyOperator -> BAR .)
+    IDENTIFIER      reduce using rule 61 (anyOperator -> BAR .)
+    KEYWORD         reduce using rule 61 (anyOperator -> BAR .)
+    MULTI_KEYWORD   reduce using rule 61 (anyOperator -> BAR .)
+    BAR             reduce using rule 61 (anyOperator -> BAR .)
+    LESS_THAN       reduce using rule 61 (anyOperator -> BAR .)
+    GREATER_THAN    reduce using rule 61 (anyOperator -> BAR .)
+
+
+state 40
+
+    (62) anyOperator -> LESS_THAN .
+
+    QUOTE           reduce using rule 62 (anyOperator -> LESS_THAN .)
+    QUASI_QUOTE     reduce using rule 62 (anyOperator -> LESS_THAN .)
+    QUASI_UNQUOTE   reduce using rule 62 (anyOperator -> LESS_THAN .)
+    SPLICE          reduce using rule 62 (anyOperator -> LESS_THAN .)
+    OPERATOR        reduce using rule 62 (anyOperator -> LESS_THAN .)
+    LEFT_PARENT     reduce using rule 62 (anyOperator -> LESS_THAN .)
+    FLOAT           reduce using rule 62 (anyOperator -> LESS_THAN .)
+    INTEGER         reduce using rule 62 (anyOperator -> LESS_THAN .)
+    CHARACTER       reduce using rule 62 (anyOperator -> LESS_THAN .)
+    STRING          reduce using rule 62 (anyOperator -> LESS_THAN .)
+    SYMBOL_IDENTIFIER reduce using rule 62 (anyOperator -> LESS_THAN .)
+    SYMBOL_KEYWORD  reduce using rule 62 (anyOperator -> LESS_THAN .)
+    SYMBOL_OPERATOR reduce using rule 62 (anyOperator -> LESS_THAN .)
+    SYMBOL_STRING   reduce using rule 62 (anyOperator -> LESS_THAN .)
+    LITERAL_ARRAY_LEFT_PARENT reduce using rule 62 (anyOperator -> LESS_THAN .)
+    LEFT_CURLY_BRACKET reduce using rule 62 (anyOperator -> LESS_THAN .)
+    RIGHT_PARENT    reduce using rule 62 (anyOperator -> LESS_THAN .)
+    IDENTIFIER      reduce using rule 62 (anyOperator -> LESS_THAN .)
+    KEYWORD         reduce using rule 62 (anyOperator -> LESS_THAN .)
+    MULTI_KEYWORD   reduce using rule 62 (anyOperator -> LESS_THAN .)
+    BAR             reduce using rule 62 (anyOperator -> LESS_THAN .)
+    LESS_THAN       reduce using rule 62 (anyOperator -> LESS_THAN .)
+    GREATER_THAN    reduce using rule 62 (anyOperator -> LESS_THAN .)
+
+
+state 41
+
+    (63) anyOperator -> GREATER_THAN .
+
+    QUOTE           reduce using rule 63 (anyOperator -> GREATER_THAN .)
+    QUASI_QUOTE     reduce using rule 63 (anyOperator -> GREATER_THAN .)
+    QUASI_UNQUOTE   reduce using rule 63 (anyOperator -> GREATER_THAN .)
+    SPLICE          reduce using rule 63 (anyOperator -> GREATER_THAN .)
+    OPERATOR        reduce using rule 63 (anyOperator -> GREATER_THAN .)
+    LEFT_PARENT     reduce using rule 63 (anyOperator -> GREATER_THAN .)
+    FLOAT           reduce using rule 63 (anyOperator -> GREATER_THAN .)
+    INTEGER         reduce using rule 63 (anyOperator -> GREATER_THAN .)
+    CHARACTER       reduce using rule 63 (anyOperator -> GREATER_THAN .)
+    STRING          reduce using rule 63 (anyOperator -> GREATER_THAN .)
+    SYMBOL_IDENTIFIER reduce using rule 63 (anyOperator -> GREATER_THAN .)
+    SYMBOL_KEYWORD  reduce using rule 63 (anyOperator -> GREATER_THAN .)
+    SYMBOL_OPERATOR reduce using rule 63 (anyOperator -> GREATER_THAN .)
+    SYMBOL_STRING   reduce using rule 63 (anyOperator -> GREATER_THAN .)
+    LITERAL_ARRAY_LEFT_PARENT reduce using rule 63 (anyOperator -> GREATER_THAN .)
+    LEFT_CURLY_BRACKET reduce using rule 63 (anyOperator -> GREATER_THAN .)
+    RIGHT_PARENT    reduce using rule 63 (anyOperator -> GREATER_THAN .)
+    IDENTIFIER      reduce using rule 63 (anyOperator -> GREATER_THAN .)
+    KEYWORD         reduce using rule 63 (anyOperator -> GREATER_THAN .)
+    MULTI_KEYWORD   reduce using rule 63 (anyOperator -> GREATER_THAN .)
+    BAR             reduce using rule 63 (anyOperator -> GREATER_THAN .)
+    LESS_THAN       reduce using rule 63 (anyOperator -> GREATER_THAN .)
+    GREATER_THAN    reduce using rule 63 (anyOperator -> GREATER_THAN .)
+
+
+state 42
+
+    (13) primaryExpression -> primaryExpression LEFT_PARENT . expressionList RIGHT_PARENT
+    (1) expressionList -> . optionalExpression
+    (2) expressionList -> . expressionList DOT optionalExpression
+    (3) optionalExpression -> .
+    (4) optionalExpression -> . expression
+    (43) expression -> . commaExpression
+    (41) commaExpression -> . commaExpressionContent
+    (42) commaExpression -> . commaExpressionContent COMMA
+    (39) commaExpressionContent -> . assignmentExpression
+    (40) commaExpressionContent -> . commaExpressionContent COMMA assignmentExpression
+    (37) assignmentExpression -> . lowPrecedenceExpression
+    (38) assignmentExpression -> . lowPrecedenceExpression ASSIGNMENT assignmentExpression
+    (34) lowPrecedenceExpression -> . chainExpression
+    (35) lowPrecedenceExpression -> . lowPrecedenceExpression lowPrecedenceOperator chainExpression
+    (33) chainExpression -> . binaryExpression
+    (31) binaryExpression -> . prefixUnaryExpression
+    (32) binaryExpression -> . binaryExpression anyOperator prefixUnaryExpression
+    (29) prefixUnaryExpression -> . primaryExpression
+    (30) prefixUnaryExpression -> . anyPrefixOperator prefixUnaryExpression
+    (8) primaryExpression -> . primaryTerm
+    (9) primaryExpression -> . QUOTE primaryTerm
+    (10) primaryExpression -> . QUASI_QUOTE primaryTerm
+    (11) primaryExpression -> . QUASI_UNQUOTE primaryTerm
+    (12) primaryExpression -> . SPLICE primaryTerm
+    (13) primaryExpression -> . primaryExpression LEFT_PARENT expressionList RIGHT_PARENT
+    (14) primaryExpression -> . primaryExpression LEFT_BRACKET expressionList RIGHT_BRACKET
+    (15) primaryExpression -> . primaryExpression block
+    (64) anyPrefixOperator -> . OPERATOR
+    (5) primaryTerm -> . literal
+    (6) primaryTerm -> . block
+    (7) primaryTerm -> . LEFT_PARENT expression RIGHT_PARENT
+    (44) literal -> . FLOAT
+    (45) literal -> . INTEGER
+    (46) literal -> . CHARACTER
+    (47) literal -> . STRING
+    (48) literal -> . SYMBOL_IDENTIFIER
+    (49) literal -> . SYMBOL_KEYWORD
+    (50) literal -> . SYMBOL_OPERATOR
+    (51) literal -> . SYMBOL_STRING
+    (52) literal -> . LITERAL_ARRAY_LEFT_PARENT literalArrayElements RIGHT_PARENT
+    (19) block -> . LEFT_CURLY_BRACKET optionalBlockClosureHeader expressionList RIGHT_CURLY_BRACKET
+
+    RIGHT_PARENT    reduce using rule 3 (optionalExpression -> .)
+    DOT             reduce using rule 3 (optionalExpression -> .)
+    QUOTE           shift and go to state 14
+    QUASI_QUOTE     shift and go to state 15
+    QUASI_UNQUOTE   shift and go to state 16
+    SPLICE          shift and go to state 17
+    OPERATOR        shift and go to state 20
+    LEFT_PARENT     shift and go to state 18
+    FLOAT           shift and go to state 22
+    INTEGER         shift and go to state 23
+    CHARACTER       shift and go to state 24
+    STRING          shift and go to state 25
+    SYMBOL_IDENTIFIER shift and go to state 26
+    SYMBOL_KEYWORD  shift and go to state 27
+    SYMBOL_OPERATOR shift and go to state 28
+    SYMBOL_STRING   shift and go to state 29
+    LITERAL_ARRAY_LEFT_PARENT shift and go to state 30
+    LEFT_CURLY_BRACKET shift and go to state 31
+
+    primaryExpression              shift and go to state 11
+    expressionList                 shift and go to state 61
+    optionalExpression             shift and go to state 2
+    expression                     shift and go to state 3
+    commaExpression                shift and go to state 4
+    commaExpressionContent         shift and go to state 5
+    assignmentExpression           shift and go to state 6
+    lowPrecedenceExpression        shift and go to state 7
+    chainExpression                shift and go to state 8
+    binaryExpression               shift and go to state 9
+    prefixUnaryExpression          shift and go to state 10
+    anyPrefixOperator              shift and go to state 12
+    primaryTerm                    shift and go to state 13
+    block                          shift and go to state 19
+    literal                        shift and go to state 21
+
+state 43
+
+    (14) primaryExpression -> primaryExpression LEFT_BRACKET . expressionList RIGHT_BRACKET
+    (1) expressionList -> . optionalExpression
+    (2) expressionList -> . expressionList DOT optionalExpression
+    (3) optionalExpression -> .
+    (4) optionalExpression -> . expression
+    (43) expression -> . commaExpression
+    (41) commaExpression -> . commaExpressionContent
+    (42) commaExpression -> . commaExpressionContent COMMA
+    (39) commaExpressionContent -> . assignmentExpression
+    (40) commaExpressionContent -> . commaExpressionContent COMMA assignmentExpression
+    (37) assignmentExpression -> . lowPrecedenceExpression
+    (38) assignmentExpression -> . lowPrecedenceExpression ASSIGNMENT assignmentExpression
+    (34) lowPrecedenceExpression -> . chainExpression
+    (35) lowPrecedenceExpression -> . lowPrecedenceExpression lowPrecedenceOperator chainExpression
+    (33) chainExpression -> . binaryExpression
+    (31) binaryExpression -> . prefixUnaryExpression
+    (32) binaryExpression -> . binaryExpression anyOperator prefixUnaryExpression
+    (29) prefixUnaryExpression -> . primaryExpression
+    (30) prefixUnaryExpression -> . anyPrefixOperator prefixUnaryExpression
+    (8) primaryExpression -> . primaryTerm
+    (9) primaryExpression -> . QUOTE primaryTerm
+    (10) primaryExpression -> . QUASI_QUOTE primaryTerm
+    (11) primaryExpression -> . QUASI_UNQUOTE primaryTerm
+    (12) primaryExpression -> . SPLICE primaryTerm
+    (13) primaryExpression -> . primaryExpression LEFT_PARENT expressionList RIGHT_PARENT
+    (14) primaryExpression -> . primaryExpression LEFT_BRACKET expressionList RIGHT_BRACKET
+    (15) primaryExpression -> . primaryExpression block
+    (64) anyPrefixOperator -> . OPERATOR
+    (5) primaryTerm -> . literal
+    (6) primaryTerm -> . block
+    (7) primaryTerm -> . LEFT_PARENT expression RIGHT_PARENT
+    (44) literal -> . FLOAT
+    (45) literal -> . INTEGER
+    (46) literal -> . CHARACTER
+    (47) literal -> . STRING
+    (48) literal -> . SYMBOL_IDENTIFIER
+    (49) literal -> . SYMBOL_KEYWORD
+    (50) literal -> . SYMBOL_OPERATOR
+    (51) literal -> . SYMBOL_STRING
+    (52) literal -> . LITERAL_ARRAY_LEFT_PARENT literalArrayElements RIGHT_PARENT
+    (19) block -> . LEFT_CURLY_BRACKET optionalBlockClosureHeader expressionList RIGHT_CURLY_BRACKET
+
+    RIGHT_BRACKET   reduce using rule 3 (optionalExpression -> .)
+    DOT             reduce using rule 3 (optionalExpression -> .)
+    QUOTE           shift and go to state 14
+    QUASI_QUOTE     shift and go to state 15
+    QUASI_UNQUOTE   shift and go to state 16
+    SPLICE          shift and go to state 17
+    OPERATOR        shift and go to state 20
+    LEFT_PARENT     shift and go to state 18
+    FLOAT           shift and go to state 22
+    INTEGER         shift and go to state 23
+    CHARACTER       shift and go to state 24
+    STRING          shift and go to state 25
+    SYMBOL_IDENTIFIER shift and go to state 26
+    SYMBOL_KEYWORD  shift and go to state 27
+    SYMBOL_OPERATOR shift and go to state 28
+    SYMBOL_STRING   shift and go to state 29
+    LITERAL_ARRAY_LEFT_PARENT shift and go to state 30
+    LEFT_CURLY_BRACKET shift and go to state 31
+
+    primaryExpression              shift and go to state 11
+    expressionList                 shift and go to state 62
+    optionalExpression             shift and go to state 2
+    expression                     shift and go to state 3
+    commaExpression                shift and go to state 4
+    commaExpressionContent         shift and go to state 5
+    assignmentExpression           shift and go to state 6
+    lowPrecedenceExpression        shift and go to state 7
+    chainExpression                shift and go to state 8
+    binaryExpression               shift and go to state 9
+    prefixUnaryExpression          shift and go to state 10
+    anyPrefixOperator              shift and go to state 12
+    primaryTerm                    shift and go to state 13
+    block                          shift and go to state 19
+    literal                        shift and go to state 21
+
+state 44
+
+    (15) primaryExpression -> primaryExpression block .
+
+    LEFT_PARENT     reduce using rule 15 (primaryExpression -> primaryExpression block .)
+    LEFT_BRACKET    reduce using rule 15 (primaryExpression -> primaryExpression block .)
+    LEFT_CURLY_BRACKET reduce using rule 15 (primaryExpression -> primaryExpression block .)
+    OPERATOR        reduce using rule 15 (primaryExpression -> primaryExpression block .)
+    BAR             reduce using rule 15 (primaryExpression -> primaryExpression block .)
+    LESS_THAN       reduce using rule 15 (primaryExpression -> primaryExpression block .)
+    GREATER_THAN    reduce using rule 15 (primaryExpression -> primaryExpression block .)
+    ASSIGNMENT      reduce using rule 15 (primaryExpression -> primaryExpression block .)
+    COLON_COLON     reduce using rule 15 (primaryExpression -> primaryExpression block .)
+    COMMA           reduce using rule 15 (primaryExpression -> primaryExpression block .)
+    DOT             reduce using rule 15 (primaryExpression -> primaryExpression block .)
+    $end            reduce using rule 15 (primaryExpression -> primaryExpression block .)
+    RIGHT_PARENT    reduce using rule 15 (primaryExpression -> primaryExpression block .)
+    RIGHT_BRACKET   reduce using rule 15 (primaryExpression -> primaryExpression block .)
+    RIGHT_CURLY_BRACKET reduce using rule 15 (primaryExpression -> primaryExpression block .)
+
+
+state 45
+
+    (30) prefixUnaryExpression -> anyPrefixOperator prefixUnaryExpression .
+
+    OPERATOR        reduce using rule 30 (prefixUnaryExpression -> anyPrefixOperator prefixUnaryExpression .)
+    BAR             reduce using rule 30 (prefixUnaryExpression -> anyPrefixOperator prefixUnaryExpression .)
+    LESS_THAN       reduce using rule 30 (prefixUnaryExpression -> anyPrefixOperator prefixUnaryExpression .)
+    GREATER_THAN    reduce using rule 30 (prefixUnaryExpression -> anyPrefixOperator prefixUnaryExpression .)
+    ASSIGNMENT      reduce using rule 30 (prefixUnaryExpression -> anyPrefixOperator prefixUnaryExpression .)
+    COLON_COLON     reduce using rule 30 (prefixUnaryExpression -> anyPrefixOperator prefixUnaryExpression .)
+    COMMA           reduce using rule 30 (prefixUnaryExpression -> anyPrefixOperator prefixUnaryExpression .)
+    DOT             reduce using rule 30 (prefixUnaryExpression -> anyPrefixOperator prefixUnaryExpression .)
+    $end            reduce using rule 30 (prefixUnaryExpression -> anyPrefixOperator prefixUnaryExpression .)
+    RIGHT_PARENT    reduce using rule 30 (prefixUnaryExpression -> anyPrefixOperator prefixUnaryExpression .)
+    RIGHT_BRACKET   reduce using rule 30 (prefixUnaryExpression -> anyPrefixOperator prefixUnaryExpression .)
+    RIGHT_CURLY_BRACKET reduce using rule 30 (prefixUnaryExpression -> anyPrefixOperator prefixUnaryExpression .)
+
+
+state 46
+
+    (9) primaryExpression -> QUOTE primaryTerm .
+
+    LEFT_PARENT     reduce using rule 9 (primaryExpression -> QUOTE primaryTerm .)
+    LEFT_BRACKET    reduce using rule 9 (primaryExpression -> QUOTE primaryTerm .)
+    LEFT_CURLY_BRACKET reduce using rule 9 (primaryExpression -> QUOTE primaryTerm .)
+    OPERATOR        reduce using rule 9 (primaryExpression -> QUOTE primaryTerm .)
+    BAR             reduce using rule 9 (primaryExpression -> QUOTE primaryTerm .)
+    LESS_THAN       reduce using rule 9 (primaryExpression -> QUOTE primaryTerm .)
+    GREATER_THAN    reduce using rule 9 (primaryExpression -> QUOTE primaryTerm .)
+    ASSIGNMENT      reduce using rule 9 (primaryExpression -> QUOTE primaryTerm .)
+    COLON_COLON     reduce using rule 9 (primaryExpression -> QUOTE primaryTerm .)
+    COMMA           reduce using rule 9 (primaryExpression -> QUOTE primaryTerm .)
+    DOT             reduce using rule 9 (primaryExpression -> QUOTE primaryTerm .)
+    $end            reduce using rule 9 (primaryExpression -> QUOTE primaryTerm .)
+    RIGHT_PARENT    reduce using rule 9 (primaryExpression -> QUOTE primaryTerm .)
+    RIGHT_BRACKET   reduce using rule 9 (primaryExpression -> QUOTE primaryTerm .)
+    RIGHT_CURLY_BRACKET reduce using rule 9 (primaryExpression -> QUOTE primaryTerm .)
+
+
+state 47
+
+    (10) primaryExpression -> QUASI_QUOTE primaryTerm .
+
+    LEFT_PARENT     reduce using rule 10 (primaryExpression -> QUASI_QUOTE primaryTerm .)
+    LEFT_BRACKET    reduce using rule 10 (primaryExpression -> QUASI_QUOTE primaryTerm .)
+    LEFT_CURLY_BRACKET reduce using rule 10 (primaryExpression -> QUASI_QUOTE primaryTerm .)
+    OPERATOR        reduce using rule 10 (primaryExpression -> QUASI_QUOTE primaryTerm .)
+    BAR             reduce using rule 10 (primaryExpression -> QUASI_QUOTE primaryTerm .)
+    LESS_THAN       reduce using rule 10 (primaryExpression -> QUASI_QUOTE primaryTerm .)
+    GREATER_THAN    reduce using rule 10 (primaryExpression -> QUASI_QUOTE primaryTerm .)
+    ASSIGNMENT      reduce using rule 10 (primaryExpression -> QUASI_QUOTE primaryTerm .)
+    COLON_COLON     reduce using rule 10 (primaryExpression -> QUASI_QUOTE primaryTerm .)
+    COMMA           reduce using rule 10 (primaryExpression -> QUASI_QUOTE primaryTerm .)
+    DOT             reduce using rule 10 (primaryExpression -> QUASI_QUOTE primaryTerm .)
+    $end            reduce using rule 10 (primaryExpression -> QUASI_QUOTE primaryTerm .)
+    RIGHT_PARENT    reduce using rule 10 (primaryExpression -> QUASI_QUOTE primaryTerm .)
+    RIGHT_BRACKET   reduce using rule 10 (primaryExpression -> QUASI_QUOTE primaryTerm .)
+    RIGHT_CURLY_BRACKET reduce using rule 10 (primaryExpression -> QUASI_QUOTE primaryTerm .)
+
+
+state 48
+
+    (11) primaryExpression -> QUASI_UNQUOTE primaryTerm .
+
+    LEFT_PARENT     reduce using rule 11 (primaryExpression -> QUASI_UNQUOTE primaryTerm .)
+    LEFT_BRACKET    reduce using rule 11 (primaryExpression -> QUASI_UNQUOTE primaryTerm .)
+    LEFT_CURLY_BRACKET reduce using rule 11 (primaryExpression -> QUASI_UNQUOTE primaryTerm .)
+    OPERATOR        reduce using rule 11 (primaryExpression -> QUASI_UNQUOTE primaryTerm .)
+    BAR             reduce using rule 11 (primaryExpression -> QUASI_UNQUOTE primaryTerm .)
+    LESS_THAN       reduce using rule 11 (primaryExpression -> QUASI_UNQUOTE primaryTerm .)
+    GREATER_THAN    reduce using rule 11 (primaryExpression -> QUASI_UNQUOTE primaryTerm .)
+    ASSIGNMENT      reduce using rule 11 (primaryExpression -> QUASI_UNQUOTE primaryTerm .)
+    COLON_COLON     reduce using rule 11 (primaryExpression -> QUASI_UNQUOTE primaryTerm .)
+    COMMA           reduce using rule 11 (primaryExpression -> QUASI_UNQUOTE primaryTerm .)
+    DOT             reduce using rule 11 (primaryExpression -> QUASI_UNQUOTE primaryTerm .)
+    $end            reduce using rule 11 (primaryExpression -> QUASI_UNQUOTE primaryTerm .)
+    RIGHT_PARENT    reduce using rule 11 (primaryExpression -> QUASI_UNQUOTE primaryTerm .)
+    RIGHT_BRACKET   reduce using rule 11 (primaryExpression -> QUASI_UNQUOTE primaryTerm .)
+    RIGHT_CURLY_BRACKET reduce using rule 11 (primaryExpression -> QUASI_UNQUOTE primaryTerm .)
+
+
+state 49
+
+    (12) primaryExpression -> SPLICE primaryTerm .
+
+    LEFT_PARENT     reduce using rule 12 (primaryExpression -> SPLICE primaryTerm .)
+    LEFT_BRACKET    reduce using rule 12 (primaryExpression -> SPLICE primaryTerm .)
+    LEFT_CURLY_BRACKET reduce using rule 12 (primaryExpression -> SPLICE primaryTerm .)
+    OPERATOR        reduce using rule 12 (primaryExpression -> SPLICE primaryTerm .)
+    BAR             reduce using rule 12 (primaryExpression -> SPLICE primaryTerm .)
+    LESS_THAN       reduce using rule 12 (primaryExpression -> SPLICE primaryTerm .)
+    GREATER_THAN    reduce using rule 12 (primaryExpression -> SPLICE primaryTerm .)
+    ASSIGNMENT      reduce using rule 12 (primaryExpression -> SPLICE primaryTerm .)
+    COLON_COLON     reduce using rule 12 (primaryExpression -> SPLICE primaryTerm .)
+    COMMA           reduce using rule 12 (primaryExpression -> SPLICE primaryTerm .)
+    DOT             reduce using rule 12 (primaryExpression -> SPLICE primaryTerm .)
+    $end            reduce using rule 12 (primaryExpression -> SPLICE primaryTerm .)
+    RIGHT_PARENT    reduce using rule 12 (primaryExpression -> SPLICE primaryTerm .)
+    RIGHT_BRACKET   reduce using rule 12 (primaryExpression -> SPLICE primaryTerm .)
+    RIGHT_CURLY_BRACKET reduce using rule 12 (primaryExpression -> SPLICE primaryTerm .)
+
+
+state 50
+
+    (7) primaryTerm -> LEFT_PARENT expression . RIGHT_PARENT
+
+    RIGHT_PARENT    shift and go to state 63
+
+
+state 51
+
+    (52) literal -> LITERAL_ARRAY_LEFT_PARENT literalArrayElements . RIGHT_PARENT
+    (54) literalArrayElements -> literalArrayElements . literalArrayElement
+    (55) literalArrayElement -> . literal
+    (56) literalArrayElement -> . IDENTIFIER
+    (57) literalArrayElement -> . anyKeyword
+    (58) literalArrayElement -> . anyOperator
+    (59) literalArrayElement -> . LEFT_PARENT literalArrayElements RIGHT_PARENT
+    (44) literal -> . FLOAT
+    (45) literal -> . INTEGER
+    (46) literal -> . CHARACTER
+    (47) literal -> . STRING
+    (48) literal -> . SYMBOL_IDENTIFIER
+    (49) literal -> . SYMBOL_KEYWORD
+    (50) literal -> . SYMBOL_OPERATOR
+    (51) literal -> . SYMBOL_STRING
+    (52) literal -> . LITERAL_ARRAY_LEFT_PARENT literalArrayElements RIGHT_PARENT
+    (65) anyKeyword -> . KEYWORD
+    (66) anyKeyword -> . MULTI_KEYWORD
+    (60) anyOperator -> . OPERATOR
+    (61) anyOperator -> . BAR
+    (62) anyOperator -> . LESS_THAN
+    (63) anyOperator -> . GREATER_THAN
+
+    RIGHT_PARENT    shift and go to state 64
+    IDENTIFIER      shift and go to state 67
+    LEFT_PARENT     shift and go to state 70
+    FLOAT           shift and go to state 22
+    INTEGER         shift and go to state 23
+    CHARACTER       shift and go to state 24
+    STRING          shift and go to state 25
+    SYMBOL_IDENTIFIER shift and go to state 26
+    SYMBOL_KEYWORD  shift and go to state 27
+    SYMBOL_OPERATOR shift and go to state 28
+    SYMBOL_STRING   shift and go to state 29
+    LITERAL_ARRAY_LEFT_PARENT shift and go to state 30
+    KEYWORD         shift and go to state 71
+    MULTI_KEYWORD   shift and go to state 72
+    OPERATOR        shift and go to state 38
+    BAR             shift and go to state 39
+    LESS_THAN       shift and go to state 40
+    GREATER_THAN    shift and go to state 41
+
+    literalArrayElement            shift and go to state 65
+    literal                        shift and go to state 66
+    anyKeyword                     shift and go to state 68
+    anyOperator                    shift and go to state 69
+
+state 52
+
+    (19) block -> LEFT_CURLY_BRACKET optionalBlockClosureHeader . expressionList RIGHT_CURLY_BRACKET
+    (1) expressionList -> . optionalExpression
+    (2) expressionList -> . expressionList DOT optionalExpression
+    (3) optionalExpression -> .
+    (4) optionalExpression -> . expression
+    (43) expression -> . commaExpression
+    (41) commaExpression -> . commaExpressionContent
+    (42) commaExpression -> . commaExpressionContent COMMA
+    (39) commaExpressionContent -> . assignmentExpression
+    (40) commaExpressionContent -> . commaExpressionContent COMMA assignmentExpression
+    (37) assignmentExpression -> . lowPrecedenceExpression
+    (38) assignmentExpression -> . lowPrecedenceExpression ASSIGNMENT assignmentExpression
+    (34) lowPrecedenceExpression -> . chainExpression
+    (35) lowPrecedenceExpression -> . lowPrecedenceExpression lowPrecedenceOperator chainExpression
+    (33) chainExpression -> . binaryExpression
+    (31) binaryExpression -> . prefixUnaryExpression
+    (32) binaryExpression -> . binaryExpression anyOperator prefixUnaryExpression
+    (29) prefixUnaryExpression -> . primaryExpression
+    (30) prefixUnaryExpression -> . anyPrefixOperator prefixUnaryExpression
+    (8) primaryExpression -> . primaryTerm
+    (9) primaryExpression -> . QUOTE primaryTerm
+    (10) primaryExpression -> . QUASI_QUOTE primaryTerm
+    (11) primaryExpression -> . QUASI_UNQUOTE primaryTerm
+    (12) primaryExpression -> . SPLICE primaryTerm
+    (13) primaryExpression -> . primaryExpression LEFT_PARENT expressionList RIGHT_PARENT
+    (14) primaryExpression -> . primaryExpression LEFT_BRACKET expressionList RIGHT_BRACKET
+    (15) primaryExpression -> . primaryExpression block
+    (64) anyPrefixOperator -> . OPERATOR
+    (5) primaryTerm -> . literal
+    (6) primaryTerm -> . block
+    (7) primaryTerm -> . LEFT_PARENT expression RIGHT_PARENT
+    (44) literal -> . FLOAT
+    (45) literal -> . INTEGER
+    (46) literal -> . CHARACTER
+    (47) literal -> . STRING
+    (48) literal -> . SYMBOL_IDENTIFIER
+    (49) literal -> . SYMBOL_KEYWORD
+    (50) literal -> . SYMBOL_OPERATOR
+    (51) literal -> . SYMBOL_STRING
+    (52) literal -> . LITERAL_ARRAY_LEFT_PARENT literalArrayElements RIGHT_PARENT
+    (19) block -> . LEFT_CURLY_BRACKET optionalBlockClosureHeader expressionList RIGHT_CURLY_BRACKET
+
+    RIGHT_CURLY_BRACKET reduce using rule 3 (optionalExpression -> .)
+    DOT             reduce using rule 3 (optionalExpression -> .)
+    QUOTE           shift and go to state 14
+    QUASI_QUOTE     shift and go to state 15
+    QUASI_UNQUOTE   shift and go to state 16
+    SPLICE          shift and go to state 17
+    OPERATOR        shift and go to state 20
+    LEFT_PARENT     shift and go to state 18
+    FLOAT           shift and go to state 22
+    INTEGER         shift and go to state 23
+    CHARACTER       shift and go to state 24
+    STRING          shift and go to state 25
+    SYMBOL_IDENTIFIER shift and go to state 26
+    SYMBOL_KEYWORD  shift and go to state 27
+    SYMBOL_OPERATOR shift and go to state 28
+    SYMBOL_STRING   shift and go to state 29
+    LITERAL_ARRAY_LEFT_PARENT shift and go to state 30
+    LEFT_CURLY_BRACKET shift and go to state 31
+
+    expressionList                 shift and go to state 73
+    optionalExpression             shift and go to state 2
+    expression                     shift and go to state 3
+    commaExpression                shift and go to state 4
+    commaExpressionContent         shift and go to state 5
+    assignmentExpression           shift and go to state 6
+    lowPrecedenceExpression        shift and go to state 7
+    chainExpression                shift and go to state 8
+    binaryExpression               shift and go to state 9
+    prefixUnaryExpression          shift and go to state 10
+    primaryExpression              shift and go to state 11
+    anyPrefixOperator              shift and go to state 12
+    primaryTerm                    shift and go to state 13
+    block                          shift and go to state 19
+    literal                        shift and go to state 21
+
+state 53
+
+    (17) optionalBlockClosureHeader -> blockClosureHeader .
+
+    QUOTE           reduce using rule 17 (optionalBlockClosureHeader -> blockClosureHeader .)
+    QUASI_QUOTE     reduce using rule 17 (optionalBlockClosureHeader -> blockClosureHeader .)
+    QUASI_UNQUOTE   reduce using rule 17 (optionalBlockClosureHeader -> blockClosureHeader .)
+    SPLICE          reduce using rule 17 (optionalBlockClosureHeader -> blockClosureHeader .)
+    OPERATOR        reduce using rule 17 (optionalBlockClosureHeader -> blockClosureHeader .)
+    LEFT_PARENT     reduce using rule 17 (optionalBlockClosureHeader -> blockClosureHeader .)
+    FLOAT           reduce using rule 17 (optionalBlockClosureHeader -> blockClosureHeader .)
+    INTEGER         reduce using rule 17 (optionalBlockClosureHeader -> blockClosureHeader .)
+    CHARACTER       reduce using rule 17 (optionalBlockClosureHeader -> blockClosureHeader .)
+    STRING          reduce using rule 17 (optionalBlockClosureHeader -> blockClosureHeader .)
+    SYMBOL_IDENTIFIER reduce using rule 17 (optionalBlockClosureHeader -> blockClosureHeader .)
+    SYMBOL_KEYWORD  reduce using rule 17 (optionalBlockClosureHeader -> blockClosureHeader .)
+    SYMBOL_OPERATOR reduce using rule 17 (optionalBlockClosureHeader -> blockClosureHeader .)
+    SYMBOL_STRING   reduce using rule 17 (optionalBlockClosureHeader -> blockClosureHeader .)
+    LITERAL_ARRAY_LEFT_PARENT reduce using rule 17 (optionalBlockClosureHeader -> blockClosureHeader .)
+    LEFT_CURLY_BRACKET reduce using rule 17 (optionalBlockClosureHeader -> blockClosureHeader .)
+    RIGHT_CURLY_BRACKET reduce using rule 17 (optionalBlockClosureHeader -> blockClosureHeader .)
+    DOT             reduce using rule 17 (optionalBlockClosureHeader -> blockClosureHeader .)
+
+
+state 54
+
+    (16) blockClosureHeader -> blockArguments . blockResultType BAR
+    (21) blockArguments -> blockArguments . blockArgument
+    (25) blockResultType -> .
+    (26) blockResultType -> . COLON_COLON primaryExpression
+    (24) blockArgument -> . COLON optionalBlockArgumentType expandableIdentifier
+
+    BAR             reduce using rule 25 (blockResultType -> .)
+    COLON_COLON     shift and go to state 76
+    COLON           shift and go to state 77
+
+    blockResultType                shift and go to state 74
+    blockArgument                  shift and go to state 75
+
+state 55
+
+    (2) expressionList -> expressionList DOT optionalExpression .
+
+    DOT             reduce using rule 2 (expressionList -> expressionList DOT optionalExpression .)
+    $end            reduce using rule 2 (expressionList -> expressionList DOT optionalExpression .)
+    RIGHT_PARENT    reduce using rule 2 (expressionList -> expressionList DOT optionalExpression .)
+    RIGHT_BRACKET   reduce using rule 2 (expressionList -> expressionList DOT optionalExpression .)
+    RIGHT_CURLY_BRACKET reduce using rule 2 (expressionList -> expressionList DOT optionalExpression .)
+
+
+state 56
+
+    (40) commaExpressionContent -> commaExpressionContent COMMA assignmentExpression .
+
+    COMMA           reduce using rule 40 (commaExpressionContent -> commaExpressionContent COMMA assignmentExpression .)
+    DOT             reduce using rule 40 (commaExpressionContent -> commaExpressionContent COMMA assignmentExpression .)
+    $end            reduce using rule 40 (commaExpressionContent -> commaExpressionContent COMMA assignmentExpression .)
+    RIGHT_PARENT    reduce using rule 40 (commaExpressionContent -> commaExpressionContent COMMA assignmentExpression .)
+    RIGHT_BRACKET   reduce using rule 40 (commaExpressionContent -> commaExpressionContent COMMA assignmentExpression .)
+    RIGHT_CURLY_BRACKET reduce using rule 40 (commaExpressionContent -> commaExpressionContent COMMA assignmentExpression .)
+
+
+state 57
+
+    (38) assignmentExpression -> lowPrecedenceExpression ASSIGNMENT assignmentExpression .
+
+    COMMA           reduce using rule 38 (assignmentExpression -> lowPrecedenceExpression ASSIGNMENT assignmentExpression .)
+    DOT             reduce using rule 38 (assignmentExpression -> lowPrecedenceExpression ASSIGNMENT assignmentExpression .)
+    $end            reduce using rule 38 (assignmentExpression -> lowPrecedenceExpression ASSIGNMENT assignmentExpression .)
+    RIGHT_PARENT    reduce using rule 38 (assignmentExpression -> lowPrecedenceExpression ASSIGNMENT assignmentExpression .)
+    RIGHT_BRACKET   reduce using rule 38 (assignmentExpression -> lowPrecedenceExpression ASSIGNMENT assignmentExpression .)
+    RIGHT_CURLY_BRACKET reduce using rule 38 (assignmentExpression -> lowPrecedenceExpression ASSIGNMENT assignmentExpression .)
+
+
+state 58
+
+    (35) lowPrecedenceExpression -> lowPrecedenceExpression lowPrecedenceOperator chainExpression .
+
+    ASSIGNMENT      reduce using rule 35 (lowPrecedenceExpression -> lowPrecedenceExpression lowPrecedenceOperator chainExpression .)
+    COLON_COLON     reduce using rule 35 (lowPrecedenceExpression -> lowPrecedenceExpression lowPrecedenceOperator chainExpression .)
+    COMMA           reduce using rule 35 (lowPrecedenceExpression -> lowPrecedenceExpression lowPrecedenceOperator chainExpression .)
+    DOT             reduce using rule 35 (lowPrecedenceExpression -> lowPrecedenceExpression lowPrecedenceOperator chainExpression .)
+    $end            reduce using rule 35 (lowPrecedenceExpression -> lowPrecedenceExpression lowPrecedenceOperator chainExpression .)
+    RIGHT_PARENT    reduce using rule 35 (lowPrecedenceExpression -> lowPrecedenceExpression lowPrecedenceOperator chainExpression .)
+    RIGHT_BRACKET   reduce using rule 35 (lowPrecedenceExpression -> lowPrecedenceExpression lowPrecedenceOperator chainExpression .)
+    RIGHT_CURLY_BRACKET reduce using rule 35 (lowPrecedenceExpression -> lowPrecedenceExpression lowPrecedenceOperator chainExpression .)
+
+
+state 59
+
+    (36) lowPrecedenceOperator -> COLON_COLON anyOperator .
+
+    QUOTE           reduce using rule 36 (lowPrecedenceOperator -> COLON_COLON anyOperator .)
+    QUASI_QUOTE     reduce using rule 36 (lowPrecedenceOperator -> COLON_COLON anyOperator .)
+    QUASI_UNQUOTE   reduce using rule 36 (lowPrecedenceOperator -> COLON_COLON anyOperator .)
+    SPLICE          reduce using rule 36 (lowPrecedenceOperator -> COLON_COLON anyOperator .)
+    OPERATOR        reduce using rule 36 (lowPrecedenceOperator -> COLON_COLON anyOperator .)
+    LEFT_PARENT     reduce using rule 36 (lowPrecedenceOperator -> COLON_COLON anyOperator .)
+    FLOAT           reduce using rule 36 (lowPrecedenceOperator -> COLON_COLON anyOperator .)
+    INTEGER         reduce using rule 36 (lowPrecedenceOperator -> COLON_COLON anyOperator .)
+    CHARACTER       reduce using rule 36 (lowPrecedenceOperator -> COLON_COLON anyOperator .)
+    STRING          reduce using rule 36 (lowPrecedenceOperator -> COLON_COLON anyOperator .)
+    SYMBOL_IDENTIFIER reduce using rule 36 (lowPrecedenceOperator -> COLON_COLON anyOperator .)
+    SYMBOL_KEYWORD  reduce using rule 36 (lowPrecedenceOperator -> COLON_COLON anyOperator .)
+    SYMBOL_OPERATOR reduce using rule 36 (lowPrecedenceOperator -> COLON_COLON anyOperator .)
+    SYMBOL_STRING   reduce using rule 36 (lowPrecedenceOperator -> COLON_COLON anyOperator .)
+    LITERAL_ARRAY_LEFT_PARENT reduce using rule 36 (lowPrecedenceOperator -> COLON_COLON anyOperator .)
+    LEFT_CURLY_BRACKET reduce using rule 36 (lowPrecedenceOperator -> COLON_COLON anyOperator .)
+
+
+state 60
+
+    (32) binaryExpression -> binaryExpression anyOperator prefixUnaryExpression .
+
+    OPERATOR        reduce using rule 32 (binaryExpression -> binaryExpression anyOperator prefixUnaryExpression .)
+    BAR             reduce using rule 32 (binaryExpression -> binaryExpression anyOperator prefixUnaryExpression .)
+    LESS_THAN       reduce using rule 32 (binaryExpression -> binaryExpression anyOperator prefixUnaryExpression .)
+    GREATER_THAN    reduce using rule 32 (binaryExpression -> binaryExpression anyOperator prefixUnaryExpression .)
+    ASSIGNMENT      reduce using rule 32 (binaryExpression -> binaryExpression anyOperator prefixUnaryExpression .)
+    COLON_COLON     reduce using rule 32 (binaryExpression -> binaryExpression anyOperator prefixUnaryExpression .)
+    COMMA           reduce using rule 32 (binaryExpression -> binaryExpression anyOperator prefixUnaryExpression .)
+    DOT             reduce using rule 32 (binaryExpression -> binaryExpression anyOperator prefixUnaryExpression .)
+    $end            reduce using rule 32 (binaryExpression -> binaryExpression anyOperator prefixUnaryExpression .)
+    RIGHT_PARENT    reduce using rule 32 (binaryExpression -> binaryExpression anyOperator prefixUnaryExpression .)
+    RIGHT_BRACKET   reduce using rule 32 (binaryExpression -> binaryExpression anyOperator prefixUnaryExpression .)
+    RIGHT_CURLY_BRACKET reduce using rule 32 (binaryExpression -> binaryExpression anyOperator prefixUnaryExpression .)
+
+
+state 61
+
+    (13) primaryExpression -> primaryExpression LEFT_PARENT expressionList . RIGHT_PARENT
+    (2) expressionList -> expressionList . DOT optionalExpression
+
+    RIGHT_PARENT    shift and go to state 78
+    DOT             shift and go to state 32
+
+
+state 62
+
+    (14) primaryExpression -> primaryExpression LEFT_BRACKET expressionList . RIGHT_BRACKET
+    (2) expressionList -> expressionList . DOT optionalExpression
+
+    RIGHT_BRACKET   shift and go to state 79
+    DOT             shift and go to state 32
+
+
+state 63
+
+    (7) primaryTerm -> LEFT_PARENT expression RIGHT_PARENT .
+
+    LEFT_PARENT     reduce using rule 7 (primaryTerm -> LEFT_PARENT expression RIGHT_PARENT .)
+    LEFT_BRACKET    reduce using rule 7 (primaryTerm -> LEFT_PARENT expression RIGHT_PARENT .)
+    LEFT_CURLY_BRACKET reduce using rule 7 (primaryTerm -> LEFT_PARENT expression RIGHT_PARENT .)
+    OPERATOR        reduce using rule 7 (primaryTerm -> LEFT_PARENT expression RIGHT_PARENT .)
+    BAR             reduce using rule 7 (primaryTerm -> LEFT_PARENT expression RIGHT_PARENT .)
+    LESS_THAN       reduce using rule 7 (primaryTerm -> LEFT_PARENT expression RIGHT_PARENT .)
+    GREATER_THAN    reduce using rule 7 (primaryTerm -> LEFT_PARENT expression RIGHT_PARENT .)
+    ASSIGNMENT      reduce using rule 7 (primaryTerm -> LEFT_PARENT expression RIGHT_PARENT .)
+    COLON_COLON     reduce using rule 7 (primaryTerm -> LEFT_PARENT expression RIGHT_PARENT .)
+    COMMA           reduce using rule 7 (primaryTerm -> LEFT_PARENT expression RIGHT_PARENT .)
+    DOT             reduce using rule 7 (primaryTerm -> LEFT_PARENT expression RIGHT_PARENT .)
+    $end            reduce using rule 7 (primaryTerm -> LEFT_PARENT expression RIGHT_PARENT .)
+    RIGHT_PARENT    reduce using rule 7 (primaryTerm -> LEFT_PARENT expression RIGHT_PARENT .)
+    RIGHT_BRACKET   reduce using rule 7 (primaryTerm -> LEFT_PARENT expression RIGHT_PARENT .)
+    RIGHT_CURLY_BRACKET reduce using rule 7 (primaryTerm -> LEFT_PARENT expression RIGHT_PARENT .)
+    COLON           reduce using rule 7 (primaryTerm -> LEFT_PARENT expression RIGHT_PARENT .)
+
+
+state 64
+
+    (52) literal -> LITERAL_ARRAY_LEFT_PARENT literalArrayElements RIGHT_PARENT .
+
+    LEFT_PARENT     reduce using rule 52 (literal -> LITERAL_ARRAY_LEFT_PARENT literalArrayElements RIGHT_PARENT .)
+    LEFT_BRACKET    reduce using rule 52 (literal -> LITERAL_ARRAY_LEFT_PARENT literalArrayElements RIGHT_PARENT .)
+    LEFT_CURLY_BRACKET reduce using rule 52 (literal -> LITERAL_ARRAY_LEFT_PARENT literalArrayElements RIGHT_PARENT .)
+    OPERATOR        reduce using rule 52 (literal -> LITERAL_ARRAY_LEFT_PARENT literalArrayElements RIGHT_PARENT .)
+    BAR             reduce using rule 52 (literal -> LITERAL_ARRAY_LEFT_PARENT literalArrayElements RIGHT_PARENT .)
+    LESS_THAN       reduce using rule 52 (literal -> LITERAL_ARRAY_LEFT_PARENT literalArrayElements RIGHT_PARENT .)
+    GREATER_THAN    reduce using rule 52 (literal -> LITERAL_ARRAY_LEFT_PARENT literalArrayElements RIGHT_PARENT .)
+    ASSIGNMENT      reduce using rule 52 (literal -> LITERAL_ARRAY_LEFT_PARENT literalArrayElements RIGHT_PARENT .)
+    COLON_COLON     reduce using rule 52 (literal -> LITERAL_ARRAY_LEFT_PARENT literalArrayElements RIGHT_PARENT .)
+    COMMA           reduce using rule 52 (literal -> LITERAL_ARRAY_LEFT_PARENT literalArrayElements RIGHT_PARENT .)
+    DOT             reduce using rule 52 (literal -> LITERAL_ARRAY_LEFT_PARENT literalArrayElements RIGHT_PARENT .)
+    $end            reduce using rule 52 (literal -> LITERAL_ARRAY_LEFT_PARENT literalArrayElements RIGHT_PARENT .)
+    RIGHT_PARENT    reduce using rule 52 (literal -> LITERAL_ARRAY_LEFT_PARENT literalArrayElements RIGHT_PARENT .)
+    RIGHT_BRACKET   reduce using rule 52 (literal -> LITERAL_ARRAY_LEFT_PARENT literalArrayElements RIGHT_PARENT .)
+    RIGHT_CURLY_BRACKET reduce using rule 52 (literal -> LITERAL_ARRAY_LEFT_PARENT literalArrayElements RIGHT_PARENT .)
+    IDENTIFIER      reduce using rule 52 (literal -> LITERAL_ARRAY_LEFT_PARENT literalArrayElements RIGHT_PARENT .)
+    FLOAT           reduce using rule 52 (literal -> LITERAL_ARRAY_LEFT_PARENT literalArrayElements RIGHT_PARENT .)
+    INTEGER         reduce using rule 52 (literal -> LITERAL_ARRAY_LEFT_PARENT literalArrayElements RIGHT_PARENT .)
+    CHARACTER       reduce using rule 52 (literal -> LITERAL_ARRAY_LEFT_PARENT literalArrayElements RIGHT_PARENT .)
+    STRING          reduce using rule 52 (literal -> LITERAL_ARRAY_LEFT_PARENT literalArrayElements RIGHT_PARENT .)
+    SYMBOL_IDENTIFIER reduce using rule 52 (literal -> LITERAL_ARRAY_LEFT_PARENT literalArrayElements RIGHT_PARENT .)
+    SYMBOL_KEYWORD  reduce using rule 52 (literal -> LITERAL_ARRAY_LEFT_PARENT literalArrayElements RIGHT_PARENT .)
+    SYMBOL_OPERATOR reduce using rule 52 (literal -> LITERAL_ARRAY_LEFT_PARENT literalArrayElements RIGHT_PARENT .)
+    SYMBOL_STRING   reduce using rule 52 (literal -> LITERAL_ARRAY_LEFT_PARENT literalArrayElements RIGHT_PARENT .)
+    LITERAL_ARRAY_LEFT_PARENT reduce using rule 52 (literal -> LITERAL_ARRAY_LEFT_PARENT literalArrayElements RIGHT_PARENT .)
+    KEYWORD         reduce using rule 52 (literal -> LITERAL_ARRAY_LEFT_PARENT literalArrayElements RIGHT_PARENT .)
+    MULTI_KEYWORD   reduce using rule 52 (literal -> LITERAL_ARRAY_LEFT_PARENT literalArrayElements RIGHT_PARENT .)
+    COLON           reduce using rule 52 (literal -> LITERAL_ARRAY_LEFT_PARENT literalArrayElements RIGHT_PARENT .)
+
+
+state 65
+
+    (54) literalArrayElements -> literalArrayElements literalArrayElement .
+
+    RIGHT_PARENT    reduce using rule 54 (literalArrayElements -> literalArrayElements literalArrayElement .)
+    IDENTIFIER      reduce using rule 54 (literalArrayElements -> literalArrayElements literalArrayElement .)
+    LEFT_PARENT     reduce using rule 54 (literalArrayElements -> literalArrayElements literalArrayElement .)
+    FLOAT           reduce using rule 54 (literalArrayElements -> literalArrayElements literalArrayElement .)
+    INTEGER         reduce using rule 54 (literalArrayElements -> literalArrayElements literalArrayElement .)
+    CHARACTER       reduce using rule 54 (literalArrayElements -> literalArrayElements literalArrayElement .)
+    STRING          reduce using rule 54 (literalArrayElements -> literalArrayElements literalArrayElement .)
+    SYMBOL_IDENTIFIER reduce using rule 54 (literalArrayElements -> literalArrayElements literalArrayElement .)
+    SYMBOL_KEYWORD  reduce using rule 54 (literalArrayElements -> literalArrayElements literalArrayElement .)
+    SYMBOL_OPERATOR reduce using rule 54 (literalArrayElements -> literalArrayElements literalArrayElement .)
+    SYMBOL_STRING   reduce using rule 54 (literalArrayElements -> literalArrayElements literalArrayElement .)
+    LITERAL_ARRAY_LEFT_PARENT reduce using rule 54 (literalArrayElements -> literalArrayElements literalArrayElement .)
+    KEYWORD         reduce using rule 54 (literalArrayElements -> literalArrayElements literalArrayElement .)
+    MULTI_KEYWORD   reduce using rule 54 (literalArrayElements -> literalArrayElements literalArrayElement .)
+    OPERATOR        reduce using rule 54 (literalArrayElements -> literalArrayElements literalArrayElement .)
+    BAR             reduce using rule 54 (literalArrayElements -> literalArrayElements literalArrayElement .)
+    LESS_THAN       reduce using rule 54 (literalArrayElements -> literalArrayElements literalArrayElement .)
+    GREATER_THAN    reduce using rule 54 (literalArrayElements -> literalArrayElements literalArrayElement .)
+
+
+state 66
+
+    (55) literalArrayElement -> literal .
+
+    RIGHT_PARENT    reduce using rule 55 (literalArrayElement -> literal .)
+    IDENTIFIER      reduce using rule 55 (literalArrayElement -> literal .)
+    LEFT_PARENT     reduce using rule 55 (literalArrayElement -> literal .)
+    FLOAT           reduce using rule 55 (literalArrayElement -> literal .)
+    INTEGER         reduce using rule 55 (literalArrayElement -> literal .)
+    CHARACTER       reduce using rule 55 (literalArrayElement -> literal .)
+    STRING          reduce using rule 55 (literalArrayElement -> literal .)
+    SYMBOL_IDENTIFIER reduce using rule 55 (literalArrayElement -> literal .)
+    SYMBOL_KEYWORD  reduce using rule 55 (literalArrayElement -> literal .)
+    SYMBOL_OPERATOR reduce using rule 55 (literalArrayElement -> literal .)
+    SYMBOL_STRING   reduce using rule 55 (literalArrayElement -> literal .)
+    LITERAL_ARRAY_LEFT_PARENT reduce using rule 55 (literalArrayElement -> literal .)
+    KEYWORD         reduce using rule 55 (literalArrayElement -> literal .)
+    MULTI_KEYWORD   reduce using rule 55 (literalArrayElement -> literal .)
+    OPERATOR        reduce using rule 55 (literalArrayElement -> literal .)
+    BAR             reduce using rule 55 (literalArrayElement -> literal .)
+    LESS_THAN       reduce using rule 55 (literalArrayElement -> literal .)
+    GREATER_THAN    reduce using rule 55 (literalArrayElement -> literal .)
+
+
+state 67
+
+    (56) literalArrayElement -> IDENTIFIER .
+
+    RIGHT_PARENT    reduce using rule 56 (literalArrayElement -> IDENTIFIER .)
+    IDENTIFIER      reduce using rule 56 (literalArrayElement -> IDENTIFIER .)
+    LEFT_PARENT     reduce using rule 56 (literalArrayElement -> IDENTIFIER .)
+    FLOAT           reduce using rule 56 (literalArrayElement -> IDENTIFIER .)
+    INTEGER         reduce using rule 56 (literalArrayElement -> IDENTIFIER .)
+    CHARACTER       reduce using rule 56 (literalArrayElement -> IDENTIFIER .)
+    STRING          reduce using rule 56 (literalArrayElement -> IDENTIFIER .)
+    SYMBOL_IDENTIFIER reduce using rule 56 (literalArrayElement -> IDENTIFIER .)
+    SYMBOL_KEYWORD  reduce using rule 56 (literalArrayElement -> IDENTIFIER .)
+    SYMBOL_OPERATOR reduce using rule 56 (literalArrayElement -> IDENTIFIER .)
+    SYMBOL_STRING   reduce using rule 56 (literalArrayElement -> IDENTIFIER .)
+    LITERAL_ARRAY_LEFT_PARENT reduce using rule 56 (literalArrayElement -> IDENTIFIER .)
+    KEYWORD         reduce using rule 56 (literalArrayElement -> IDENTIFIER .)
+    MULTI_KEYWORD   reduce using rule 56 (literalArrayElement -> IDENTIFIER .)
+    OPERATOR        reduce using rule 56 (literalArrayElement -> IDENTIFIER .)
+    BAR             reduce using rule 56 (literalArrayElement -> IDENTIFIER .)
+    LESS_THAN       reduce using rule 56 (literalArrayElement -> IDENTIFIER .)
+    GREATER_THAN    reduce using rule 56 (literalArrayElement -> IDENTIFIER .)
+
+
+state 68
+
+    (57) literalArrayElement -> anyKeyword .
+
+    RIGHT_PARENT    reduce using rule 57 (literalArrayElement -> anyKeyword .)
+    IDENTIFIER      reduce using rule 57 (literalArrayElement -> anyKeyword .)
+    LEFT_PARENT     reduce using rule 57 (literalArrayElement -> anyKeyword .)
+    FLOAT           reduce using rule 57 (literalArrayElement -> anyKeyword .)
+    INTEGER         reduce using rule 57 (literalArrayElement -> anyKeyword .)
+    CHARACTER       reduce using rule 57 (literalArrayElement -> anyKeyword .)
+    STRING          reduce using rule 57 (literalArrayElement -> anyKeyword .)
+    SYMBOL_IDENTIFIER reduce using rule 57 (literalArrayElement -> anyKeyword .)
+    SYMBOL_KEYWORD  reduce using rule 57 (literalArrayElement -> anyKeyword .)
+    SYMBOL_OPERATOR reduce using rule 57 (literalArrayElement -> anyKeyword .)
+    SYMBOL_STRING   reduce using rule 57 (literalArrayElement -> anyKeyword .)
+    LITERAL_ARRAY_LEFT_PARENT reduce using rule 57 (literalArrayElement -> anyKeyword .)
+    KEYWORD         reduce using rule 57 (literalArrayElement -> anyKeyword .)
+    MULTI_KEYWORD   reduce using rule 57 (literalArrayElement -> anyKeyword .)
+    OPERATOR        reduce using rule 57 (literalArrayElement -> anyKeyword .)
+    BAR             reduce using rule 57 (literalArrayElement -> anyKeyword .)
+    LESS_THAN       reduce using rule 57 (literalArrayElement -> anyKeyword .)
+    GREATER_THAN    reduce using rule 57 (literalArrayElement -> anyKeyword .)
+
+
+state 69
+
+    (58) literalArrayElement -> anyOperator .
+
+    RIGHT_PARENT    reduce using rule 58 (literalArrayElement -> anyOperator .)
+    IDENTIFIER      reduce using rule 58 (literalArrayElement -> anyOperator .)
+    LEFT_PARENT     reduce using rule 58 (literalArrayElement -> anyOperator .)
+    FLOAT           reduce using rule 58 (literalArrayElement -> anyOperator .)
+    INTEGER         reduce using rule 58 (literalArrayElement -> anyOperator .)
+    CHARACTER       reduce using rule 58 (literalArrayElement -> anyOperator .)
+    STRING          reduce using rule 58 (literalArrayElement -> anyOperator .)
+    SYMBOL_IDENTIFIER reduce using rule 58 (literalArrayElement -> anyOperator .)
+    SYMBOL_KEYWORD  reduce using rule 58 (literalArrayElement -> anyOperator .)
+    SYMBOL_OPERATOR reduce using rule 58 (literalArrayElement -> anyOperator .)
+    SYMBOL_STRING   reduce using rule 58 (literalArrayElement -> anyOperator .)
+    LITERAL_ARRAY_LEFT_PARENT reduce using rule 58 (literalArrayElement -> anyOperator .)
+    KEYWORD         reduce using rule 58 (literalArrayElement -> anyOperator .)
+    MULTI_KEYWORD   reduce using rule 58 (literalArrayElement -> anyOperator .)
+    OPERATOR        reduce using rule 58 (literalArrayElement -> anyOperator .)
+    BAR             reduce using rule 58 (literalArrayElement -> anyOperator .)
+    LESS_THAN       reduce using rule 58 (literalArrayElement -> anyOperator .)
+    GREATER_THAN    reduce using rule 58 (literalArrayElement -> anyOperator .)
+
+
+state 70
+
+    (59) literalArrayElement -> LEFT_PARENT . literalArrayElements RIGHT_PARENT
+    (53) literalArrayElements -> .
+    (54) literalArrayElements -> . literalArrayElements literalArrayElement
+
+    RIGHT_PARENT    reduce using rule 53 (literalArrayElements -> .)
+    IDENTIFIER      reduce using rule 53 (literalArrayElements -> .)
+    LEFT_PARENT     reduce using rule 53 (literalArrayElements -> .)
+    FLOAT           reduce using rule 53 (literalArrayElements -> .)
+    INTEGER         reduce using rule 53 (literalArrayElements -> .)
+    CHARACTER       reduce using rule 53 (literalArrayElements -> .)
+    STRING          reduce using rule 53 (literalArrayElements -> .)
+    SYMBOL_IDENTIFIER reduce using rule 53 (literalArrayElements -> .)
+    SYMBOL_KEYWORD  reduce using rule 53 (literalArrayElements -> .)
+    SYMBOL_OPERATOR reduce using rule 53 (literalArrayElements -> .)
+    SYMBOL_STRING   reduce using rule 53 (literalArrayElements -> .)
+    LITERAL_ARRAY_LEFT_PARENT reduce using rule 53 (literalArrayElements -> .)
+    KEYWORD         reduce using rule 53 (literalArrayElements -> .)
+    MULTI_KEYWORD   reduce using rule 53 (literalArrayElements -> .)
+    OPERATOR        reduce using rule 53 (literalArrayElements -> .)
+    BAR             reduce using rule 53 (literalArrayElements -> .)
+    LESS_THAN       reduce using rule 53 (literalArrayElements -> .)
+    GREATER_THAN    reduce using rule 53 (literalArrayElements -> .)
+
+    literalArrayElements           shift and go to state 80
+
+state 71
+
+    (65) anyKeyword -> KEYWORD .
+
+    RIGHT_PARENT    reduce using rule 65 (anyKeyword -> KEYWORD .)
+    IDENTIFIER      reduce using rule 65 (anyKeyword -> KEYWORD .)
+    LEFT_PARENT     reduce using rule 65 (anyKeyword -> KEYWORD .)
+    FLOAT           reduce using rule 65 (anyKeyword -> KEYWORD .)
+    INTEGER         reduce using rule 65 (anyKeyword -> KEYWORD .)
+    CHARACTER       reduce using rule 65 (anyKeyword -> KEYWORD .)
+    STRING          reduce using rule 65 (anyKeyword -> KEYWORD .)
+    SYMBOL_IDENTIFIER reduce using rule 65 (anyKeyword -> KEYWORD .)
+    SYMBOL_KEYWORD  reduce using rule 65 (anyKeyword -> KEYWORD .)
+    SYMBOL_OPERATOR reduce using rule 65 (anyKeyword -> KEYWORD .)
+    SYMBOL_STRING   reduce using rule 65 (anyKeyword -> KEYWORD .)
+    LITERAL_ARRAY_LEFT_PARENT reduce using rule 65 (anyKeyword -> KEYWORD .)
+    KEYWORD         reduce using rule 65 (anyKeyword -> KEYWORD .)
+    MULTI_KEYWORD   reduce using rule 65 (anyKeyword -> KEYWORD .)
+    OPERATOR        reduce using rule 65 (anyKeyword -> KEYWORD .)
+    BAR             reduce using rule 65 (anyKeyword -> KEYWORD .)
+    LESS_THAN       reduce using rule 65 (anyKeyword -> KEYWORD .)
+    GREATER_THAN    reduce using rule 65 (anyKeyword -> KEYWORD .)
+
+
+state 72
+
+    (66) anyKeyword -> MULTI_KEYWORD .
+
+    RIGHT_PARENT    reduce using rule 66 (anyKeyword -> MULTI_KEYWORD .)
+    IDENTIFIER      reduce using rule 66 (anyKeyword -> MULTI_KEYWORD .)
+    LEFT_PARENT     reduce using rule 66 (anyKeyword -> MULTI_KEYWORD .)
+    FLOAT           reduce using rule 66 (anyKeyword -> MULTI_KEYWORD .)
+    INTEGER         reduce using rule 66 (anyKeyword -> MULTI_KEYWORD .)
+    CHARACTER       reduce using rule 66 (anyKeyword -> MULTI_KEYWORD .)
+    STRING          reduce using rule 66 (anyKeyword -> MULTI_KEYWORD .)
+    SYMBOL_IDENTIFIER reduce using rule 66 (anyKeyword -> MULTI_KEYWORD .)
+    SYMBOL_KEYWORD  reduce using rule 66 (anyKeyword -> MULTI_KEYWORD .)
+    SYMBOL_OPERATOR reduce using rule 66 (anyKeyword -> MULTI_KEYWORD .)
+    SYMBOL_STRING   reduce using rule 66 (anyKeyword -> MULTI_KEYWORD .)
+    LITERAL_ARRAY_LEFT_PARENT reduce using rule 66 (anyKeyword -> MULTI_KEYWORD .)
+    KEYWORD         reduce using rule 66 (anyKeyword -> MULTI_KEYWORD .)
+    MULTI_KEYWORD   reduce using rule 66 (anyKeyword -> MULTI_KEYWORD .)
+    OPERATOR        reduce using rule 66 (anyKeyword -> MULTI_KEYWORD .)
+    BAR             reduce using rule 66 (anyKeyword -> MULTI_KEYWORD .)
+    LESS_THAN       reduce using rule 66 (anyKeyword -> MULTI_KEYWORD .)
+    GREATER_THAN    reduce using rule 66 (anyKeyword -> MULTI_KEYWORD .)
+
+
+state 73
+
+    (19) block -> LEFT_CURLY_BRACKET optionalBlockClosureHeader expressionList . RIGHT_CURLY_BRACKET
+    (2) expressionList -> expressionList . DOT optionalExpression
+
+    RIGHT_CURLY_BRACKET shift and go to state 81
+    DOT             shift and go to state 32
+
+
+state 74
+
+    (16) blockClosureHeader -> blockArguments blockResultType . BAR
+
+    BAR             shift and go to state 82
+
+
+state 75
+
+    (21) blockArguments -> blockArguments blockArgument .
+
+    COLON_COLON     reduce using rule 21 (blockArguments -> blockArguments blockArgument .)
+    COLON           reduce using rule 21 (blockArguments -> blockArguments blockArgument .)
+    BAR             reduce using rule 21 (blockArguments -> blockArguments blockArgument .)
+
+
+state 76
+
+    (26) blockResultType -> COLON_COLON . primaryExpression
+    (8) primaryExpression -> . primaryTerm
+    (9) primaryExpression -> . QUOTE primaryTerm
+    (10) primaryExpression -> . QUASI_QUOTE primaryTerm
+    (11) primaryExpression -> . QUASI_UNQUOTE primaryTerm
+    (12) primaryExpression -> . SPLICE primaryTerm
+    (13) primaryExpression -> . primaryExpression LEFT_PARENT expressionList RIGHT_PARENT
+    (14) primaryExpression -> . primaryExpression LEFT_BRACKET expressionList RIGHT_BRACKET
+    (15) primaryExpression -> . primaryExpression block
+    (5) primaryTerm -> . literal
+    (6) primaryTerm -> . block
+    (7) primaryTerm -> . LEFT_PARENT expression RIGHT_PARENT
+    (44) literal -> . FLOAT
+    (45) literal -> . INTEGER
+    (46) literal -> . CHARACTER
+    (47) literal -> . STRING
+    (48) literal -> . SYMBOL_IDENTIFIER
+    (49) literal -> . SYMBOL_KEYWORD
+    (50) literal -> . SYMBOL_OPERATOR
+    (51) literal -> . SYMBOL_STRING
+    (52) literal -> . LITERAL_ARRAY_LEFT_PARENT literalArrayElements RIGHT_PARENT
+    (19) block -> . LEFT_CURLY_BRACKET optionalBlockClosureHeader expressionList RIGHT_CURLY_BRACKET
+
+    QUOTE           shift and go to state 14
+    QUASI_QUOTE     shift and go to state 15
+    QUASI_UNQUOTE   shift and go to state 16
+    SPLICE          shift and go to state 17
+    LEFT_PARENT     shift and go to state 18
+    FLOAT           shift and go to state 22
+    INTEGER         shift and go to state 23
+    CHARACTER       shift and go to state 24
+    STRING          shift and go to state 25
+    SYMBOL_IDENTIFIER shift and go to state 26
+    SYMBOL_KEYWORD  shift and go to state 27
+    SYMBOL_OPERATOR shift and go to state 28
+    SYMBOL_STRING   shift and go to state 29
+    LITERAL_ARRAY_LEFT_PARENT shift and go to state 30
+    LEFT_CURLY_BRACKET shift and go to state 31
+
+    primaryExpression              shift and go to state 83
+    primaryTerm                    shift and go to state 13
+    block                          shift and go to state 19
+    literal                        shift and go to state 21
+
+state 77
+
+    (24) blockArgument -> COLON . optionalBlockArgumentType expandableIdentifier
+    (22) optionalBlockArgumentType -> .
+    (23) optionalBlockArgumentType -> . LEFT_PARENT expression RIGHT_PARENT
+
+    IDENTIFIER      reduce using rule 22 (optionalBlockArgumentType -> .)
+    QUASI_UNQUOTE   reduce using rule 22 (optionalBlockArgumentType -> .)
+    LEFT_PARENT     shift and go to state 85
+
+    optionalBlockArgumentType      shift and go to state 84
+
+state 78
+
+    (13) primaryExpression -> primaryExpression LEFT_PARENT expressionList RIGHT_PARENT .
+
+    LEFT_PARENT     reduce using rule 13 (primaryExpression -> primaryExpression LEFT_PARENT expressionList RIGHT_PARENT .)
+    LEFT_BRACKET    reduce using rule 13 (primaryExpression -> primaryExpression LEFT_PARENT expressionList RIGHT_PARENT .)
+    LEFT_CURLY_BRACKET reduce using rule 13 (primaryExpression -> primaryExpression LEFT_PARENT expressionList RIGHT_PARENT .)
+    OPERATOR        reduce using rule 13 (primaryExpression -> primaryExpression LEFT_PARENT expressionList RIGHT_PARENT .)
+    BAR             reduce using rule 13 (primaryExpression -> primaryExpression LEFT_PARENT expressionList RIGHT_PARENT .)
+    LESS_THAN       reduce using rule 13 (primaryExpression -> primaryExpression LEFT_PARENT expressionList RIGHT_PARENT .)
+    GREATER_THAN    reduce using rule 13 (primaryExpression -> primaryExpression LEFT_PARENT expressionList RIGHT_PARENT .)
+    ASSIGNMENT      reduce using rule 13 (primaryExpression -> primaryExpression LEFT_PARENT expressionList RIGHT_PARENT .)
+    COLON_COLON     reduce using rule 13 (primaryExpression -> primaryExpression LEFT_PARENT expressionList RIGHT_PARENT .)
+    COMMA           reduce using rule 13 (primaryExpression -> primaryExpression LEFT_PARENT expressionList RIGHT_PARENT .)
+    DOT             reduce using rule 13 (primaryExpression -> primaryExpression LEFT_PARENT expressionList RIGHT_PARENT .)
+    $end            reduce using rule 13 (primaryExpression -> primaryExpression LEFT_PARENT expressionList RIGHT_PARENT .)
+    RIGHT_PARENT    reduce using rule 13 (primaryExpression -> primaryExpression LEFT_PARENT expressionList RIGHT_PARENT .)
+    RIGHT_BRACKET   reduce using rule 13 (primaryExpression -> primaryExpression LEFT_PARENT expressionList RIGHT_PARENT .)
+    RIGHT_CURLY_BRACKET reduce using rule 13 (primaryExpression -> primaryExpression LEFT_PARENT expressionList RIGHT_PARENT .)
+
+
+state 79
+
+    (14) primaryExpression -> primaryExpression LEFT_BRACKET expressionList RIGHT_BRACKET .
+
+    LEFT_PARENT     reduce using rule 14 (primaryExpression -> primaryExpression LEFT_BRACKET expressionList RIGHT_BRACKET .)
+    LEFT_BRACKET    reduce using rule 14 (primaryExpression -> primaryExpression LEFT_BRACKET expressionList RIGHT_BRACKET .)
+    LEFT_CURLY_BRACKET reduce using rule 14 (primaryExpression -> primaryExpression LEFT_BRACKET expressionList RIGHT_BRACKET .)
+    OPERATOR        reduce using rule 14 (primaryExpression -> primaryExpression LEFT_BRACKET expressionList RIGHT_BRACKET .)
+    BAR             reduce using rule 14 (primaryExpression -> primaryExpression LEFT_BRACKET expressionList RIGHT_BRACKET .)
+    LESS_THAN       reduce using rule 14 (primaryExpression -> primaryExpression LEFT_BRACKET expressionList RIGHT_BRACKET .)
+    GREATER_THAN    reduce using rule 14 (primaryExpression -> primaryExpression LEFT_BRACKET expressionList RIGHT_BRACKET .)
+    ASSIGNMENT      reduce using rule 14 (primaryExpression -> primaryExpression LEFT_BRACKET expressionList RIGHT_BRACKET .)
+    COLON_COLON     reduce using rule 14 (primaryExpression -> primaryExpression LEFT_BRACKET expressionList RIGHT_BRACKET .)
+    COMMA           reduce using rule 14 (primaryExpression -> primaryExpression LEFT_BRACKET expressionList RIGHT_BRACKET .)
+    DOT             reduce using rule 14 (primaryExpression -> primaryExpression LEFT_BRACKET expressionList RIGHT_BRACKET .)
+    $end            reduce using rule 14 (primaryExpression -> primaryExpression LEFT_BRACKET expressionList RIGHT_BRACKET .)
+    RIGHT_PARENT    reduce using rule 14 (primaryExpression -> primaryExpression LEFT_BRACKET expressionList RIGHT_BRACKET .)
+    RIGHT_BRACKET   reduce using rule 14 (primaryExpression -> primaryExpression LEFT_BRACKET expressionList RIGHT_BRACKET .)
+    RIGHT_CURLY_BRACKET reduce using rule 14 (primaryExpression -> primaryExpression LEFT_BRACKET expressionList RIGHT_BRACKET .)
+
+
+state 80
+
+    (59) literalArrayElement -> LEFT_PARENT literalArrayElements . RIGHT_PARENT
+    (54) literalArrayElements -> literalArrayElements . literalArrayElement
+    (55) literalArrayElement -> . literal
+    (56) literalArrayElement -> . IDENTIFIER
+    (57) literalArrayElement -> . anyKeyword
+    (58) literalArrayElement -> . anyOperator
+    (59) literalArrayElement -> . LEFT_PARENT literalArrayElements RIGHT_PARENT
+    (44) literal -> . FLOAT
+    (45) literal -> . INTEGER
+    (46) literal -> . CHARACTER
+    (47) literal -> . STRING
+    (48) literal -> . SYMBOL_IDENTIFIER
+    (49) literal -> . SYMBOL_KEYWORD
+    (50) literal -> . SYMBOL_OPERATOR
+    (51) literal -> . SYMBOL_STRING
+    (52) literal -> . LITERAL_ARRAY_LEFT_PARENT literalArrayElements RIGHT_PARENT
+    (65) anyKeyword -> . KEYWORD
+    (66) anyKeyword -> . MULTI_KEYWORD
+    (60) anyOperator -> . OPERATOR
+    (61) anyOperator -> . BAR
+    (62) anyOperator -> . LESS_THAN
+    (63) anyOperator -> . GREATER_THAN
+
+    RIGHT_PARENT    shift and go to state 86
+    IDENTIFIER      shift and go to state 67
+    LEFT_PARENT     shift and go to state 70
+    FLOAT           shift and go to state 22
+    INTEGER         shift and go to state 23
+    CHARACTER       shift and go to state 24
+    STRING          shift and go to state 25
+    SYMBOL_IDENTIFIER shift and go to state 26
+    SYMBOL_KEYWORD  shift and go to state 27
+    SYMBOL_OPERATOR shift and go to state 28
+    SYMBOL_STRING   shift and go to state 29
+    LITERAL_ARRAY_LEFT_PARENT shift and go to state 30
+    KEYWORD         shift and go to state 71
+    MULTI_KEYWORD   shift and go to state 72
+    OPERATOR        shift and go to state 38
+    BAR             shift and go to state 39
+    LESS_THAN       shift and go to state 40
+    GREATER_THAN    shift and go to state 41
+
+    literalArrayElement            shift and go to state 65
+    literal                        shift and go to state 66
+    anyKeyword                     shift and go to state 68
+    anyOperator                    shift and go to state 69
+
+state 81
+
+    (19) block -> LEFT_CURLY_BRACKET optionalBlockClosureHeader expressionList RIGHT_CURLY_BRACKET .
+
+    LEFT_PARENT     reduce using rule 19 (block -> LEFT_CURLY_BRACKET optionalBlockClosureHeader expressionList RIGHT_CURLY_BRACKET .)
+    LEFT_BRACKET    reduce using rule 19 (block -> LEFT_CURLY_BRACKET optionalBlockClosureHeader expressionList RIGHT_CURLY_BRACKET .)
+    LEFT_CURLY_BRACKET reduce using rule 19 (block -> LEFT_CURLY_BRACKET optionalBlockClosureHeader expressionList RIGHT_CURLY_BRACKET .)
+    OPERATOR        reduce using rule 19 (block -> LEFT_CURLY_BRACKET optionalBlockClosureHeader expressionList RIGHT_CURLY_BRACKET .)
+    BAR             reduce using rule 19 (block -> LEFT_CURLY_BRACKET optionalBlockClosureHeader expressionList RIGHT_CURLY_BRACKET .)
+    LESS_THAN       reduce using rule 19 (block -> LEFT_CURLY_BRACKET optionalBlockClosureHeader expressionList RIGHT_CURLY_BRACKET .)
+    GREATER_THAN    reduce using rule 19 (block -> LEFT_CURLY_BRACKET optionalBlockClosureHeader expressionList RIGHT_CURLY_BRACKET .)
+    ASSIGNMENT      reduce using rule 19 (block -> LEFT_CURLY_BRACKET optionalBlockClosureHeader expressionList RIGHT_CURLY_BRACKET .)
+    COLON_COLON     reduce using rule 19 (block -> LEFT_CURLY_BRACKET optionalBlockClosureHeader expressionList RIGHT_CURLY_BRACKET .)
+    COMMA           reduce using rule 19 (block -> LEFT_CURLY_BRACKET optionalBlockClosureHeader expressionList RIGHT_CURLY_BRACKET .)
+    DOT             reduce using rule 19 (block -> LEFT_CURLY_BRACKET optionalBlockClosureHeader expressionList RIGHT_CURLY_BRACKET .)
+    $end            reduce using rule 19 (block -> LEFT_CURLY_BRACKET optionalBlockClosureHeader expressionList RIGHT_CURLY_BRACKET .)
+    RIGHT_PARENT    reduce using rule 19 (block -> LEFT_CURLY_BRACKET optionalBlockClosureHeader expressionList RIGHT_CURLY_BRACKET .)
+    RIGHT_BRACKET   reduce using rule 19 (block -> LEFT_CURLY_BRACKET optionalBlockClosureHeader expressionList RIGHT_CURLY_BRACKET .)
+    RIGHT_CURLY_BRACKET reduce using rule 19 (block -> LEFT_CURLY_BRACKET optionalBlockClosureHeader expressionList RIGHT_CURLY_BRACKET .)
+    COLON           reduce using rule 19 (block -> LEFT_CURLY_BRACKET optionalBlockClosureHeader expressionList RIGHT_CURLY_BRACKET .)
+
+
+state 82
+
+    (16) blockClosureHeader -> blockArguments blockResultType BAR .
+
+    QUOTE           reduce using rule 16 (blockClosureHeader -> blockArguments blockResultType BAR .)
+    QUASI_QUOTE     reduce using rule 16 (blockClosureHeader -> blockArguments blockResultType BAR .)
+    QUASI_UNQUOTE   reduce using rule 16 (blockClosureHeader -> blockArguments blockResultType BAR .)
+    SPLICE          reduce using rule 16 (blockClosureHeader -> blockArguments blockResultType BAR .)
+    OPERATOR        reduce using rule 16 (blockClosureHeader -> blockArguments blockResultType BAR .)
+    LEFT_PARENT     reduce using rule 16 (blockClosureHeader -> blockArguments blockResultType BAR .)
+    FLOAT           reduce using rule 16 (blockClosureHeader -> blockArguments blockResultType BAR .)
+    INTEGER         reduce using rule 16 (blockClosureHeader -> blockArguments blockResultType BAR .)
+    CHARACTER       reduce using rule 16 (blockClosureHeader -> blockArguments blockResultType BAR .)
+    STRING          reduce using rule 16 (blockClosureHeader -> blockArguments blockResultType BAR .)
+    SYMBOL_IDENTIFIER reduce using rule 16 (blockClosureHeader -> blockArguments blockResultType BAR .)
+    SYMBOL_KEYWORD  reduce using rule 16 (blockClosureHeader -> blockArguments blockResultType BAR .)
+    SYMBOL_OPERATOR reduce using rule 16 (blockClosureHeader -> blockArguments blockResultType BAR .)
+    SYMBOL_STRING   reduce using rule 16 (blockClosureHeader -> blockArguments blockResultType BAR .)
+    LITERAL_ARRAY_LEFT_PARENT reduce using rule 16 (blockClosureHeader -> blockArguments blockResultType BAR .)
+    LEFT_CURLY_BRACKET reduce using rule 16 (blockClosureHeader -> blockArguments blockResultType BAR .)
+    RIGHT_CURLY_BRACKET reduce using rule 16 (blockClosureHeader -> blockArguments blockResultType BAR .)
+    DOT             reduce using rule 16 (blockClosureHeader -> blockArguments blockResultType BAR .)
+
+
+state 83
+
+    (26) blockResultType -> COLON_COLON primaryExpression .
+    (13) primaryExpression -> primaryExpression . LEFT_PARENT expressionList RIGHT_PARENT
+    (14) primaryExpression -> primaryExpression . LEFT_BRACKET expressionList RIGHT_BRACKET
+    (15) primaryExpression -> primaryExpression . block
+    (19) block -> . LEFT_CURLY_BRACKET optionalBlockClosureHeader expressionList RIGHT_CURLY_BRACKET
+
+    BAR             reduce using rule 26 (blockResultType -> COLON_COLON primaryExpression .)
+    LEFT_PARENT     shift and go to state 42
+    LEFT_BRACKET    shift and go to state 43
+    LEFT_CURLY_BRACKET shift and go to state 31
+
+    block                          shift and go to state 44
+
+state 84
+
+    (24) blockArgument -> COLON optionalBlockArgumentType . expandableIdentifier
+    (27) expandableIdentifier -> . IDENTIFIER
+    (28) expandableIdentifier -> . QUASI_UNQUOTE primaryTerm
+
+    IDENTIFIER      shift and go to state 88
+    QUASI_UNQUOTE   shift and go to state 89
+
+    expandableIdentifier           shift and go to state 87
+
+state 85
+
+    (23) optionalBlockArgumentType -> LEFT_PARENT . expression RIGHT_PARENT
+    (43) expression -> . commaExpression
+    (41) commaExpression -> . commaExpressionContent
+    (42) commaExpression -> . commaExpressionContent COMMA
+    (39) commaExpressionContent -> . assignmentExpression
+    (40) commaExpressionContent -> . commaExpressionContent COMMA assignmentExpression
+    (37) assignmentExpression -> . lowPrecedenceExpression
+    (38) assignmentExpression -> . lowPrecedenceExpression ASSIGNMENT assignmentExpression
+    (34) lowPrecedenceExpression -> . chainExpression
+    (35) lowPrecedenceExpression -> . lowPrecedenceExpression lowPrecedenceOperator chainExpression
+    (33) chainExpression -> . binaryExpression
+    (31) binaryExpression -> . prefixUnaryExpression
+    (32) binaryExpression -> . binaryExpression anyOperator prefixUnaryExpression
+    (29) prefixUnaryExpression -> . primaryExpression
+    (30) prefixUnaryExpression -> . anyPrefixOperator prefixUnaryExpression
+    (8) primaryExpression -> . primaryTerm
+    (9) primaryExpression -> . QUOTE primaryTerm
+    (10) primaryExpression -> . QUASI_QUOTE primaryTerm
+    (11) primaryExpression -> . QUASI_UNQUOTE primaryTerm
+    (12) primaryExpression -> . SPLICE primaryTerm
+    (13) primaryExpression -> . primaryExpression LEFT_PARENT expressionList RIGHT_PARENT
+    (14) primaryExpression -> . primaryExpression LEFT_BRACKET expressionList RIGHT_BRACKET
+    (15) primaryExpression -> . primaryExpression block
+    (64) anyPrefixOperator -> . OPERATOR
+    (5) primaryTerm -> . literal
+    (6) primaryTerm -> . block
+    (7) primaryTerm -> . LEFT_PARENT expression RIGHT_PARENT
+    (44) literal -> . FLOAT
+    (45) literal -> . INTEGER
+    (46) literal -> . CHARACTER
+    (47) literal -> . STRING
+    (48) literal -> . SYMBOL_IDENTIFIER
+    (49) literal -> . SYMBOL_KEYWORD
+    (50) literal -> . SYMBOL_OPERATOR
+    (51) literal -> . SYMBOL_STRING
+    (52) literal -> . LITERAL_ARRAY_LEFT_PARENT literalArrayElements RIGHT_PARENT
+    (19) block -> . LEFT_CURLY_BRACKET optionalBlockClosureHeader expressionList RIGHT_CURLY_BRACKET
+
+    QUOTE           shift and go to state 14
+    QUASI_QUOTE     shift and go to state 15
+    QUASI_UNQUOTE   shift and go to state 16
+    SPLICE          shift and go to state 17
+    OPERATOR        shift and go to state 20
+    LEFT_PARENT     shift and go to state 18
+    FLOAT           shift and go to state 22
+    INTEGER         shift and go to state 23
+    CHARACTER       shift and go to state 24
+    STRING          shift and go to state 25
+    SYMBOL_IDENTIFIER shift and go to state 26
+    SYMBOL_KEYWORD  shift and go to state 27
+    SYMBOL_OPERATOR shift and go to state 28
+    SYMBOL_STRING   shift and go to state 29
+    LITERAL_ARRAY_LEFT_PARENT shift and go to state 30
+    LEFT_CURLY_BRACKET shift and go to state 31
+
+    expression                     shift and go to state 90
+    commaExpression                shift and go to state 4
+    commaExpressionContent         shift and go to state 5
+    assignmentExpression           shift and go to state 6
+    lowPrecedenceExpression        shift and go to state 7
+    chainExpression                shift and go to state 8
+    binaryExpression               shift and go to state 9
+    prefixUnaryExpression          shift and go to state 10
+    primaryExpression              shift and go to state 11
+    anyPrefixOperator              shift and go to state 12
+    primaryTerm                    shift and go to state 13
+    block                          shift and go to state 19
+    literal                        shift and go to state 21
+
+state 86
+
+    (59) literalArrayElement -> LEFT_PARENT literalArrayElements RIGHT_PARENT .
+
+    RIGHT_PARENT    reduce using rule 59 (literalArrayElement -> LEFT_PARENT literalArrayElements RIGHT_PARENT .)
+    IDENTIFIER      reduce using rule 59 (literalArrayElement -> LEFT_PARENT literalArrayElements RIGHT_PARENT .)
+    LEFT_PARENT     reduce using rule 59 (literalArrayElement -> LEFT_PARENT literalArrayElements RIGHT_PARENT .)
+    FLOAT           reduce using rule 59 (literalArrayElement -> LEFT_PARENT literalArrayElements RIGHT_PARENT .)
+    INTEGER         reduce using rule 59 (literalArrayElement -> LEFT_PARENT literalArrayElements RIGHT_PARENT .)
+    CHARACTER       reduce using rule 59 (literalArrayElement -> LEFT_PARENT literalArrayElements RIGHT_PARENT .)
+    STRING          reduce using rule 59 (literalArrayElement -> LEFT_PARENT literalArrayElements RIGHT_PARENT .)
+    SYMBOL_IDENTIFIER reduce using rule 59 (literalArrayElement -> LEFT_PARENT literalArrayElements RIGHT_PARENT .)
+    SYMBOL_KEYWORD  reduce using rule 59 (literalArrayElement -> LEFT_PARENT literalArrayElements RIGHT_PARENT .)
+    SYMBOL_OPERATOR reduce using rule 59 (literalArrayElement -> LEFT_PARENT literalArrayElements RIGHT_PARENT .)
+    SYMBOL_STRING   reduce using rule 59 (literalArrayElement -> LEFT_PARENT literalArrayElements RIGHT_PARENT .)
+    LITERAL_ARRAY_LEFT_PARENT reduce using rule 59 (literalArrayElement -> LEFT_PARENT literalArrayElements RIGHT_PARENT .)
+    KEYWORD         reduce using rule 59 (literalArrayElement -> LEFT_PARENT literalArrayElements RIGHT_PARENT .)
+    MULTI_KEYWORD   reduce using rule 59 (literalArrayElement -> LEFT_PARENT literalArrayElements RIGHT_PARENT .)
+    OPERATOR        reduce using rule 59 (literalArrayElement -> LEFT_PARENT literalArrayElements RIGHT_PARENT .)
+    BAR             reduce using rule 59 (literalArrayElement -> LEFT_PARENT literalArrayElements RIGHT_PARENT .)
+    LESS_THAN       reduce using rule 59 (literalArrayElement -> LEFT_PARENT literalArrayElements RIGHT_PARENT .)
+    GREATER_THAN    reduce using rule 59 (literalArrayElement -> LEFT_PARENT literalArrayElements RIGHT_PARENT .)
+
+
+state 87
+
+    (24) blockArgument -> COLON optionalBlockArgumentType expandableIdentifier .
+
+    COLON_COLON     reduce using rule 24 (blockArgument -> COLON optionalBlockArgumentType expandableIdentifier .)
+    COLON           reduce using rule 24 (blockArgument -> COLON optionalBlockArgumentType expandableIdentifier .)
+    BAR             reduce using rule 24 (blockArgument -> COLON optionalBlockArgumentType expandableIdentifier .)
+
+
+state 88
+
+    (27) expandableIdentifier -> IDENTIFIER .
+
+    COLON_COLON     reduce using rule 27 (expandableIdentifier -> IDENTIFIER .)
+    COLON           reduce using rule 27 (expandableIdentifier -> IDENTIFIER .)
+    BAR             reduce using rule 27 (expandableIdentifier -> IDENTIFIER .)
+
+
+state 89
+
+    (28) expandableIdentifier -> QUASI_UNQUOTE . primaryTerm
+    (5) primaryTerm -> . literal
+    (6) primaryTerm -> . block
+    (7) primaryTerm -> . LEFT_PARENT expression RIGHT_PARENT
+    (44) literal -> . FLOAT
+    (45) literal -> . INTEGER
+    (46) literal -> . CHARACTER
+    (47) literal -> . STRING
+    (48) literal -> . SYMBOL_IDENTIFIER
+    (49) literal -> . SYMBOL_KEYWORD
+    (50) literal -> . SYMBOL_OPERATOR
+    (51) literal -> . SYMBOL_STRING
+    (52) literal -> . LITERAL_ARRAY_LEFT_PARENT literalArrayElements RIGHT_PARENT
+    (19) block -> . LEFT_CURLY_BRACKET optionalBlockClosureHeader expressionList RIGHT_CURLY_BRACKET
+
+    LEFT_PARENT     shift and go to state 18
+    FLOAT           shift and go to state 22
+    INTEGER         shift and go to state 23
+    CHARACTER       shift and go to state 24
+    STRING          shift and go to state 25
+    SYMBOL_IDENTIFIER shift and go to state 26
+    SYMBOL_KEYWORD  shift and go to state 27
+    SYMBOL_OPERATOR shift and go to state 28
+    SYMBOL_STRING   shift and go to state 29
+    LITERAL_ARRAY_LEFT_PARENT shift and go to state 30
+    LEFT_CURLY_BRACKET shift and go to state 31
+
+    primaryTerm                    shift and go to state 91
+    literal                        shift and go to state 21
+    block                          shift and go to state 19
+
+state 90
+
+    (23) optionalBlockArgumentType -> LEFT_PARENT expression . RIGHT_PARENT
+
+    RIGHT_PARENT    shift and go to state 92
+
+
+state 91
+
+    (28) expandableIdentifier -> QUASI_UNQUOTE primaryTerm .
+
+    COLON_COLON     reduce using rule 28 (expandableIdentifier -> QUASI_UNQUOTE primaryTerm .)
+    COLON           reduce using rule 28 (expandableIdentifier -> QUASI_UNQUOTE primaryTerm .)
+    BAR             reduce using rule 28 (expandableIdentifier -> QUASI_UNQUOTE primaryTerm .)
+
+
+state 92
+
+    (23) optionalBlockArgumentType -> LEFT_PARENT expression RIGHT_PARENT .
+
+    IDENTIFIER      reduce using rule 23 (optionalBlockArgumentType -> LEFT_PARENT expression RIGHT_PARENT .)
+    QUASI_UNQUOTE   reduce using rule 23 (optionalBlockArgumentType -> LEFT_PARENT expression RIGHT_PARENT .)
+
