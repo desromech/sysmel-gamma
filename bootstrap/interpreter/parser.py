@@ -21,6 +21,10 @@ def p_optionalExpression_nonEmpty(p):
     'optionalExpression : expression'
     p[0] = p[1]
 
+def p_primaryTerm_identifier(p):
+    'primaryTerm : IDENTIFIER'
+    p[0] = PTIdentifierReference(p[1])
+
 def p_primaryTerm_literal(p):
     'primaryTerm : literal'
     p[0] = p[1]
@@ -28,6 +32,10 @@ def p_primaryTerm_literal(p):
 def p_primaryTerm_block(p):
     'primaryTerm : block'
     p[0] = p[1]
+
+def p_primaryTerm_emptyTuple(p):
+    'primaryTerm : LEFT_PARENT RIGHT_PARENT'
+    p[0] = PTEmptyTuple()
 
 def p_primaryTerm_parent(p):
     'primaryTerm : LEFT_PARENT expression RIGHT_PARENT'
@@ -77,8 +85,41 @@ def p_optionalBlockClosureHeader_empty(p):
     'optionalBlockClosureHeader : '
     p[0] = None
 
+def p_pragmaList_empty(p):
+    'pragmaList : '
+    p[0] = []
+
+def p_pragmaList_rest(p):
+    'pragmaList : pragmaList pragma'
+    p[0] = p[1] + [p[2]]
+
+def p_pragma_unary(p):
+    'pragma : LESS_THAN expandableIdentifier GREATER_THAN'
+    p[0] = PTUnaryPragma(p[1])
+
+def p_pragma_keyword(p):
+    'pragma : LESS_THAN pragmaKeywordArguments GREATER_THAN'
+    selector = ''
+    arguments = []
+    for keyword, argument in p[1]:
+        selector += keyword
+        arguments.append(argument)
+    p[0] = PTKeywordPragma(selector, arguments)
+
+def p_pragmaKeywordArgument(p):
+    'pragmaKeywordArgument : KEYWORD primaryExpression'
+    p[0] = (p[1], p[2])
+
+def p_pragmaKeywordArguments_first(p):
+    'pragmaKeywordArguments : pragmaKeywordArgument'
+    p[0] = [p[1]]
+
+def p_pragmaKeywordArguments_reset(p):
+    'pragmaKeywordArguments : pragmaKeywordArguments pragmaKeywordArgument'
+    p[0] = p[1] + [p[2]]
+
 def p_block(p):
-    'block : LEFT_CURLY_BRACKET optionalBlockClosureHeader expressionList RIGHT_CURLY_BRACKET'
+    'block : LEFT_CURLY_BRACKET optionalBlockClosureHeader pragmaList expressionList RIGHT_CURLY_BRACKET'
     closureHeader = p[2]
     if closureHeader is None:
         arguments, resultType = closureHeader
@@ -138,8 +179,44 @@ def p_binaryExpression_operation(p):
     'binaryExpression : binaryExpression anyOperator prefixUnaryExpression'
     p[0] = PTBinaryExpression(p[2], p[1], p[3])
 
-def p_chainExpression_receiver(p):
-    'chainExpression : binaryExpression'
+def p_chainedMessageArgument(p):
+    'chainedMessageArgument : KEYWORD binaryExpression'
+    p[0] = (p[1], p[2])
+
+def p_chainedMessageArguments_first(p):
+    'chainedMessageArguments : chainedMessageArgument'
+    p[0] = [p[1]]
+
+def p_chainedMessageArguments_rest(p):
+    'chainedMessageArguments : chainedMessageArguments chainedMessageArgument'
+    p[0] = p[1] + [p[2]]
+
+def p_chainedMessage(p):
+    'chainedMessage : chainedMessageArguments'
+    p[0] = p[1]
+
+def p_chainedMessages_first(p):
+    'chainedMessages : chainedMessage'
+    p[0] = [p[1]]
+
+def p_chainedMessages_rest(p):
+    'chainedMessages : chainedMessages SEMICOLON chainedMessage'
+    p[0] = p[1] + [p[3]]
+
+def p_optionalChainedMessages_empty(p):
+    'optionalChainedMessages :'
+    p[0] = None
+
+def p_optionalChainedMessages_nonEmpty(p):
+    'optionalChainedMessages : chainedMessages'
+    p[0] = None
+
+def p_chainExpression_withReceiver(p):
+    'chainExpression : binaryExpression optionalChainedMessages'
+    p[0] = p[1]
+
+def p_chainExpression_withoutReceiver(p):
+    'chainExpression : chainedMessages'
     p[0] = p[1]
 
 def p_lowPrecedenceExpression_first(p):

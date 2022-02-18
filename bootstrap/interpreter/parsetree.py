@@ -29,6 +29,10 @@ class PTPrefixUnaryExpression(PTNode):
 class PTLowPrecedenceBinaryExpression(PTBinaryExpression):
     pass
 
+class PTEmptyTuple(PTBinaryExpression):
+    def __init__(self):
+        PTNode.__init__(self)
+
 class PTCommaPair(PTBinaryExpression):
     def __init__(self, left, right):
         PTNode.__init__(self)
@@ -52,6 +56,11 @@ class PTApplyBlock(PTBinaryExpression):
         PTNode.__init__(self)
         self.entity = entity
         self.block = block
+
+class PTIdentifierReference(PTNode):
+    def __init__(self, identifier):
+        PTNode.__init__(self)
+        self.identifier = identifier
 
 class PTLiteral(PTNode):
     def __init__(self, value):
@@ -109,9 +118,9 @@ class PTUnaryPragma(PTPragma):
         self.identifier = identifier
 
 class PTKeywordPragma(PTPragma):
-    def __init__(self, keywords, arguments):
+    def __init__(self, selector, arguments):
         PTNode.__init__(self)
-        self.keywords = keywords
+        self.selector = selector
         self.arguments = arguments
 
 class PTLiteralInteger(PTLiteral):
