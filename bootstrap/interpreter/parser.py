@@ -2,6 +2,19 @@ import ply.yacc as yacc
 from scanner import tokens
 from parsetree import *
 
+currentSourceCode = ''
+currentSourceCodeName = ''
+
+class ParserToken:
+    def __init__(self, value, sourceCode, sourceCodeName, lexpos):
+        self.value = value
+        self.sourceCode = sourceCode
+        self.sourceCodeName = sourceCodeName
+        self.lexpos = lexpos
+
+def tokenAt(parser, index):
+    return ParserToken(parser[index], currentSourceCode, currentSourceCodeName, parser.lexpos(index))
+
 def p_expressionList_single(p):
     'expressionList : optionalExpression'
     if p[1] is None:
@@ -23,7 +36,7 @@ def p_optionalExpression_nonEmpty(p):
 
 def p_primaryTerm_identifier(p):
     'primaryTerm : IDENTIFIER'
-    p[0] = PTIdentifierReference(p[1])
+    p[0] = PTIdentifierReference(tokenAt(p, 1))
 
 def p_primaryTerm_literal(p):
     'primaryTerm : literal'
@@ -35,7 +48,7 @@ def p_primaryTerm_block(p):
 
 def p_primaryTerm_emptyTuple(p):
     'primaryTerm : LEFT_PARENT RIGHT_PARENT'
-    p[0] = PTEmptyTuple()
+    p[0] = PTEmptyTuple([tokenAt(p, 1), tokenAt(p, 2)])
 
 def p_primaryTerm_parent(p):
     'primaryTerm : LEFT_PARENT expression RIGHT_PARENT'
@@ -47,27 +60,27 @@ def p_primaryExpression_primaryTerm(p):
 
 def p_primaryExpression_quote(p):
     'primaryExpression : QUOTE primaryTerm'
-    p[0] = PTQuote(p[2])
+    p[0] = PTQuote(tokenAt(p, 2), [tokenAt(p, 1)])
 
 def p_primaryExpression_quasiQuote(p):
     'primaryExpression : QUASI_QUOTE primaryTerm'
-    p[0] = PTQuasiQuote(p[2])
+    p[0] = PTQuasiQuote(tokenAt(p, 2), [tokenAt(p, 1)])
 
 def p_primaryExpression_quasiUnquote(p):
     'primaryExpression : QUASI_UNQUOTE primaryTerm'
-    p[0] = PTQuasiUnquote(p[2])
+    p[0] = PTQuasiUnquote(tokenAt(p, 2), [tokenAt(p, 1)])
 
 def p_primaryExpression_splice(p):
     'primaryExpression : SPLICE primaryTerm'
-    p[0] = PTSplice(p[2])
+    p[0] = PTSplice(tokenAt(p, 2), [tokenAt(p, 1)])
 
 def p_primaryExpression_call(p):
     'primaryExpression : primaryExpression LEFT_PARENT expressionList RIGHT_PARENT'
-    p[0] = PTCall(p[1], p[3])
+    p[0] = PTCall(p[1], p[3], tokenAt(p, 2), [tokenAt(p, 2), tokenAt(p, 4)])
 
 def p_primaryExpression_subscript(p):
     'primaryExpression : primaryExpression LEFT_BRACKET expressionList RIGHT_BRACKET'
-    p[0] = PTSubscript(p[1], p[3])
+    p[0] = PTSubscript(p[1], p[3], tokenAt(p, 2), [tokenAt(p, 2), tokenAt(p, 4)])
 
 def p_primaryExpression_applyBlock(p):
     'primaryExpression : primaryExpression block'
@@ -95,7 +108,7 @@ def p_pragmaList_rest(p):
 
 def p_pragma_unary(p):
     'pragma : LESS_THAN expandableIdentifier GREATER_THAN'
-    p[0] = PTUnaryPragma(p[1])
+    p[0] = PTUnaryPragma(p[2], [tokenAt(p, 1), tokenAt(p, 3)])
 
 def p_pragma_keyword(p):
     'pragma : LESS_THAN pragmaKeywordArguments GREATER_THAN'
@@ -104,7 +117,7 @@ def p_pragma_keyword(p):
     for keyword, argument in p[1]:
         selector += keyword
         arguments.append(argument)
-    p[0] = PTKeywordPragma(selector, arguments)
+    p[0] = PTKeywordPragma(selector, arguments, [tokenAt(p, 1), tokenAt(p, 3)])
 
 def p_pragmaKeywordArgument(p):
     'pragmaKeywordArgument : KEYWORD primaryExpression'
@@ -123,9 +136,9 @@ def p_block(p):
     closureHeader = p[2]
     if closureHeader is None:
         arguments, resultType = closureHeader
-        p[0] = PTBlockClosure(arguments, resultType, p[3])
+        p[0] = PTBlockClosure(arguments, resultType, p[3], [tokenAt(p, 1), tokenAt(p, 5)])
     else:
-        p[0] = PTLexicalBlock(p[3])
+        p[0] = PTLexicalBlock(p[3], [tokenAt(p, 1), tokenAt(p, 5)])
 
 def p_blockArguments_empty(p):
     'blockArguments : '
@@ -261,39 +274,39 @@ def p_expression(p):
 
 def p_literal_float(p):
     'literal : FLOAT'
-    p[0] = PTLiteralFloat(p[1])
+    p[0] = PTLiteralFloat(tokenAt(p, 1))
 
 def p_literal_integer(p):
     'literal : INTEGER'
-    p[0] = PTLiteralInteger(p[1])
+    p[0] = PTLiteralInteger(tokenAt(p, 1))
 
 def p_literal_character(p):
     'literal : CHARACTER'
-    p[0] = PTLiteralCharacter(p[1])
+    p[0] = PTLiteralCharacter(tokenAt(p, 1))
 
 def p_literal_string(p):
     'literal : STRING'
-    p[0] = PTLiteralString(p[1])
+    p[0] = PTLiteralString(tokenAt(p, 1))
 
 def p_literal_symbolIdentifier(p):
     'literal : SYMBOL_IDENTIFIER'
-    p[0] = PTLiteralSymbol(p[1])
+    p[0] = PTLiteralSymbol(tokenAt(p, 1))
 
 def p_literal_symbolKeyword(p):
     'literal : SYMBOL_KEYWORD'
-    p[0] = PTLiteralSymbol(p[1])
+    p[0] = PTLiteralSymbol(tokenAt(p, 1))
 
 def p_literal_symbolOperator(p):
     'literal : SYMBOL_OPERATOR'
-    p[0] = PTLiteralSymbol(p[1])
+    p[0] = PTLiteralSymbol(tokenAt(p, 1))
 
 def p_literal_symbolString(p):
     'literal : SYMBOL_STRING'
-    p[0] = PTLiteralSymbol(p[1])
+    p[0] = PTLiteralSymbol(tokenAt(p, 1))
 
 def p_literal_literalArray(p):
     'literal : LITERAL_ARRAY_LEFT_PARENT literalArrayElements RIGHT_PARENT'
-    p[0] = PTLiteralArray(p[2])
+    p[0] = PTLiteralArray(p[2], [tokenAt(p, 1), tokenAt(p, 3)])
 
 def p_literalArrayElements_empty(p):
     'literalArrayElements :'
@@ -343,3 +356,10 @@ def p_error(p):
     p[0] = PTError()
 
 parser = yacc.yacc()
+
+def parseString(string, sourceName = ''):
+    global currentSourceCode
+    global currentSourceCodeName
+    currentSourceCode = string
+    currentSourceCodeName = sourceName
+    return parser.parse(string)
