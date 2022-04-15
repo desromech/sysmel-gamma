@@ -1,0 +1,5 @@
+## This is the Phase1, where the core basic type system is defined.
+## In this stage the compiler environment itself is completely empty,
+## except for a single reference to the bootstrap compiler itself.
+
+BootstrapCompiler
