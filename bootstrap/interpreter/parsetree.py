@@ -1,18 +1,47 @@
+from source_collection import *
+
 def sourcePositionFromToken(token):
-    return None
+    return token.asSourcePosition()
 
 def sourcePositionFromList(list):
-    return None
+    result = EmptySourcePosition()
+    for el in list:
+        if el is not None:
+            result = result.mergeWith(el.asSourcePosition())
+    return result
 
 def sourcePositionFromTokens(tokens):
-    return None
+    return sourcePositionFromList(tokens)
 
-def emptySourcePosition():
-    return None
+ESCAPE_CHARACTERS = {
+    'n' : '\n',
+    'r' : '\r',
+    't' : '\t',
+}
+
+def parseCStringEscapeSequences(string):
+    result = ''
+    i = 0
+    while i < len(string):
+        c = string[i]
+        if c == '\\':
+            i = i + 1
+            c = string[i]
+            if c in ESCAPE_CHARACTERS:
+                result += ESCAPE_CHARACTERS[c]
+            else:
+                result += c
+        else:
+            result += c
+        i = i + 1
+    return result
 
 class PTNode:
     def __init__(self):
-        pass
+        self.sourcePosition = EmptySourcePosition()
+
+    def asSourcePosition(self):
+        return self.sourcePosition
 
     def isExpressionList(self):
         return False
@@ -21,6 +50,9 @@ class PTNode:
         return False
 
     def isBinaryExpression(self):
+        return False
+
+    def isUnaryMessage(self):
         return False
 
     def isPrefixUnaryExpression(self):
@@ -36,6 +68,15 @@ class PTNode:
         return False
 
     def isCall(self):
+        return False
+
+    def isKeywordMessage(self):
+        return False
+
+    def isChainedMessage(self):
+        return False
+
+    def isMessageChain(self):
         return False
 
     def isSubscript(self):
@@ -126,19 +167,70 @@ class PTBinaryExpression(PTNode):
         self.operation = operation
         self.left = left
         self.right = right
-        self.sourcePosition = sourcePositionFromList([left, sourcePositionFromToken(operation), right])
+        self.sourcePosition = sourcePositionFromList([left, operation, right])
 
     def isBinaryExpression(self):
         return True
+
+class PTUnaryMessage(PTNode):
+    def __init__(self, receiver, selector):
+        PTNode.__init__(self)
+        self.receiver = receiver
+        self.selector = selector
+        self.sourcePosition = sourcePositionFromList([receiver, selector])
+
+    def isUnaryMessage(self):
+        return True
+
+class PTChainedMessage(PTNode):
+    def __init__(self, selector, arguments):
+        PTNode.__init__(self)
+        self.selector = selector
+        self.arguments = arguments
+        self.sourcePosition = sourcePositionFromList([selector] + arguments)
+
+    def isChainedMessage(self):
+        return True
+
+class PTKeywordMessage(PTNode):
+    def __init__(self, receiver, selector, arguments):
+        PTNode.__init__(self)
+        self.receiver = receiver
+        self.selector = selector
+        self.arguments = arguments
+        self.sourcePosition = sourcePositionFromList([receiver, selector] + arguments)
+
+    def isKeywordMessage(self):
+        return True
+
+class PTMessageChain(PTNode):
+    def __init__(self, receiver, messages):
+        PTNode.__init__(self)
+        self.receiver = receiver
+        self.messages = messages
+        self.sourcePosition = sourcePositionFromList([receiver] + messages)
+
+    def isMessageChain(self):
+        return True
+
+    def simplified(self):
+        chainCount = len(self.messages)
+        if chainCount == 0:
+            return self.receiver
+        elif chainCount == 1:
+            message = self.messages[0]
+            return PTKeywordMessage(self.receiver, message.selector, message.arguments)
+
+        return self
 
 class PTPrefixUnaryExpression(PTNode):
     def __init__(self, operation, operand):
         PTNode.__init__(self)
         self.operation = operation
         self.operand = operand
-        self.sourcePosition = sourcePositionFromList([sourcePositionFromToken(operation), operand])
+        self.sourcePosition = sourcePositionFromList([operation, operand])
 
-    def isUnaryExpression(self):
+    def isPrefixUnaryExpression(self):
         return True
 
 class PTLowPrecedenceBinaryExpression(PTBinaryExpression):
@@ -148,7 +240,7 @@ class PTLowPrecedenceBinaryExpression(PTBinaryExpression):
     def isLowPrecedenceBinaryExpression(self):
         return True
 
-class PTEmptyTuple(PTBinaryExpression):
+class PTEmptyTuple(PTNode):
     def __init__(self, tokens):
         PTNode.__init__(self)
         self.sourcePosition = sourcePositionFromTokens(tokens)
@@ -156,7 +248,7 @@ class PTEmptyTuple(PTBinaryExpression):
     def isEmptyTuple(self):
         return True
 
-class PTCommaPair(PTBinaryExpression):
+class PTCommaPair(PTNode):
     def __init__(self, left, right):
         PTNode.__init__(self)
         self.left = left
@@ -166,7 +258,7 @@ class PTCommaPair(PTBinaryExpression):
     def isCommaPair(self):
         return True
 
-class PTCall(PTBinaryExpression):
+class PTCall(PTNode):
     def __init__(self, functional, arguments, tokens):
         PTNode.__init__(self)
         self.functional = functional
@@ -176,7 +268,7 @@ class PTCall(PTBinaryExpression):
     def isCall(self):
         return True
 
-class PTSubscript(PTBinaryExpression):
+class PTSubscript(PTNode):
     def __init__(self, sequenceable, indices, tokens):
         PTNode.__init__(self)
         self.sequenceable = sequenceable
@@ -186,7 +278,7 @@ class PTSubscript(PTBinaryExpression):
     def isSubscript(self):
         return True
 
-class PTApplyBlock(PTBinaryExpression):
+class PTApplyBlock(PTNode):
     def __init__(self, entity, block):
         PTNode.__init__(self)
         self.entity = entity
@@ -293,10 +385,14 @@ class PTKeywordPragma(PTPragma):
         return True
 
 class PTLiteral(PTNode):
-    def __init__(self, value):
+    def __init__(self, value, valuePosition = None):
         PTNode.__init__(self)
-        self.value = self.parseLiteralString(value.value)
-        self.sourcePosition = sourcePositionFromToken(value)
+        if valuePosition is None:
+            self.value = self.parseLiteralString(value.value)
+            self.sourcePosition = sourcePositionFromToken(value)
+        else:
+            self.value = value
+            self.sourcePosition = valuePosition
 
     def parseLiteralString(self, value):
         return value
@@ -323,21 +419,26 @@ class PTLiteralCharacter(PTLiteral):
         return True
 
     def parseLiteralString(self, value):
-        return value[1]
+        return parseCStringEscapeSequences(value[1:-1])
 
 class PTLiteralString(PTLiteral):
     def isLiteralString(self):
         return True
 
     def parseLiteralString(self, value):
-        return value[1:-1]
+        return parseCStringEscapeSequences(value[1:-1])
 
 class PTLiteralSymbol(PTLiteral):
     def isLiteralSymbol(self):
         return True
 
     def parseLiteralString(self, value):
-        return value[2:-1]
+        if value.startswith('#"'):
+            return parseCStringEscapeSequences(value[2:-1])
+        elif value.startswith('#'):
+            return value[1:]
+        else:
+            return value
 
 class PTLiteralArray(PTLiteral):
     def isLiteralArray(self):

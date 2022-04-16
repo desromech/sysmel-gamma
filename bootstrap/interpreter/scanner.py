@@ -69,7 +69,7 @@ t_STRING = r'"([^\\"]|(\\.))*\"'
 t_CHARACTER = r'\'([^\\"]|(\\.))*\''
 
 t_MULTI_KEYWORD = r'[_A-Za-z][_A-Za-z0-9]*\:([_A-Za-z][_A-Za-z0-9]*\:)+'
-t_KEYWORD = r'[_A-Za-z][_A-Za-z0-9]*\:'
+t_KEYWORD = r'[_A-Za-z][_A-Za-z0-9]*\:(?!=)'
 t_IDENTIFIER = r'[_A-Za-z][_A-Za-z0-9]*'
 
 t_SYMBOL_IDENTIFIER = r'\#[_A-Za-z][_A-Za-z0-9]*'

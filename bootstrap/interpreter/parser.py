@@ -1,19 +1,22 @@
+from lib2to3.pgen2.token import tok_name
 import ply.yacc as yacc
 from scanner import tokens
 from parsetree import *
+from source_collection import *
 
-currentSourceCode = ''
-currentSourceCodeName = ''
+currentSourceCollection = EmptySourceCollection()
 
 class ParserToken:
-    def __init__(self, value, sourceCode, sourceCodeName, lexpos):
+    def __init__(self, value, sourceCollection, lexpos):
+        #assert value is str
         self.value = value
-        self.sourceCode = sourceCode
-        self.sourceCodeName = sourceCodeName
-        self.lexpos = lexpos
+        self.sourcePosition = sourceCollection.positionForRange((lexpos, lexpos + len(value)))
+
+    def asSourcePosition(self):
+        return self.sourcePosition
 
 def tokenAt(parser, index):
-    return ParserToken(parser[index], currentSourceCode, currentSourceCodeName, parser.lexpos(index))
+    return ParserToken(parser[index], currentSourceCollection, parser.lexpos(index))
 
 def p_expressionList_single(p):
     'expressionList : optionalExpression'
@@ -74,13 +77,17 @@ def p_primaryExpression_splice(p):
     'primaryExpression : SPLICE primaryTerm'
     p[0] = PTSplice(tokenAt(p, 2), [tokenAt(p, 1)])
 
+def p_primaryExpression_unaryMessage(p):
+    'primaryExpression : primaryExpression expandableIdentifier'
+    p[0] = PTUnaryMessage(p[1], p[2])
+
 def p_primaryExpression_call(p):
     'primaryExpression : primaryExpression LEFT_PARENT expressionList RIGHT_PARENT'
-    p[0] = PTCall(p[1], p[3], tokenAt(p, 2), [tokenAt(p, 2), tokenAt(p, 4)])
+    p[0] = PTCall(p[1], p[3], [tokenAt(p, 2), tokenAt(p, 4)])
 
 def p_primaryExpression_subscript(p):
     'primaryExpression : primaryExpression LEFT_BRACKET expressionList RIGHT_BRACKET'
-    p[0] = PTSubscript(p[1], p[3], tokenAt(p, 2), [tokenAt(p, 2), tokenAt(p, 4)])
+    p[0] = PTSubscript(p[1], p[3], [tokenAt(p, 2), tokenAt(p, 4)])
 
 def p_primaryExpression_applyBlock(p):
     'primaryExpression : primaryExpression block'
@@ -170,7 +177,7 @@ def p_blockResultType_nonEmpty(p):
 
 def p_expandableIdentifier_identifier(p):
     'expandableIdentifier : IDENTIFIER'
-    p[0] = p[1]
+    p[0] = PTIdentifierReference(tokenAt(p, 1))
 
 def p_expandableIdentifier_quasiUnquote(p):
     'expandableIdentifier : QUASI_UNQUOTE primaryTerm'
@@ -194,7 +201,7 @@ def p_binaryExpression_operation(p):
 
 def p_chainedMessageArgument(p):
     'chainedMessageArgument : KEYWORD binaryExpression'
-    p[0] = (p[1], p[2])
+    p[0] = (tokenAt(p, 1), p[2])
 
 def p_chainedMessageArguments_first(p):
     'chainedMessageArguments : chainedMessageArgument'
@@ -204,33 +211,65 @@ def p_chainedMessageArguments_rest(p):
     'chainedMessageArguments : chainedMessageArguments chainedMessageArgument'
     p[0] = p[1] + [p[2]]
 
-def p_chainedMessage(p):
-    'chainedMessage : chainedMessageArguments'
+def p_chainedMessageKeyword(p):
+    'chainedMessageKeyword : chainedMessageArguments'
+    selector = ''
+    selectorPosition = EmptySourcePosition()
+    arguments = []
+    for messageKeyword, messageKeywordArg in p[1]:
+        selector += messageKeyword.value
+        selectorPosition = selectorPosition.mergeWith(messageKeyword.asSourcePosition())
+        arguments.append(messageKeywordArg)
+
+    selectorSymbol = PTLiteralSymbol(selector, selectorPosition)
+    p[0] = PTChainedMessage(selectorSymbol, arguments)
+
+def p_chainedMessage_keyword(p):
+    'chainedMessage : chainedMessageKeyword'
     p[0] = p[1]
 
+def p_chainedMessage_unary(p):
+    'chainedMessage : expandableIdentifier'
+    p[0] = PTChainedMessage(p[1], [])
+
 def p_chainedMessages_first(p):
-    'chainedMessages : chainedMessage'
-    p[0] = [p[1]]
+    'chainedMessages : SEMICOLON chainedMessage'
+    p[0] = [p[2]]
 
 def p_chainedMessages_rest(p):
     'chainedMessages : chainedMessages SEMICOLON chainedMessage'
     p[0] = p[1] + [p[3]]
 
-def p_optionalChainedMessages_empty(p):
-    'optionalChainedMessages :'
+def p_optionalKeywordChain_empty(p):
+    'optionalKeywordChain :'
     p[0] = None
 
-def p_optionalChainedMessages_nonEmpty(p):
-    'optionalChainedMessages : chainedMessages'
-    p[0] = None
+def p_optionalKeywordChain_nonEmpty(p):
+    'optionalKeywordChain : chainedMessages'
+    p[0] = p[1]
+
+def p_optionalKeywordChain_keyword(p):
+    'optionalKeywordChain : chainedMessageKeyword'
+    p[0] = [p[1]]
+
+def p_optionalKeywordChain_keyword_nonEmpty(p):
+    'optionalKeywordChain : chainedMessageKeyword chainedMessages'
+    p[0] = [p[1]] + p[2]
 
 def p_chainExpression_withReceiver(p):
-    'chainExpression : binaryExpression optionalChainedMessages'
-    p[0] = p[1]
+    'chainExpression : binaryExpression optionalKeywordChain'
+    if p[2] is None:
+        p[0] = p[1]
+    else:
+        p[0] = PTMessageChain(p[1], p[2]).simplified()
 
 def p_chainExpression_withoutReceiver(p):
-    'chainExpression : chainedMessages'
-    p[0] = p[1]
+    'chainExpression : chainedMessageKeyword'
+    p[0] = PTMessageChain(None, [p[1]]).simplified()
+
+def p_chainExpression_withoutReceiverChain(p):
+    'chainExpression : chainedMessageKeyword chainedMessages'
+    p[0] = PTMessageChain(None, [p[1]] + p[2]).simplified()
 
 def p_lowPrecedenceExpression_first(p):
     'lowPrecedenceExpression : chainExpression'
@@ -250,7 +289,7 @@ def p_assignmentExpression_last(p):
 
 def p_assignmentExpression_previous(p):
     'assignmentExpression : lowPrecedenceExpression ASSIGNMENT assignmentExpression'
-    p[0] = PTAssignment(p[1], p[2])
+    p[0] = PTAssignment(p[1], p[3])
 
 def p_commaExpressionContent_first(p):
     'commaExpressionContent : assignmentExpression'
@@ -326,11 +365,11 @@ def p_literalArrayElement_identifer(p):
 
 def p_literalArrayElement_keyword(p):
     'literalArrayElement : anyKeyword'
-    p[0] = PTLiteralSymbol(p[1])
+    p[0] = p[1]
 
 def p_literalArrayElement_operator(p):
     'literalArrayElement : anyOperator'
-    p[0] = PTLiteralSymbol(p[1])
+    p[0] = p[1]
 
 def p_literalArrayElement_array(p):
     'literalArrayElement : LEFT_PARENT literalArrayElements RIGHT_PARENT'
@@ -341,16 +380,16 @@ def p_anyOperator(p):
                    | BAR
                    | LESS_THAN
                    | GREATER_THAN'''
-    p[0] = p[1]
+    p[0] = PTLiteralSymbol(tokenAt(p, 1))
 
 def p_anyPrefixOperator(p):
     'anyPrefixOperator : OPERATOR'
-    p[0] = p[1]
+    p[0] = PTLiteralSymbol(tokenAt(p, 1))
 
 def p_anyKeyword(p):
     '''anyKeyword : KEYWORD
                    | MULTI_KEYWORD'''
-    p[0] = p[1]
+    p[0] = PTLiteralSymbol(p[1])
 
 def p_error(p):
     p[0] = PTError()
@@ -358,8 +397,6 @@ def p_error(p):
 parser = yacc.yacc()
 
 def parseString(string, sourceName = ''):
-    global currentSourceCode
-    global currentSourceCodeName
-    currentSourceCode = string
-    currentSourceCodeName = sourceName
+    global currentSourceCollection
+    currentSourceCollection = StringSourceCollection(string, sourceName)
     return parser.parse(string)
