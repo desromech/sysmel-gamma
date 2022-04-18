@@ -64,6 +64,9 @@ class PTNode:
     def isEmptyTuple(self):
         return False
 
+    def isParenthesis(self):
+        return False
+
     def isCommaPair(self):
         return False
 
@@ -137,6 +140,15 @@ class PTNode:
         return False
 
     def isLiteralArray(self):
+        return False
+
+    def isMakeDictionary(self):
+        return False
+
+    def isDictionaryKeyValue(self):
+        return False
+
+    def isMakeByteArray(self):
         return False
 
     def isError(self):
@@ -246,6 +258,15 @@ class PTEmptyTuple(PTNode):
         self.sourcePosition = sourcePositionFromTokens(tokens)
 
     def isEmptyTuple(self):
+        return True
+
+class PTParenthesis(PTNode):
+    def __init__(self, expression, tokens):
+        PTNode.__init__(self)
+        self.expression = expression
+        self.sourcePosition = sourcePositionFromList(tokens + [expression])
+
+    def isParenthesis(self):
         return True
 
 class PTCommaPair(PTNode):
@@ -440,8 +461,41 @@ class PTLiteralSymbol(PTLiteral):
         else:
             return value
 
-class PTLiteralArray(PTLiteral):
+class PTLiteralArray(PTNode):
+    def __init__(self, elements, tokens):
+        PTNode.__init__(self)
+        self.elements = elements
+        self.sourcePosition = sourcePositionFromList([sourcePositionFromTokens(tokens)] + elements)
+
     def isLiteralArray(self):
+        return True
+
+class PTMakeDictionary(PTNode):
+    def __init__(self, elements, tokens):
+        PTNode.__init__(self)
+        self.elements = elements
+        self.sourcePosition = sourcePositionFromList([sourcePositionFromTokens(tokens)] + elements)
+
+    def isMakeDictionary(self):
+        return True
+
+class PTDictionaryKeyValue(PTNode):
+    def __init__(self, key, value):
+        PTNode.__init__(self)
+        self.key = key
+        self.value = value
+        self.sourcePosition = sourcePositionFromList([key, value])
+
+    def isDictionaryKeyValue(self):
+        return True
+
+class PTMakeByteArray(PTNode):
+    def __init__(self, expressions, tokens):
+        PTNode.__init__(self)
+        self.expressions = expressions
+        self.sourcePosition = sourcePositionFromList(tokens + [expressions])
+
+    def isMakeByteArray(self):
         return True
 
 class PTError(PTNode):

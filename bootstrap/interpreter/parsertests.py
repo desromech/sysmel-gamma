@@ -33,8 +33,9 @@ class TestParser(unittest.TestCase):
         self.assertTrue(self.parseExpression('-42').isLiteralInteger())
         self.assertEqual(self.parseExpression('-42').value, -42)
 
-        self.assertTrue(self.parseExpression('(-42)').isLiteralInteger())
-        self.assertEqual(self.parseExpression('(-42)').value, -42)
+        self.assertTrue(self.parseExpression('(-42)').isParenthesis())
+        self.assertTrue(self.parseExpression('(-42)').expression.isLiteralInteger())
+        self.assertEqual(self.parseExpression('(-42)').expression.value, -42)
 
     def test_literalFloat(self):
         self.assertTrue(self.parseExpression('42.5').isLiteralFloat())
@@ -320,6 +321,89 @@ class TestParser(unittest.TestCase):
 
         self.assertTrue(node.indices.expressions[0].isIdentifierReference())
         self.assertEqual(node.indices.expressions[0].value, 'a')
+
+    def test_literalArray(self):
+        node = self.parseExpression(r'#()')
+        self.assertTrue(node.isLiteralArray())
+        self.assertEqual(len(node.elements), 0)
+
+        node = self.parseExpression(r'#(a)')
+        self.assertTrue(node.isLiteralArray())
+        self.assertEqual(len(node.elements), 1)
+
+        node = self.parseExpression(r'#(a hello: + -)')
+        self.assertTrue(node.isLiteralArray())
+        self.assertEqual(len(node.elements), 4)
+
+        self.assertTrue(node.elements[0].isLiteralSymbol())
+        self.assertTrue(node.elements[1].isLiteralSymbol())
+        self.assertTrue(node.elements[2].isLiteralSymbol())
+        self.assertTrue(node.elements[3].isLiteralSymbol())
+
+        node = self.parseExpression(r'#(a hello: + - ())')
+        self.assertTrue(node.isLiteralArray())
+        self.assertEqual(len(node.elements), 5)
+
+        self.assertTrue(node.elements[0].isLiteralSymbol())
+        self.assertTrue(node.elements[1].isLiteralSymbol())
+        self.assertTrue(node.elements[2].isLiteralSymbol())
+        self.assertTrue(node.elements[3].isLiteralSymbol())
+        self.assertTrue(node.elements[4].isLiteralArray())
+
+    def test_makeDictionary(self):
+        node = self.parseExpression(r'#{}')
+        self.assertTrue(node.isMakeDictionary())
+        self.assertEqual(len(node.elements), 0)
+
+        node = self.parseExpression(r'#{test:}')
+        self.assertTrue(node.isMakeDictionary())
+        self.assertEqual(len(node.elements), 1)
+        self.assertTrue(node.elements[0].isDictionaryKeyValue())
+        self.assertTrue(node.elements[0].key.isLiteralSymbol())
+        self.assertEqual(node.elements[0].key.value, 'test')
+        self.assertEqual(node.elements[0].value, None)
+
+        node = self.parseExpression(r'#{First: 1. Second: . Third: 3}')
+        self.assertTrue(node.isMakeDictionary())
+        self.assertEqual(len(node.elements), 3)
+        self.assertTrue(node.elements[0].isDictionaryKeyValue())
+        self.assertTrue(node.elements[0].key.isLiteralSymbol())
+        self.assertEqual(node.elements[0].key.value, 'First')
+        self.assertTrue(node.elements[0].value.isLiteralInteger())
+        self.assertEqual(node.elements[0].value.value, 1)
+
+        self.assertTrue(node.elements[1].isDictionaryKeyValue())
+        self.assertTrue(node.elements[1].key.isLiteralSymbol())
+        self.assertEqual(node.elements[1].key.value, 'Second')
+        self.assertEqual(node.elements[1].value, None)
+
+        self.assertTrue(node.elements[2].isDictionaryKeyValue())
+        self.assertTrue(node.elements[2].key.isLiteralSymbol())
+        self.assertEqual(node.elements[2].key.value, 'Third')
+        self.assertTrue(node.elements[2].value.isLiteralInteger())
+        self.assertEqual(node.elements[2].value.value, 3)
+
+    def test_makeByteArray(self):
+        node = self.parseExpression(r'#[]')
+        self.assertTrue(node.isMakeByteArray())
+        self.assertTrue(node.expressions.isExpressionList())
+        self.assertEqual(len(node.expressions.expressions), 0)
+
+        node = self.parseExpression(r'#[1 . 2 . 3 . 4 . 5]')
+        self.assertTrue(node.isMakeByteArray())
+        self.assertTrue(node.expressions.isExpressionList())
+        self.assertEqual(len(node.expressions.expressions), 5)
+
+        self.assertTrue(node.expressions.expressions[0].isLiteralInteger())
+        self.assertEqual(node.expressions.expressions[0].value, 1)
+        self.assertTrue(node.expressions.expressions[1].isLiteralInteger())
+        self.assertEqual(node.expressions.expressions[1].value, 2)
+        self.assertTrue(node.expressions.expressions[2].isLiteralInteger())
+        self.assertEqual(node.expressions.expressions[2].value, 3)
+        self.assertTrue(node.expressions.expressions[3].isLiteralInteger())
+        self.assertEqual(node.expressions.expressions[3].value, 4)
+        self.assertTrue(node.expressions.expressions[4].isLiteralInteger())
+        self.assertEqual(node.expressions.expressions[4].value, 5)
 
 if __name__ == '__main__':
     unittest.main()

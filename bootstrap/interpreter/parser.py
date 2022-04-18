@@ -27,7 +27,10 @@ def p_expressionList_single(p):
 
 def p_expressionList_pair(p):
     'expressionList : expressionList DOT optionalExpression'
-    p[0] = PTExpressionList(p[1].expressions + p[2].expressions)
+    if p[3] is None:
+        p[0] = p[1]
+    else:
+        p[0] = PTExpressionList(p[1].expressions + [p[3]])
 
 def p_optionalExpression_empty(p):
     'optionalExpression :'
@@ -49,13 +52,21 @@ def p_primaryTerm_block(p):
     'primaryTerm : block'
     p[0] = p[1]
 
+def p_primaryTerm_makeDictionary(p):
+    'primaryTerm : makeDictionary'
+    p[0] = p[1]
+
+def p_primaryTerm_makeByteArray(p):
+    'primaryTerm : makeByteArray'
+    p[0] = p[1]
+
 def p_primaryTerm_emptyTuple(p):
     'primaryTerm : LEFT_PARENT RIGHT_PARENT'
     p[0] = PTEmptyTuple([tokenAt(p, 1), tokenAt(p, 2)])
 
 def p_primaryTerm_parent(p):
     'primaryTerm : LEFT_PARENT expression RIGHT_PARENT'
-    p[0] = p[2]
+    p[0] = PTParenthesis(p[2], [tokenAt(p, 1), tokenAt(p, 3)])
 
 def p_primaryExpression_primaryTerm(p):
     'primaryExpression : primaryTerm'
@@ -353,7 +364,7 @@ def p_literalArrayElements_empty(p):
 
 def p_literalArrayElements_nonEmpty(p):
     'literalArrayElements : literalArrayElements literalArrayElement'
-    p[0] = p[1] + p[2]
+    p[0] = p[1] + [p[2]]
 
 def p_literalArrayElement_literal(p):
     'literalArrayElement : literal'
@@ -361,7 +372,7 @@ def p_literalArrayElement_literal(p):
 
 def p_literalArrayElement_identifer(p):
     'literalArrayElement : IDENTIFIER'
-    p[0] = PTLiteralSymbol(p[1])
+    p[0] = PTLiteralSymbol(tokenAt(p, 1))
 
 def p_literalArrayElement_keyword(p):
     'literalArrayElement : anyKeyword'
@@ -373,7 +384,49 @@ def p_literalArrayElement_operator(p):
 
 def p_literalArrayElement_array(p):
     'literalArrayElement : LEFT_PARENT literalArrayElements RIGHT_PARENT'
-    p[0] = PTLiteralArray(p[2])
+    p[0] = PTLiteralArray(p[2], [tokenAt(p, 1), tokenAt(p, 3)])
+
+def p_dictionaryKey_keyword(p):
+    'dictionaryKey : KEYWORD'
+    symbol = PTLiteralSymbol(tokenAt(p, 1))
+    symbol.value = symbol.value[:-1]
+    p[0] = symbol
+
+def p_dictionaryKey_keywordExpression(p):
+    'dictionaryKey : binaryExpression COLON'
+    p[0] = PTLiteralSymbol(tokenAt(p, 1))
+
+def p_dictionaryElement_onlyKey(p):
+    'dictionaryElement : dictionaryKey'
+    p[0] = PTDictionaryKeyValue(p[1], None)
+
+def p_dictionaryElement_keyValue(p):
+    'dictionaryElement : dictionaryKey expression'
+    p[0] = PTDictionaryKeyValue(p[1], p[2])
+
+def p_dicionaryElements_empty(p):
+    'dictionaryElements : '
+    p[0] = []
+
+def p_dicionaryElements_nonEmptyFirst(p):
+    'dictionaryElements : dictionaryElement'
+    p[0] = [p[1]]
+
+def p_dicionaryElements_next(p):
+    'dictionaryElements : dictionaryElements DOT dictionaryElement'
+    p[0] = p[1] + [p[3]]
+
+def p_dicionaryElements_dot(p):
+    'dictionaryElements : dictionaryElements DOT'
+    p[0] = p[1]
+
+def p_makeDictionary(p):
+    'makeDictionary : DICTIONARY_ARRAY_LEFT_CURLY_BRACKET dictionaryElements RIGHT_CURLY_BRACKET'
+    p[0] = PTMakeDictionary(p[2], [tokenAt(p, 1), tokenAt(p, 3)])
+
+def p_makeByteArray(p):
+    'makeByteArray : BYTE_ARRAY_LEFT_BRACKET expressionList RIGHT_BRACKET'
+    p[0] = PTMakeByteArray(p[2], [tokenAt(p, 1), tokenAt(p, 3)])
 
 def p_anyOperator(p):
     '''anyOperator : OPERATOR
@@ -389,10 +442,7 @@ def p_anyPrefixOperator(p):
 def p_anyKeyword(p):
     '''anyKeyword : KEYWORD
                    | MULTI_KEYWORD'''
-    p[0] = PTLiteralSymbol(p[1])
-
-def p_error(p):
-    p[0] = PTError()
+    p[0] = PTLiteralSymbol(tokenAt(p, 1))
 
 parser = yacc.yacc()
 
