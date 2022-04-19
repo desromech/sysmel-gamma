@@ -60,6 +60,21 @@ class BootstrapCompiler:
     def __init__(self):
         self.topLevelEnvironment = TopLevelEnvironment()
         self.topLevelEnvironment.setSymbolValue('__BootstrapCompiler__', self)
+        self.methodDict = {
+            'addBasicGCTypeNamed:': self.addBasicGCTypeNamed,
+            'enableTypeSystem': self.enableTypeSystem
+        }
+        self.isTypeSystemEnabled = False
 
     def makeScriptEvaluationEnvironment(self):
         return ScriptEvaluationEnvironment(self.topLevelEnvironment)
+
+    def performWithArguments(self, selector, arguments):
+        method = self.methodDict[selector]
+        return method(*arguments)
+
+    def addBasicGCTypeNamed(self, typeName):
+        print('TODO: addBasicGCTypeNamed', typeName)
+
+    def enableTypeSystem(self):
+        print('TODO: enable the type system')

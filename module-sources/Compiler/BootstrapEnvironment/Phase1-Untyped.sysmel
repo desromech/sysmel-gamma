@@ -2,4 +2,15 @@
 ## In this stage the compiler environment itself is completely empty,
 ## except for a single reference to the bootstrap compiler itself.
 
+## Add opaque definitions for the basic literal types.
 __BootstrapCompiler__
+    addBasicGCTypeNamed: #String;
+    addBasicGCTypeNamed: #Symbol;
+    addBasicGCTypeNamed: #Integer;
+    addBasicGCTypeNamed: #Float.
+
+## The primitive types.
+
+## At the end of this phase we can enable the actual type system.
+__BootstrapCompiler__
+    enableTypeSystem

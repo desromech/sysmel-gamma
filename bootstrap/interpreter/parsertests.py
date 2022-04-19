@@ -94,7 +94,7 @@ class TestParser(unittest.TestCase):
 
     def test_unaryMessage(self):
         self.assertTrue(self.parseExpression(r'a negated').isUnaryMessage())
-        self.assertTrue(self.parseExpression(r'a negated').selector.isIdentifierReference())
+        self.assertTrue(self.parseExpression(r'a negated').selector.isLiteralSymbol())
         self.assertEqual(self.parseExpression(r'a negated').selector.value, 'negated')
 
     def test_unaryPrefixExpression(self):
@@ -202,7 +202,7 @@ class TestParser(unittest.TestCase):
         node = self.parseExpression(r'a hello; computeWith: b; yourself')
         self.assertTrue(node.isMessageChain())
         self.assertTrue(node.receiver.isUnaryMessage())
-        self.assertTrue(node.receiver.selector.isIdentifierReference())
+        self.assertTrue(node.receiver.selector.isLiteralSymbol())
         self.assertEqual(node.receiver.selector.value, "hello")
 
         self.assertTrue(node.receiver.receiver.isIdentifierReference())

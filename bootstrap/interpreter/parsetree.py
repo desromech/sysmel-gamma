@@ -198,15 +198,27 @@ class PTBinaryExpression(PTNode):
     def isBinaryExpression(self):
         return True
 
+    def evaluateWithEnvironment(self, environment):
+        receiver = self.receiver.evaluateWithEnvironment(environment)
+        selector = self.selector.evaluateWithEnvironment(environment)
+        left = self.left.evaluateWithEnvironment(environment)
+        right = self.right.evaluateWithEnvironment(environment)
+        return receiver.performWithArguments(selector, [left, right])
+
 class PTUnaryMessage(PTNode):
     def __init__(self, receiver, selector):
         PTNode.__init__(self)
         self.receiver = receiver
-        self.selector = selector
+        self.selector = selector.asSymbolEvaluatedExpression()
         self.sourcePosition = sourcePositionFromList([receiver, selector])
 
     def isUnaryMessage(self):
         return True
+
+    def evaluateWithEnvironment(self, environment):
+        receiver = self.receiver.evaluateWithEnvironment(environment)
+        selector = self.selector.evaluateWithEnvironment(environment)
+        return receiver.performWithArguments(selector, [])
 
 class PTChainedMessage(PTNode):
     def __init__(self, selector, arguments):
@@ -218,6 +230,11 @@ class PTChainedMessage(PTNode):
     def isChainedMessage(self):
         return True
 
+    def evaluateWithReceiverAndEnvironment(self, receiver, environment):
+        selector = self.selector.evaluateWithEnvironment(environment)
+        arguments = list(map(lambda arg: arg.evaluateWithEnvironment(environment), self.arguments))
+        return receiver.performWithArguments(selector, arguments)
+
 class PTKeywordMessage(PTNode):
     def __init__(self, receiver, selector, arguments):
         PTNode.__init__(self)
@@ -228,6 +245,12 @@ class PTKeywordMessage(PTNode):
 
     def isKeywordMessage(self):
         return True
+
+    def evaluateWithEnvironment(self, environment):
+        receiver = self.receiver.evaluateWithEnvironment(environment)
+        selector = self.selector.evaluateWithEnvironment(environment)
+        arguments = list(map(lambda arg: arg.evaluateWithEnvironment(environment), self.arguments))
+        return receiver.performWithArguments(selector, arguments)
 
 class PTMessageChain(PTNode):
     def __init__(self, receiver, messages):
@@ -248,6 +271,13 @@ class PTMessageChain(PTNode):
             return PTKeywordMessage(self.receiver, message.selector, message.arguments)
 
         return self
+
+    def evaluateWithEnvironment(self, environment):
+        receiver = self.receiver.evaluateWithEnvironment(environment)
+        result = receiver
+        for message in self.messages:
+            result = message.evaluateWithReceiverAndEnvironment(receiver, environment)
+        return result
 
 class PTPrefixUnaryExpression(PTNode):
     def __init__(self, operation, operand):
@@ -331,6 +361,9 @@ class PTIdentifierReference(PTNode):
     def isIdentifierReference(self):
         return True
 
+    def asSymbolEvaluatedExpression(self):
+        return PTLiteralSymbol(self.value, self)
+
     def evaluateWithEnvironment(self, environment):
         binding = environment.lookupSymbolRecursively(self.value)
         if binding is None:
@@ -393,6 +426,9 @@ class PTQuasiUnquote(PTNode):
     def isQuasiUnquote(self):
         return True
 
+    def asSymbolEvaluatedExpression(self):
+        return self
+
 class PTSplice(PTNode):
     def __init__(self, expression, tokens):
         PTNode.__init__(self)
@@ -440,6 +476,9 @@ class PTLiteral(PTNode):
 
     def isLiteral(self):
         return True
+
+    def evaluateWithEnvironment(self, environment):
+        return self.value
 
 class PTLiteralInteger(PTLiteral):
     def isLiteralInteger(self):
