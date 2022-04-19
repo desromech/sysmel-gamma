@@ -42,6 +42,8 @@ tokens = (
     'SPLICE',
 )
 
+t_ignore = ' \t'
+
 t_COLON_COLON = r'::'
 t_ASSIGNMENT = r':='
 t_COLON = r':'
@@ -78,9 +80,13 @@ t_SYMBOL_KEYWORD = r'\#([_A-Za-z][_A-Za-z0-9]*\:)+'
 
 t_SYMBOL_OPERATOR = r'\#[+\-/\\\*~<>=@,%\|&\?\!^]+'
 
-t_ignore = ' \t'
-t_ignore_SINGLE_LINE_COMMENT = r'\#\#.*'
-t_ignore_MULTI_LINE_COMMENT = r'(?s)\#\*.*?\*\#'
+def t_SINGLE_LINE_COMMENT(t):
+    r'\#\#.*'
+    pass
+
+def t_MULTI_LINE_COMMENT(t):
+    r'(?s)\#\*.*?\*\#'
+    pass
 
 def t_FLOAT(t):
     r'[\+\-]?[0-9]+(\.[0-9]+([eE][\+\-]?[0-9]+)?|[eE][+\-]?[0-9]+)'
@@ -113,6 +119,7 @@ def t_OPERATOR(t):
 def t_newline(t):
     r'(\r?\n)+'
     t.lexer.lineno += len(t.value)
+    pass
 
 # Error handling rule
 def t_error(t):

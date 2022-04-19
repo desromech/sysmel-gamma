@@ -154,6 +154,9 @@ class PTNode:
     def isError(self):
         return False
 
+    def evaluateWithEnvironment(self, environment):
+        assert False
+
 class PTExpressionList(PTNode):
     def __init__(self, expressions):
         PTNode.__init__(self)
@@ -162,6 +165,12 @@ class PTExpressionList(PTNode):
 
     def isExpressionList(self):
         return True
+
+    def evaluateWithEnvironment(self, environment):
+        result = None
+        for expression in self.expressions:
+            result = expression.evaluateWithEnvironment(environment)
+        return result
 
 class PTAssignment(PTNode):
     def __init__(self, reference, value):
