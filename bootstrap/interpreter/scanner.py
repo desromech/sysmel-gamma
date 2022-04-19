@@ -85,7 +85,7 @@ def t_SINGLE_LINE_COMMENT(t):
     pass
 
 def t_MULTI_LINE_COMMENT(t):
-    r'(?s)\#\*.*?\*\#'
+    r'\#\*(.|[\n\r])*?\*\#'
     pass
 
 def t_FLOAT(t):

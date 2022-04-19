@@ -2,4 +2,4 @@
 ## In this stage the compiler environment itself is completely empty,
 ## except for a single reference to the bootstrap compiler itself.
 
-BootstrapCompiler
+__BootstrapCompiler__

@@ -25,8 +25,8 @@ class TestScanner(unittest.TestCase):
         self.assertEqual(self.scanString('helloWorld01234').type, 'IDENTIFIER')
         self.assertEqual(self.scanString('helloWorld01234').value, 'helloWorld01234')
 
-        self.assertEqual(self.scanString('#* Comment *#helloWorld01234').type, 'IDENTIFIER')
-        self.assertEqual(self.scanString('#* Comment *#helloWorld01234').value, 'helloWorld01234')
+        self.assertEqual(self.scanString('#* Comment\nNextLine *#helloWorld01234').type, 'IDENTIFIER')
+        self.assertEqual(self.scanString('#* Comment\nNextLine *#helloWorld01234').value, 'helloWorld01234')
 
         self.assertEqual(self.scanString('## Comment\nhelloWorld01234').type, 'IDENTIFIER')
         self.assertEqual(self.scanString('## Comment\nhelloWorld01234').value, 'helloWorld01234')

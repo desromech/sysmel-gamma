@@ -1,4 +1,6 @@
 from source_collection import *
+from errors import *
+
 
 def sourcePositionFromToken(token):
     return token.asSourcePosition()
@@ -155,7 +157,10 @@ class PTNode:
         return False
 
     def evaluateWithEnvironment(self, environment):
-        assert False
+        raise NotImplementedError("Implement evaluateWithEnvironment() in subclass")
+
+    def raiseEvaluationError(self, message):
+        raise InterpreterEvaluationError('%s: %s' % (str(self.sourcePosition), message))
 
 class PTExpressionList(PTNode):
     def __init__(self, expressions):
@@ -325,6 +330,12 @@ class PTIdentifierReference(PTNode):
 
     def isIdentifierReference(self):
         return True
+
+    def evaluateWithEnvironment(self, environment):
+        binding = environment.lookupSymbolRecursively(self.value)
+        if binding is None:
+            self.raiseEvaluationError('Symbol %s is not bound in current scope.' % self.value)
+        return binding.getReferenceValue()
 
 class PTLexicalBlock(PTNode):
     def __init__(self, body, tokens):
