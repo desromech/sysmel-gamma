@@ -139,7 +139,7 @@ class BootstrapCompiler(BehaviorTypedObject):
 
     def addGCClassNamedWithSuperclassInstanceVariables(self, className, superclass, instanceVariables):
         typeNameSymbol = Symbol(className)
-        type = ClassType(typeNameSymbol, superclass)
+        type = ClassType(typeNameSymbol, superclass, instanceVariables)
         self.addBasicTypeWithName(type, typeNameSymbol)
 
     def enableTypeSystem(self):

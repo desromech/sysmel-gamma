@@ -48,8 +48,18 @@ __BootstrapCompiler__
     addGCClassNamed: #Node instanceVariables: #{
         sourcePosition: BootstrapCompiler AST SourcePosition
     };
-    addGCClassNamed: #ExpressionList superclass: BootstrapCompiler AST Node instanceVariables: #{
-        expressions: Array
+    addGCClassNamed: #ArgumentDefinitionNode superclass: BootstrapCompiler AST Node instanceVariables: #{
+        name: BootstrapCompiler AST Node.
+        type: BootstrapCompiler AST Node.
+    };
+    addGCClassNamed: #CleanUpScopeNode superclass: BootstrapCompiler AST Node instanceVariables: #{
+        body: BootstrapCompiler AST Node
+    };
+    addGCClassNamed: #SequenceNode superclass: BootstrapCompiler AST Node instanceVariables: #{
+        ##expressions: BootstrapCompiler AST Node[]
+    };
+    addGCClassNamed: #SemanticErrorNode superclass: BootstrapCompiler AST Node instanceVariables: #{
+        message: String
     }.
 
 ## At the end of this phase we can enable the actual type system.

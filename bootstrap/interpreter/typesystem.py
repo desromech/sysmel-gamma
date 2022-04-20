@@ -156,10 +156,19 @@ class PrimitiveCharacterType(PrimitiveType):
 class PrimitiveFloatType(PrimitiveType):
     pass
 
+class TupleType(SimpleType):
+    def __init__(self, typeName, slotNames):
+        pass
+
+class RecordType(SimpleType):
+    def __init__(self, typeName, slotNames):
+        pass
+
 class ClassType(SimpleType):
-    def __init__(self, typeName, superclass):
+    def __init__(self, typeName, superclass, instanceVariables = Dictionary()):
         super().__init__(typeName)
         self.superclass = superclass
+        self.instanceVariables = instanceVariables
     
     def lookupSelector(self, selector):
         found = super().lookupSelector(selector)

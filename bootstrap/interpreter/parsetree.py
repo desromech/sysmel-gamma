@@ -332,6 +332,13 @@ class PTCall(PTNode):
     def isCall(self):
         return True
 
+    def evaluateWithEnvironment(self, environment):
+        functional = self.functional.evaluateWithEnvironment(environment)
+        arguments = []
+        if self.arguments is not None:
+            arguments = self.arguments.evaluateWithEnvironment(environment)
+        return functional.performWithArguments(Symbol('()'), arguments)
+
 class PTSubscript(PTNode):
     def __init__(self, sequenceable, indices, tokens):
         PTNode.__init__(self)
@@ -342,6 +349,13 @@ class PTSubscript(PTNode):
     def isSubscript(self):
         return True
 
+    def evaluateWithEnvironment(self, environment):
+        sequenceable = self.sequenceable.evaluateWithEnvironment(environment)
+        indices = []
+        if self.indices is not None:
+            indices = self.indices.evaluateWithEnvironment(environment)
+        return sequenceable.performWithArguments(Symbol('[]'), indices)
+
 class PTApplyBlock(PTNode):
     def __init__(self, entity, block):
         PTNode.__init__(self)
@@ -350,6 +364,13 @@ class PTApplyBlock(PTNode):
 
     def isApplyBlock(self):
         return True
+
+    def evaluateWithEnvironment(self, environment):
+        entity = self.entity.evaluateWithEnvironment(environment)
+        block = None
+        if self.entity is not None:
+            block = self.block.evaluateWithEnvironment(block)
+        return entity.performWithArguments(Symbol('{}'), [block])
 
 class PTIdentifierReference(PTNode):
     def __init__(self, identifier):
