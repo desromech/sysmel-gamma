@@ -103,37 +103,32 @@ class BootstrapCompiler(BehaviorTypedObject):
         self.basicTypeEnvironment[basicTypeName] = basicType
         self.activeNamespace.setSymbolBinding(basicTypeName, basicType)
 
-    def addPrimitiveBooleanTypeNamedWithSizeAlignment(self, typeName, typeSize, typeAlignment):
+    def addPrimitiveTypeNamedWithSchema(self, typeName, schema):
         typeNameSymbol = Symbol(typeName)
-        type = PrimitiveBooleanType(typeSize, typeAlignment, typeNameSymbol)
+        type = SimpleType(name = typeNameSymbol, schema = schema)
         self.addBasicTypeWithName(type, typeNameSymbol)
+
+    def addPrimitiveBooleanTypeNamedWithSizeAlignment(self, typeName, typeSize, typeAlignment):
+        self.addPrimitiveTypeNamedWithSchema(typeName, PrimitiveBooleanTypeSchema(typeSize, typeAlignment))
 
     def addPrimitiveUnsignedIntegerTypeNamedWithSizeAlignment(self, typeName, typeSize, typeAlignment):
-        typeNameSymbol = Symbol(typeName)
-        type = PrimitiveUnsignedIntegerType(typeSize, typeAlignment, typeNameSymbol)
-        self.addBasicTypeWithName(type, typeNameSymbol)
+        self.addPrimitiveTypeNamedWithSchema(typeName, PrimitiveUnsignedIntegerTypeSchema(typeSize, typeAlignment))
 
     def addPrimitiveSignedIntegerTypeNamedWithSizeAlignment(self, typeName, typeSize, typeAlignment):
-        typeNameSymbol = Symbol(typeName)
-        type = PrimitiveSignedIntegerType(typeSize, typeAlignment, typeNameSymbol)
-        self.addBasicTypeWithName(type, typeNameSymbol)
+        self.addPrimitiveTypeNamedWithSchema(typeName, PrimitiveSignedIntegerTypeSchema(typeSize, typeAlignment))
 
     def addPrimitiveCharacterTypeNamedWithSizeAlignment(self, typeName, typeSize, typeAlignment):
-        typeNameSymbol = Symbol(typeName)
-        type = PrimitiveCharacterType(typeSize, typeAlignment, typeNameSymbol)
-        self.addBasicTypeWithName(type, typeNameSymbol)
+        self.addPrimitiveTypeNamedWithSchema(typeName, PrimitiveCharacterTypeSchema(typeSize, typeAlignment))
 
     def addPrimitiveFloatTypeNamedWithSizeAlignment(self, typeName, typeSize, typeAlignment):
-        typeNameSymbol = Symbol(typeName)
-        type = PrimitiveFloatType(typeSize, typeAlignment, typeNameSymbol)
-        self.addBasicTypeWithName(type, typeNameSymbol)
+        self.addPrimitiveTypeNamedWithSchema(typeName, PrimitiveFloatTypeSchema(typeSize, typeAlignment))
 
     def addGCClassNamedWithInstanceVariables(self, className, instanceVariables):
         self.addGCClassNamedWithSuperclassInstanceVariables(className, self.basicTypeEnvironment.get('Object', None), instanceVariables)
 
     def addGCClassNamedWithSuperclassInstanceVariables(self, className, superclass, instanceVariables):
         typeNameSymbol = Symbol(className)
-        type = ClassType(typeNameSymbol, superclass, instanceVariables)
+        type = SimpleType(name = typeNameSymbol, supertype = superclass, schema = GCClassTypeSchema(instanceVariables))
         self.addBasicTypeWithName(type, typeNameSymbol)
 
     def enableTypeSystem(self):

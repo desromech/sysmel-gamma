@@ -84,15 +84,70 @@ class PrimitiveMethod:
     def runWithIn(self, selector, arguments, receiver):
         return self.method(receiver, *arguments)
 
+class TypeSchema:
+    pass
+
+class GCClassTypeSchema:
+    def __init__(self, instanceVariables):
+        self.instanceVariables = instanceVariables
+
+class EmptyTypeSchema(TypeSchema):
+    pass
+
+class PrimitiveTypeSchema(TypeSchema):
+    def __init__(self, size, alignment):
+        super().__init__()
+        self.size = size
+        self.alignment = alignment
+
+class PrimitiveUnsignedIntegerTypeSchema(PrimitiveTypeSchema):
+    pass
+
+class PrimitiveSignedIntegerTypeSchema(PrimitiveTypeSchema):
+    pass
+
+class PrimitiveBooleanTypeSchema(PrimitiveTypeSchema):
+    pass
+
+class PrimitiveCharacterTypeSchema(PrimitiveTypeSchema):
+    pass
+
+class PrimitiveFloatTypeSchema(PrimitiveTypeSchema):
+    pass
+
 class BehaviorType(ValueInterface, TypeInterface):
-    def __init__(self):
-        self.methodDict = {}
+    def __init__(self, name = None, supertype = None, traits = [], schema = None, methodDict = {}):
+        self.name = name
+        self.methodDict = methodDict
+        self.supertype = supertype
+        self.traits = traits
+        self.schema = schema
+
+    def directTraits(self):
+        return self.traits
 
     def lookupSelector(self, selector):
         return self.methodDict.get(selector, None)
 
+    def lookupSelectorRecursively(self, selector):
+        ## Check in the local method dictionary.
+        found = self.lookupSelector(selector)
+        if found is not None:
+            return found
+        
+        ## Find in a direct trait.
+        for trait in self.directTraits():
+            found = trait.lookupSelector(found)
+            if found is not None:
+                return found
+
+        ##  Find in the supertype.
+        if self.supertype is not None:
+            return self.superclass.lookupSelector(selector)
+        return None
+
     def runWithIn(self, selector, arguments, receiver):
-        method = self.lookupSelector(selector)
+        method = self.lookupSelectorRecursively(selector)
         if method is None:
             raise DoesNotUnderstand('%s does not understand message %s' % (str(receiver), repr(selector)))
         return method.runWithIn(selector, arguments, receiver)
@@ -108,6 +163,16 @@ class BehaviorType(ValueInterface, TypeInterface):
         for method, selector in methodsWithSelector:
             self.addMethodWithSelector(PrimitiveMethod(method), Symbol(selector))
 
+    def getName():
+        return ''
+
+    def __str__(self):
+        return self.getName()
+
+    def __repr__(self):
+        return self.getName()
+
+
 class BehaviorTypedObject(TypedValue):
     def __init__(self) -> None:
         super().__init__()
@@ -122,55 +187,4 @@ class BehaviorTypedObject(TypedValue):
         pass
 
 class SimpleType(BehaviorType):
-    def __init__(self, typeName):
-        super().__init__()
-        self.typeName = typeName
-
-    def __str__(self):
-        return self.typeName
-
-    def __repr__(self):
-        return self.typeName
-
-class PrimitiveType(SimpleType):
-    def __init__(self, size, alignment, typeName):
-        super().__init__(typeName)
-        self.size = size
-        self.alignment = alignment
-
-class PrimitiveBooleanType(PrimitiveType):
     pass
-
-class PrimitiveUnsignedIntegerType(PrimitiveType):
-    pass
-
-class PrimitiveSignedIntegerType(PrimitiveType):
-    pass
-
-class PrimitiveCharacterType(PrimitiveType):
-    pass
-
-class PrimitiveFloatType(PrimitiveType):
-    pass
-
-class TupleType(SimpleType):
-    def __init__(self, typeName, slotNames):
-        pass
-
-class RecordType(SimpleType):
-    def __init__(self, typeName, slotNames):
-        pass
-
-class ClassType(SimpleType):
-    def __init__(self, typeName, superclass, instanceVariables = Dictionary()):
-        super().__init__(typeName)
-        self.superclass = superclass
-        self.instanceVariables = instanceVariables
-    
-    def lookupSelector(self, selector):
-        found = super().lookupSelector(selector)
-        if found is None:
-            return found
-        elif self.superclass is not None:
-            return self.superclass.lookupSelector(selector)
-        return None

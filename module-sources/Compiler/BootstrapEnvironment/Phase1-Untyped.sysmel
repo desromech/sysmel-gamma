@@ -61,7 +61,7 @@ __BootstrapCompiler__
         body: BootstrapCompiler AST Node
     };
     addGCClassNamed: #SequenceNode superclass: BootstrapCompiler AST Node instanceVariables: #{
-        ##expressions: BootstrapCompiler AST Node[]
+        expressions: BootstrapCompiler AST Node[]
     };
     addGCClassNamed: #SemanticErrorNode superclass: BootstrapCompiler AST Node instanceVariables: #{
         message: String
