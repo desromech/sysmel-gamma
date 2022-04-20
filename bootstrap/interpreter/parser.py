@@ -62,7 +62,7 @@ def p_primaryTerm_makeByteArray(p):
 
 def p_primaryTerm_emptyTuple(p):
     'primaryTerm : LEFT_PARENT RIGHT_PARENT'
-    p[0] = PTEmptyTuple([tokenAt(p, 1), tokenAt(p, 2)])
+    p[0] = PTMakeTuple([], [tokenAt(p, 1), tokenAt(p, 2)])
 
 def p_primaryTerm_parent(p):
     'primaryTerm : LEFT_PARENT expression RIGHT_PARENT'
@@ -259,28 +259,30 @@ def p_optionalKeywordChain_nonEmpty(p):
     'optionalKeywordChain : chainedMessages'
     p[0] = p[1]
 
-def p_optionalKeywordChain_keyword(p):
-    'optionalKeywordChain : chainedMessageKeyword'
-    p[0] = [p[1]]
-
-def p_optionalKeywordChain_keyword_nonEmpty(p):
-    'optionalKeywordChain : chainedMessageKeyword chainedMessages'
-    p[0] = [p[1]] + p[2]
-
 def p_chainExpression_withReceiver(p):
     'chainExpression : binaryExpression optionalKeywordChain'
     if p[2] is None:
         p[0] = p[1]
     else:
-        p[0] = PTMessageChain(p[1], p[2]).simplified()
+        if p[1].canBeMessageChainFirstElement():
+            p[0] = PTMessageChain(p[1].asMessageChainReceiver(), [p[1].asMessageChainMessage()] + p[2])
+        else:
+            p[0] = PTMessageChain(p[1], p[2])
+
+def p_chainExpression_withReceiverFirstKeyword(p):
+    'chainExpression : binaryExpression chainedMessageKeyword optionalKeywordChain'
+    if p[3] is None:
+        p[0] = PTKeywordMessage(p[1], p[2].selector, p[2].arguments)
+    else:
+        p[0] = PTMessageChain(p[1], [p[2]] + p[3])
 
 def p_chainExpression_withoutReceiver(p):
     'chainExpression : chainedMessageKeyword'
-    p[0] = PTMessageChain(None, [p[1]]).simplified()
+    p[0] = PTKeywordMessage(None, p[1].selector, p[1].arguments)
 
 def p_chainExpression_withoutReceiverChain(p):
     'chainExpression : chainedMessageKeyword chainedMessages'
-    p[0] = PTMessageChain(None, [p[1]] + p[2]).simplified()
+    p[0] = PTMessageChain(None, [p[1]] + p[2])
 
 def p_lowPrecedenceExpression_first(p):
     'lowPrecedenceExpression : chainExpression'
@@ -308,7 +310,11 @@ def p_commaExpressionContent_first(p):
 
 def p_commaExpressionContent_next(p):
     'commaExpressionContent : commaExpressionContent COMMA assignmentExpression'
-    p[0] = PTCommaPair(p[1], p[3])
+
+    if p[1].isMakeTuple():
+        p[0] = PTMakeTuple(p[1].elements + [p[3]])
+    else:
+        p[0] = PTMakeTuple([p[1], p[3]])
 
 def p_commaExpression_content(p):
     'commaExpression : commaExpressionContent'
@@ -316,7 +322,10 @@ def p_commaExpression_content(p):
 
 def p_commaExpression_extraComma(p):
     'commaExpression : commaExpressionContent COMMA'
-    p[0] = PTCommaPair(p[1], None)
+    if p[1].isMakeTuple():
+        p[0] = p[1]
+    else:
+        p[0] = PTMakeTuple([p[1]])
 
 def p_expression(p):
     'expression : commaExpression'

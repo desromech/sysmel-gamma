@@ -4,12 +4,53 @@
 
 ## Add opaque definitions for the basic literal types.
 __BootstrapCompiler__
-    addBasicGCTypeNamed: #String;
-    addBasicGCTypeNamed: #Symbol;
-    addBasicGCTypeNamed: #Integer;
-    addBasicGCTypeNamed: #Float.
+    addPrimitiveGCTypeNamed: #String;
+    addPrimitiveGCTypeNamed: #Symbol;
+    addPrimitiveGCTypeNamed: #Array;
+    addPrimitiveGCTypeNamed: #Association;
+    addPrimitiveGCTypeNamed: #Dictionary;
 
-## The primitive types.
+    addPrimitiveGCTypeNamed: #Integer;
+    addPrimitiveGCTypeNamed: #Float;
+
+    ## The primitive types.
+    addPrimitiveBooleanTypeNamed: #Boolean8 size: 1 alignment: 1;
+    addPrimitiveBooleanTypeNamed: #Boolean16 size: 2 alignment: 2;
+    addPrimitiveBooleanTypeNamed: #Boolean32 size: 4 alignment: 4;
+    addBasicType: #Boolean withName: Boolean8;
+
+    addPrimitiveUnsignedIntegerTypeNamed: #UInt8 size: 1 alignment: 1;
+    addPrimitiveUnsignedIntegerTypeNamed: #UInt16 size: 2 alignment: 2;
+    addPrimitiveUnsignedIntegerTypeNamed: #UInt32 size: 4 alignment: 4;
+    addPrimitiveUnsignedIntegerTypeNamed: #UInt64 size: 8 alignment: 8;
+
+    addPrimitiveSignedIntegerTypeNamed: #Int8 size: 1 alignment: 1;
+    addPrimitiveSignedIntegerTypeNamed: #Int16 size: 2 alignment: 2;
+    addPrimitiveSignedIntegerTypeNamed: #Int32 size: 4 alignment: 4;
+    addPrimitiveSignedIntegerTypeNamed: #Int64 size: 8 alignment: 8;
+
+    addPrimitiveCharacterTypeNamed: #Char8 size: 1 alignment: 1;
+    addPrimitiveCharacterTypeNamed: #Char16 size: 2 alignment: 2;
+    addPrimitiveCharacterTypeNamed: #Char32 size: 4 alignment: 4;
+    addBasicType: #Character withName: Char32;
+
+    addPrimitiveUnsignedIntegerTypeNamed: #Float16 size: 2 alignment: 2;
+    addPrimitiveUnsignedIntegerTypeNamed: #Float32 size: 4 alignment: 4;
+    addPrimitiveUnsignedIntegerTypeNamed: #Float64 size: 8 alignment: 8.
+
+## The AST nodes.
+__BootstrapCompiler__
+    enterTopLevelNamespace;
+    enterNamespaceNamed: #BootstrapCompiler;
+    enterNamespaceNamed: #AST;
+    addGCClassNamed: #SourceCollection instanceVariables: #{};
+    addGCClassNamed: #SourcePosition instanceVariables: #{};
+    addGCClassNamed: #Node instanceVariables: #{
+        sourcePosition: BootstrapCompiler AST SourcePosition
+    };
+    addGCClassNamed: #ExpressionList superclass: BootstrapCompiler AST Node instanceVariables: #{
+        expressions: Array
+    }.
 
 ## At the end of this phase we can enable the actual type system.
 __BootstrapCompiler__

@@ -6,3 +6,6 @@ class InterpreterParseError(InterpreterError):
 
 class InterpreterEvaluationError(InterpreterError):
     pass
+
+class DoesNotUnderstand(InterpreterError):
+    pass

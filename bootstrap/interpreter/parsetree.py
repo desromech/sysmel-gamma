@@ -1,6 +1,6 @@
 from source_collection import *
 from errors import *
-
+from typesystem import *
 
 def sourcePositionFromToken(token):
     return token.asSourcePosition()
@@ -63,13 +63,10 @@ class PTNode:
     def isLowPrecedenceBinaryExpression(self):
         return False
 
-    def isEmptyTuple(self):
-        return False
-
     def isParenthesis(self):
         return False
 
-    def isCommaPair(self):
+    def isMakeTuple(self):
         return False
 
     def isCall(self):
@@ -162,6 +159,9 @@ class PTNode:
     def raiseEvaluationError(self, message):
         raise InterpreterEvaluationError('%s: %s' % (str(self.sourcePosition), message))
 
+    def canBeMessageChainFirstElement(self):
+        return False
+
 class PTExpressionList(PTNode):
     def __init__(self, expressions):
         PTNode.__init__(self)
@@ -198,6 +198,15 @@ class PTBinaryExpression(PTNode):
     def isBinaryExpression(self):
         return True
 
+    def canBeMessageChainFirstElement(self):
+        return True
+
+    def asMessageChainReceiver(self):
+        return self.left
+
+    def asMessageChainMessage(self):
+        return PTChainedMessage(self.operation, [self.right])
+
     def evaluateWithEnvironment(self, environment):
         receiver = self.receiver.evaluateWithEnvironment(environment)
         selector = self.selector.evaluateWithEnvironment(environment)
@@ -214,6 +223,15 @@ class PTUnaryMessage(PTNode):
 
     def isUnaryMessage(self):
         return True
+
+    def canBeMessageChainFirstElement(self):
+        return True
+
+    def asMessageChainReceiver(self):
+        return self.receiver
+
+    def asMessageChainMessage(self):
+        return PTChainedMessage(self.selector, [])
 
     def evaluateWithEnvironment(self, environment):
         receiver = self.receiver.evaluateWithEnvironment(environment)
@@ -262,16 +280,6 @@ class PTMessageChain(PTNode):
     def isMessageChain(self):
         return True
 
-    def simplified(self):
-        chainCount = len(self.messages)
-        if chainCount == 0:
-            return self.receiver
-        elif chainCount == 1:
-            message = self.messages[0]
-            return PTKeywordMessage(self.receiver, message.selector, message.arguments)
-
-        return self
-
     def evaluateWithEnvironment(self, environment):
         receiver = self.receiver.evaluateWithEnvironment(environment)
         result = receiver
@@ -296,14 +304,6 @@ class PTLowPrecedenceBinaryExpression(PTBinaryExpression):
     def isLowPrecedenceBinaryExpression(self):
         return True
 
-class PTEmptyTuple(PTNode):
-    def __init__(self, tokens):
-        PTNode.__init__(self)
-        self.sourcePosition = sourcePositionFromTokens(tokens)
-
-    def isEmptyTuple(self):
-        return True
-
 class PTParenthesis(PTNode):
     def __init__(self, expression, tokens):
         PTNode.__init__(self)
@@ -313,14 +313,13 @@ class PTParenthesis(PTNode):
     def isParenthesis(self):
         return True
 
-class PTCommaPair(PTNode):
-    def __init__(self, left, right):
+class PTMakeTuple(PTNode):
+    def __init__(self, elements, tokens = []):
         PTNode.__init__(self)
-        self.left = left
-        self.right = right
-        self.sourcePosition = sourcePositionFromList([left, right])
+        self.elements = elements
+        self.sourcePosition = sourcePositionFromList(elements + tokens)
 
-    def isCommaPair(self):
+    def isMakeTuple(self):
         return True
 
 class PTCall(PTNode):
@@ -362,13 +361,13 @@ class PTIdentifierReference(PTNode):
         return True
 
     def asSymbolEvaluatedExpression(self):
-        return PTLiteralSymbol(self.value, self)
+        return PTLiteralSymbol(self.value, self.asSourcePosition())
 
     def evaluateWithEnvironment(self, environment):
         binding = environment.lookupSymbolRecursively(self.value)
         if binding is None:
             self.raiseEvaluationError('Symbol %s is not bound in current scope.' % self.value)
-        return binding.getReferenceValue()
+        return binding.getSymbolBindingReferenceValue()
 
 class PTLexicalBlock(PTNode):
     def __init__(self, body, tokens):
@@ -485,28 +484,28 @@ class PTLiteralInteger(PTLiteral):
         return True
 
     def parseLiteralString(self, value):
-        return int(value)
+        return Integer(value)
 
 class PTLiteralFloat(PTLiteral):
     def isLiteralFloat(self):
         return True
 
     def parseLiteralString(self, value):
-        return float(value)
+        return Float(value)
 
 class PTLiteralCharacter(PTLiteral):
     def isLiteralCharacter(self):
         return True
 
     def parseLiteralString(self, value):
-        return parseCStringEscapeSequences(value[1:-1])
+        return Character(ord(parseCStringEscapeSequences(value[1:-1])))
 
 class PTLiteralString(PTLiteral):
     def isLiteralString(self):
         return True
 
     def parseLiteralString(self, value):
-        return parseCStringEscapeSequences(value[1:-1])
+        return String(parseCStringEscapeSequences(value[1:-1]))
 
 class PTLiteralSymbol(PTLiteral):
     def isLiteralSymbol(self):
@@ -514,17 +513,20 @@ class PTLiteralSymbol(PTLiteral):
 
     def parseLiteralString(self, value):
         if value.startswith('#"'):
-            return parseCStringEscapeSequences(value[2:-1])
+            return Symbol(parseCStringEscapeSequences(value[2:-1]))
         elif value.startswith('#'):
-            return value[1:]
+            return Symbol(value[1:])
         else:
-            return value
+            return Symbol(value)
 
 class PTLiteralArray(PTNode):
     def __init__(self, elements, tokens):
         PTNode.__init__(self)
         self.elements = elements
         self.sourcePosition = sourcePositionFromList([sourcePositionFromTokens(tokens)] + elements)
+
+    def evaluateWithEnvironment(self, environment):
+        return Array(map(lambda el: el.evaluateWithEnvironment(environment), self.elements))
 
     def isLiteralArray(self):
         return True
@@ -535,6 +537,9 @@ class PTMakeDictionary(PTNode):
         self.elements = elements
         self.sourcePosition = sourcePositionFromList([sourcePositionFromTokens(tokens)] + elements)
 
+    def evaluateWithEnvironment(self, environment):
+        return Dictionary(map(lambda el: el.evaluateWithEnvironment(environment), self.elements))
+
     def isMakeDictionary(self):
         return True
 
@@ -544,6 +549,14 @@ class PTDictionaryKeyValue(PTNode):
         self.key = key
         self.value = value
         self.sourcePosition = sourcePositionFromList([key, value])
+
+    def evaluateWithEnvironment(self, environment):
+        key = self.key.evaluateWithEnvironment(environment)
+        value = None
+        if self.value is not None:
+            value = self.value.evaluateWithEnvironment(environment)
+
+        return Association(key, value)
 
     def isDictionaryKeyValue(self):
         return True

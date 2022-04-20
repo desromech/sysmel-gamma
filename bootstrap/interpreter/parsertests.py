@@ -62,7 +62,7 @@ class TestParser(unittest.TestCase):
 
     def test_literalCharacter(self):
         self.assertTrue(self.parseExpression(r"'A'").isLiteralCharacter())
-        self.assertEqual(self.parseExpression(r"'A'").value, 'A')
+        self.assertEqual(self.parseExpression(r"'A'").value, ord('A'))
 
     def test_literalSymbol(self):
         self.assertTrue(self.parseExpression(r'#hello').isLiteralSymbol())
@@ -201,52 +201,54 @@ class TestParser(unittest.TestCase):
     def test_unaryChainMessage(self):
         node = self.parseExpression(r'a hello; computeWith: b; yourself')
         self.assertTrue(node.isMessageChain())
-        self.assertTrue(node.receiver.isUnaryMessage())
-        self.assertTrue(node.receiver.selector.isLiteralSymbol())
-        self.assertEqual(node.receiver.selector.value, "hello")
+        self.assertTrue(node.receiver.isIdentifierReference())
+        self.assertTrue(node.receiver.value, "a")
 
-        self.assertTrue(node.receiver.receiver.isIdentifierReference())
-        self.assertEqual(node.receiver.receiver.value, "a")
-
-        self.assertEqual(len(node.messages), 2)
+        self.assertEqual(len(node.messages), 3)
 
         self.assertTrue(node.messages[0].isChainedMessage())
         self.assertTrue(node.messages[0].selector.isLiteralSymbol())
-        self.assertEqual(node.messages[0].selector.value, "computeWith:")
+        self.assertEqual(node.messages[0].selector.value, "hello")
+        self.assertEqual(len(node.messages[0].arguments), 0)
+
+        self.assertTrue(node.messages[1].isChainedMessage())
+        self.assertTrue(node.messages[1].selector.isLiteralSymbol())
+        self.assertEqual(node.messages[1].selector.value, "computeWith:")
+        self.assertEqual(len(node.messages[1].arguments), 1)
+        self.assertTrue(node.messages[1].arguments[0].isIdentifierReference())
+        self.assertEqual(node.messages[1].arguments[0].value, "b")
+
+        self.assertTrue(node.messages[2].isChainedMessage())
+        self.assertTrue(node.messages[2].selector.isIdentifierReference())
+        self.assertEqual(node.messages[2].selector.value, "yourself")
+        self.assertEqual(len(node.messages[2].arguments), 0)
+
+    def test_binaryChainMessage(self):
+        node = self.parseExpression(r'a + b; computeWith: c; yourself')
+        self.assertTrue(node.isMessageChain())
+        self.assertTrue(node.receiver.isIdentifierReference())
+        self.assertEqual(node.receiver.value, "a")
+
+        self.assertEqual(len(node.messages), 3)
+
+        self.assertTrue(node.messages[0].isChainedMessage())
+        self.assertTrue(node.messages[0].selector.isLiteralSymbol())
+        self.assertEqual(node.messages[0].selector.value, "+")
         self.assertEqual(len(node.messages[0].arguments), 1)
         self.assertTrue(node.messages[0].arguments[0].isIdentifierReference())
         self.assertEqual(node.messages[0].arguments[0].value, "b")
 
         self.assertTrue(node.messages[1].isChainedMessage())
-        self.assertTrue(node.messages[1].selector.isIdentifierReference())
-        self.assertEqual(node.messages[1].selector.value, "yourself")
-        self.assertEqual(len(node.messages[1].arguments), 0)
+        self.assertTrue(node.messages[1].selector.isLiteralSymbol())
+        self.assertEqual(node.messages[1].selector.value, "computeWith:")
+        self.assertEqual(len(node.messages[1].arguments), 1)
+        self.assertTrue(node.messages[1].arguments[0].isIdentifierReference())
+        self.assertEqual(node.messages[1].arguments[0].value, "c")
 
-    def test_binaryChainMessage(self):
-        node = self.parseExpression(r'a + b; computeWith: c; yourself')
-        self.assertTrue(node.isMessageChain())
-        self.assertTrue(node.receiver.isBinaryExpression())
-        self.assertTrue(node.receiver.operation.isLiteralSymbol())
-        self.assertEqual(node.receiver.operation.value, "+")
-
-        self.assertTrue(node.receiver.left.isIdentifierReference())
-        self.assertEqual(node.receiver.left.value, "a")
-        self.assertTrue(node.receiver.right.isIdentifierReference())
-        self.assertEqual(node.receiver.right.value, "b")
-
-        self.assertEqual(len(node.messages), 2)
-
-        self.assertTrue(node.messages[0].isChainedMessage())
-        self.assertTrue(node.messages[0].selector.isLiteralSymbol())
-        self.assertEqual(node.messages[0].selector.value, "computeWith:")
-        self.assertEqual(len(node.messages[0].arguments), 1)
-        self.assertTrue(node.messages[0].arguments[0].isIdentifierReference())
-        self.assertEqual(node.messages[0].arguments[0].value, "c")
-
-        self.assertTrue(node.messages[1].isChainedMessage())
-        self.assertTrue(node.messages[1].selector.isIdentifierReference())
-        self.assertEqual(node.messages[1].selector.value, "yourself")
-        self.assertEqual(len(node.messages[1].arguments), 0)
+        self.assertTrue(node.messages[2].isChainedMessage())
+        self.assertTrue(node.messages[2].selector.isIdentifierReference())
+        self.assertEqual(node.messages[2].selector.value, "yourself")
+        self.assertEqual(len(node.messages[2].arguments), 0)
 
     def test_assignment(self):
         node = self.parseExpression(r'a:=b')
@@ -271,16 +273,18 @@ class TestParser(unittest.TestCase):
 
     def test_emptyTuple(self):
         node = self.parseExpression(r'()')
-        self.assertTrue(node.isEmptyTuple())
+        self.assertTrue(node.isMakeTuple())
+        self.assertEqual(len(node.elements), 0)
 
     def test_commaPair(self):
         node = self.parseExpression(r'a,b')
-        self.assertTrue(node.isCommaPair())
-        self.assertTrue(node.left.isIdentifierReference())
-        self.assertEqual(node.left.value, "a")
+        self.assertTrue(node.isMakeTuple())
+        self.assertEqual(len(node.elements), 2)
+        self.assertTrue(node.elements[0].isIdentifierReference())
+        self.assertEqual(node.elements[0].value, "a")
 
-        self.assertTrue(node.right.isIdentifierReference())
-        self.assertEqual(node.right.value, "b")
+        self.assertTrue(node.elements[1].isIdentifierReference())
+        self.assertEqual(node.elements[1].value, "b")
 
     def test_call(self):
         node = self.parseExpression(r'f()')
