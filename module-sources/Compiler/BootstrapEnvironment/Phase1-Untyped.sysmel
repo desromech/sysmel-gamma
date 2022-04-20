@@ -9,7 +9,10 @@ __BootstrapCompiler__
     addGCClassNamed: #String instanceVariables: #{};
     addGCClassNamed: #Symbol instanceVariables: #{};
     addGCClassNamed: #Array instanceVariables: #{};
-    addGCClassNamed: #Association instanceVariables: #{};
+    addGCClassNamed: #Association instanceVariables: #{
+        key: Object.
+        value: Object.
+    };
     addGCClassNamed: #Dictionary instanceVariables: #{};
 
     addGCClassNamed: #Integer instanceVariables: #{};
