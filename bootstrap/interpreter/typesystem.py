@@ -132,9 +132,6 @@ class SimpleType(BehaviorType):
     def __repr__(self):
         return self.typeName
 
-class PrimitiveGCType(SimpleType):
-    pass
-
 class PrimitiveType(SimpleType):
     def __init__(self, size, alignment, typeName):
         super().__init__(typeName)

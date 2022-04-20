@@ -2,22 +2,25 @@
 ## In this stage the compiler environment itself is completely empty,
 ## except for a single reference to the bootstrap compiler itself.
 
-## Add opaque definitions for the basic literal types.
 __BootstrapCompiler__
-    addPrimitiveGCTypeNamed: #String;
-    addPrimitiveGCTypeNamed: #Symbol;
-    addPrimitiveGCTypeNamed: #Array;
-    addPrimitiveGCTypeNamed: #Association;
-    addPrimitiveGCTypeNamed: #Dictionary;
+    ## The core runtime classes.
+    addGCClassNamed: #ProtoObject instanceVariables: #{};
+    addGCClassNamed: #Object superclass: ProtoObject instanceVariables: #{};
+    addGCClassNamed: #String instanceVariables: #{};
+    addGCClassNamed: #Symbol instanceVariables: #{};
+    addGCClassNamed: #Array instanceVariables: #{};
+    addGCClassNamed: #Association instanceVariables: #{};
+    addGCClassNamed: #Dictionary instanceVariables: #{};
 
-    addPrimitiveGCTypeNamed: #Integer;
-    addPrimitiveGCTypeNamed: #Float;
+    addGCClassNamed: #Integer instanceVariables: #{};
+    addGCClassNamed: #Float instanceVariables: #{};
+    addGCClassNamed: #Character instanceVariables: #{};
+    addGCClassNamed: #Boolean instanceVariables: #{};
 
     ## The primitive types.
     addPrimitiveBooleanTypeNamed: #Boolean8 size: 1 alignment: 1;
     addPrimitiveBooleanTypeNamed: #Boolean16 size: 2 alignment: 2;
     addPrimitiveBooleanTypeNamed: #Boolean32 size: 4 alignment: 4;
-    addBasicType: #Boolean withName: Boolean8;
 
     addPrimitiveUnsignedIntegerTypeNamed: #UInt8 size: 1 alignment: 1;
     addPrimitiveUnsignedIntegerTypeNamed: #UInt16 size: 2 alignment: 2;
@@ -32,7 +35,6 @@ __BootstrapCompiler__
     addPrimitiveCharacterTypeNamed: #Char8 size: 1 alignment: 1;
     addPrimitiveCharacterTypeNamed: #Char16 size: 2 alignment: 2;
     addPrimitiveCharacterTypeNamed: #Char32 size: 4 alignment: 4;
-    addBasicType: #Character withName: Char32;
 
     addPrimitiveUnsignedIntegerTypeNamed: #Float16 size: 2 alignment: 2;
     addPrimitiveUnsignedIntegerTypeNamed: #Float32 size: 4 alignment: 4;

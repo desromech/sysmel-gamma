@@ -69,7 +69,6 @@ class BootstrapCompiler(BehaviorTypedObject):
         BehaviorTypedObject.initializeBehaviorType(type)
         type.addPrimitiveMethodsWithSelectors([
             ## Type system
-            (cls.addPrimitiveGCTypeNamed, 'addPrimitiveGCTypeNamed:'),
             (cls.addBasicTypeWithName, 'addBasicType:withName:'),
             (cls.addPrimitiveBooleanTypeNamedWithSizeAlignment, 'addPrimitiveBooleanTypeNamed:size:alignment:'),
             (cls.addPrimitiveUnsignedIntegerTypeNamedWithSizeAlignment, 'addPrimitiveUnsignedIntegerTypeNamed:size:alignment:'),
@@ -104,11 +103,6 @@ class BootstrapCompiler(BehaviorTypedObject):
         self.basicTypeEnvironment[basicTypeName] = basicType
         self.activeNamespace.setSymbolBinding(basicTypeName, basicType)
 
-    def addPrimitiveGCTypeNamed(self, typeName):
-        typeNameSymbol = Symbol(typeName)
-        type = PrimitiveGCType(typeNameSymbol)
-        self.addBasicTypeWithName(type, typeNameSymbol)
-
     def addPrimitiveBooleanTypeNamedWithSizeAlignment(self, typeName, typeSize, typeAlignment):
         typeNameSymbol = Symbol(typeName)
         type = PrimitiveBooleanType(typeSize, typeAlignment, typeNameSymbol)
@@ -135,7 +129,7 @@ class BootstrapCompiler(BehaviorTypedObject):
         self.addBasicTypeWithName(type, typeNameSymbol)
 
     def addGCClassNamedWithInstanceVariables(self, className, instanceVariables):
-        self.addGCClassNamedWithSuperclassInstanceVariables(className, None, instanceVariables)
+        self.addGCClassNamedWithSuperclassInstanceVariables(className, self.basicTypeEnvironment.get('Object', None), instanceVariables)
 
     def addGCClassNamedWithSuperclassInstanceVariables(self, className, superclass, instanceVariables):
         typeNameSymbol = Symbol(className)
