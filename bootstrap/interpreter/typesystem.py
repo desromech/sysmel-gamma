@@ -115,13 +115,14 @@ class PrimitiveCharacterTypeSchema(PrimitiveTypeSchema):
 class PrimitiveFloatTypeSchema(PrimitiveTypeSchema):
     pass
 
-class BehaviorType(ValueInterface, TypeInterface):
+class BehaviorType(TypedValue, TypeInterface):
     def __init__(self, name = None, supertype = None, traits = [], schema = None, methodDict = {}):
         self.name = name
         self.methodDict = methodDict
         self.supertype = supertype
         self.traits = traits
         self.schema = schema
+        self.type = None
 
     def directTraits(self):
         return self.traits
@@ -143,7 +144,7 @@ class BehaviorType(ValueInterface, TypeInterface):
 
         ##  Find in the supertype.
         if self.supertype is not None:
-            return self.superclass.lookupSelector(selector)
+            return self.supertype.lookupSelector(selector)
         return None
 
     def runWithIn(self, selector, arguments, receiver):
@@ -163,8 +164,19 @@ class BehaviorType(ValueInterface, TypeInterface):
         for method, selector in methodsWithSelector:
             self.addMethodWithSelector(PrimitiveMethod(method), Symbol(selector))
 
-    def getName():
+    def getName(self):
         return ''
+
+    def getType(self):
+        if self.type is None:
+            self.type = self.createMetaType()
+        return self.type
+
+    def createMetaType(self):
+        typeSupertype = None
+        if self.supertype is not None:
+            typeSupertype = self.supertype.getType()
+        return MetaType(supertype = typeSupertype)
 
     def __str__(self):
         return self.getName()
@@ -185,6 +197,9 @@ class BehaviorTypedObject(TypedValue):
     @classmethod
     def initializeBehaviorType(cls, type):
         pass
+
+class MetaType(BehaviorType):
+    pass
 
 class SimpleType(BehaviorType):
     pass
