@@ -6,19 +6,27 @@ __BootstrapCompiler__
     ## The core runtime classes.
     addGCClassNamed: #ProtoObject instanceVariables: #{};
     addGCClassNamed: #Object superclass: ProtoObject instanceVariables: #{};
+    addGCClassNamed: #Type superclass: Object instanceVariables: #{};
+    addGCClassNamed: #SimpleType superclass: Type instanceVariables: #{};
+    addGCClassNamed: #MetaType superclass: Type instanceVariables: #{};
     addGCClassNamed: #String instanceVariables: #{};
     addGCClassNamed: #Symbol instanceVariables: #{};
     addGCClassNamed: #Array instanceVariables: #{};
+    addGCClassNamed: #Integer instanceVariables: #{};
+    addGCClassNamed: #Float instanceVariables: #{};
+    addGCClassNamed: #Character instanceVariables: #{};
+    addGCClassNamed: #Boolean instanceVariables: #{};
+
     addGCClassNamed: #Association instanceVariables: #{
         key: Object.
         value: Object.
     };
     addGCClassNamed: #Dictionary instanceVariables: #{};
 
-    addGCClassNamed: #Integer instanceVariables: #{};
-    addGCClassNamed: #Float instanceVariables: #{};
-    addGCClassNamed: #Character instanceVariables: #{};
-    addGCClassNamed: #Boolean instanceVariables: #{};
+    addGCClassNamed: #ArrayType superclass: SimpleType instanceVariables: #{
+        baseType: Type.
+        bounds: Integer.
+    };
 
     ## The primitive types.
     addPrimitiveBooleanTypeNamed: #Boolean8 size: 1 alignment: 1;
@@ -42,6 +50,11 @@ __BootstrapCompiler__
     addPrimitiveUnsignedIntegerTypeNamed: #Float16 size: 2 alignment: 2;
     addPrimitiveUnsignedIntegerTypeNamed: #Float32 size: 4 alignment: 4;
     addPrimitiveUnsignedIntegerTypeNamed: #Float64 size: 8 alignment: 8.
+
+## Basic type system methods.
+MetaType withSelector: #"[]" addMethod: {:(Type)self :: Type |
+    self
+}.
 
 ## The AST nodes.
 __BootstrapCompiler__

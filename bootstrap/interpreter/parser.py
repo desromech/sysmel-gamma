@@ -110,7 +110,7 @@ def p_blockClosureHeader(p):
 
 def p_optionalBlockClosureHeader_notEmpty(p):
     'optionalBlockClosureHeader : blockClosureHeader'
-    p[0] = None
+    p[0] = p[1]
 
 def p_optionalBlockClosureHeader_empty(p):
     'optionalBlockClosureHeader : '
@@ -152,11 +152,11 @@ def p_pragmaKeywordArguments_reset(p):
 def p_block(p):
     'block : LEFT_CURLY_BRACKET optionalBlockClosureHeader pragmaList expressionList RIGHT_CURLY_BRACKET'
     closureHeader = p[2]
-    if closureHeader is None:
+    if closureHeader is not None:
         arguments, resultType = closureHeader
-        p[0] = PTBlockClosure(arguments, resultType, p[3], [tokenAt(p, 1), tokenAt(p, 5)])
+        p[0] = PTBlockClosure(arguments, resultType, p[3], p[4], [tokenAt(p, 1), tokenAt(p, 5)])
     else:
-        p[0] = PTLexicalBlock(p[3], [tokenAt(p, 1), tokenAt(p, 5)])
+        p[0] = PTLexicalBlock(p[3], p[4], [tokenAt(p, 1), tokenAt(p, 5)])
 
 def p_blockArguments_empty(p):
     'blockArguments : '
@@ -176,7 +176,7 @@ def p_optionalBlockArgumentType_nonEmpty(p):
 
 def p_blockArgument(p):
     'blockArgument : COLON optionalBlockArgumentType expandableIdentifier'
-    p[0] = PTBlockArgument(None, p[2])
+    p[0] = PTBlockArgument(p[2], p[3])
 
 def p_blockResultType_empty(p):
     'blockResultType : '

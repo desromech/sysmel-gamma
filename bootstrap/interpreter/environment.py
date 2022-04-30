@@ -19,6 +19,9 @@ class IdentifierLookupScope(BehaviorTypedObject):
         else:
             return None
 
+    def makeChildLexicalScope(self):
+        return LexicalScope(self)
+
 class LexicalScope(IdentifierLookupScope):
     def __init__(self, parentScope):
         super().__init__(parentScope)
@@ -102,6 +105,8 @@ class BootstrapCompiler(BehaviorTypedObject):
     def addBasicTypeWithName(self, basicType, basicTypeName):
         self.basicTypeEnvironment[basicTypeName] = basicType
         self.activeNamespace.setSymbolBinding(basicTypeName, basicType)
+        if basicTypeName == 'MetaType':
+            basicType.addMetaTypeRootMethods()
 
     def addPrimitiveTypeNamedWithSchema(self, typeName, schema):
         typeNameSymbol = Symbol(typeName)

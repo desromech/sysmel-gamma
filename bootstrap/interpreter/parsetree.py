@@ -162,6 +162,9 @@ class PTNode:
     def canBeMessageChainFirstElement(self):
         return False
 
+    def asNonEmptyExpressionOrNone(self):
+        return self
+
 class PTExpressionList(PTNode):
     def __init__(self, expressions):
         PTNode.__init__(self)
@@ -176,6 +179,11 @@ class PTExpressionList(PTNode):
         for expression in self.expressions:
             result = expression.evaluateWithEnvironment(environment)
         return result
+
+    def asNonEmptyExpressionOrNone(self):
+        if len(self.expressions) == 0:
+            return None
+        return self
 
 class PTAssignment(PTNode):
     def __init__(self, reference, value):
@@ -326,7 +334,7 @@ class PTCall(PTNode):
     def __init__(self, functional, arguments, tokens):
         PTNode.__init__(self)
         self.functional = functional
-        self.arguments = arguments
+        self.arguments = arguments.asNonEmptyExpressionOrNone()
         self.sourcePosition = sourcePositionFromList([functional, arguments, sourcePositionFromTokens(tokens)])
 
     def isCall(self):
@@ -343,7 +351,7 @@ class PTSubscript(PTNode):
     def __init__(self, sequenceable, indices, tokens):
         PTNode.__init__(self)
         self.sequenceable = sequenceable
-        self.indices = indices
+        self.indices = indices.asNonEmptyExpressionOrNone()
         self.sourcePosition = sourcePositionFromList([sequenceable, indices, sourcePositionFromTokens(tokens)])
 
     def isSubscript(self):
@@ -353,7 +361,7 @@ class PTSubscript(PTNode):
         sequenceable = self.sequenceable.evaluateWithEnvironment(environment)
         indices = []
         if self.indices is not None:
-            indices = self.indices.evaluateWithEnvironment(environment)
+            indices = [self.indices.evaluateWithEnvironment(environment)]
         return sequenceable.performWithArguments(Symbol('[]'), indices)
 
 class PTApplyBlock(PTNode):
@@ -391,30 +399,52 @@ class PTIdentifierReference(PTNode):
         return binding.getSymbolBindingReferenceValue()
 
 class PTLexicalBlock(PTNode):
-    def __init__(self, body, tokens):
+    def __init__(self, pragmas, body, tokens):
         PTNode.__init__(self)
+        self.pragmas = pragmas
         self.body = body
-        self.sourcePosition = sourcePositionFromList([body, sourcePositionFromTokens(tokens)])
+        self.sourcePosition = sourcePositionFromList([body] + tokens)
+
+    def evaluateWithEnvironment(self, environment):
+        innerEnvironment = environment.makeChildLexicalScope()
+        return self.body.evaluateWithEnvironment(innerEnvironment)
 
     def isLexicalBlock(self):
         return True
 
 class PTBlockClosure(PTNode):
-    def __init__(self, arguments, resultType, body, tokens):
+    def __init__(self, arguments, resultType, pragmas, body, tokens):
         PTNode.__init__(self)
         self.arguments = arguments
         self.resultType = resultType
+        self.pragmas = pragmas
         self.body = body
-        self.sourcePosition = sourcePositionFromList([arguments, resultType, body, sourcePositionFromTokens(tokens)])
+        self.sourcePosition = sourcePositionFromList(arguments + [resultType, body] + tokens)
 
     def isBlockClosure(self):
         return True
+
+    def evaluateWithEnvironment(self, environment):
+        return BlockClosure(self, environment)
+
+    def evaluateClosureWithEnvironmentAndArguments(self, closureEnvironment, arguments):
+        if len(self.arguments) != len(arguments):
+            self.raiseEvaluationError('Mismatching number of arguments for evaluating closure.')
+        
+        evaluationEnvironment = closureEnvironment.makeChildLexicalScope()
+        for i in range(len(self.arguments)):
+            argumentDeclaration = self.arguments[i]
+            argumentValue = arguments[i]
+            argumentName = argumentDeclaration.identifier.evaluateWithEnvironment(closureEnvironment)
+            evaluationEnvironment.setSymbolBinding(argumentName, argumentValue)
+
+        return self.body.evaluateWithEnvironment(evaluationEnvironment)
 
 class PTBlockArgument(PTNode):
     def __init__(self, type, identifier):
         PTNode.__init__(self)
         self.type = type
-        self.identifier = identifier
+        self.identifier = identifier.asSymbolEvaluatedExpression()
 
     def isBlockArgument(self):
         return True

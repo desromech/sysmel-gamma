@@ -84,6 +84,14 @@ class PrimitiveMethod:
     def runWithIn(self, selector, arguments, receiver):
         return self.method(receiver, *arguments)
 
+class BlockClosure:
+    def __init__(self, node, environment):
+        self.node = node
+        self.environment = environment
+
+    def runWithIn(self, selector, arguments, receiver):
+        return self.node.evaluateClosureWithEnvironmentAndArguments(self.environment, [receiver] + arguments)
+
 class TypeSchema:
     pass
 
@@ -144,7 +152,7 @@ class BehaviorType(TypedValue, TypeInterface):
 
         ##  Find in the supertype.
         if self.supertype is not None:
-            return self.supertype.lookupSelector(selector)
+            return self.supertype.lookupSelectorRecursively(selector)
         return None
 
     def runWithIn(self, selector, arguments, receiver):
@@ -156,6 +164,9 @@ class BehaviorType(TypedValue, TypeInterface):
     def addMethodWithSelector(self, method, selector):
         self.methodDict[selector] = method
 
+    def withSelectorAddMethod(self, selector, method):
+        self.methodDict[selector] = method
+
     def addMethodsWithSelectors(self, methodsWithSelector):
         for method, selector in methodsWithSelector:
             self.addMethodWithSelector(method, Symbol(selector))
@@ -165,18 +176,25 @@ class BehaviorType(TypedValue, TypeInterface):
             self.addMethodWithSelector(PrimitiveMethod(method), Symbol(selector))
 
     def getName(self):
-        return ''
+        if self.name is not None:
+            return self.name
+        return String('')
 
     def getType(self):
         if self.type is None:
             self.type = self.createMetaType()
         return self.type
 
+    def getMetaTypeRoot(self):
+        return getBasicTypeNamed(Symbol('MetaType'))
+
     def createMetaType(self):
         typeSupertype = None
         if self.supertype is not None:
             typeSupertype = self.supertype.getType()
-        return MetaType(supertype = typeSupertype)
+        else:
+            typeSupertype = self.getMetaTypeRoot()
+        return MetaType(thisType = self, supertype = typeSupertype)
 
     def __str__(self):
         return self.getName()
@@ -184,6 +202,14 @@ class BehaviorType(TypedValue, TypeInterface):
     def __repr__(self):
         return self.getName()
 
+    def addMetaTypeRootMethods(self):
+        cls = self.__class__
+        self.addPrimitiveMethodsWithSelectors([
+            (cls.withSelectorAddMethod, 'withSelector:addMethod:'),
+        ])
+
+    def asArrayType(self):
+        return self
 
 class BehaviorTypedObject(TypedValue):
     def __init__(self) -> None:
@@ -199,7 +225,17 @@ class BehaviorTypedObject(TypedValue):
         pass
 
 class MetaType(BehaviorType):
-    pass
+    def __init__(self, thisType=None, name=None, supertype=None, traits=[], schema=None, methodDict={}):
+        super().__init__(name, supertype, traits, schema, methodDict)
+        self.thisType = thisType
+
+    def getMetaTypeRoot(self):
+        return None
+
+    def getName(self):
+        if self.thisType is not None:
+            return String(self.thisType.getName() + ' type')
+        return super().getName()
 
 class SimpleType(BehaviorType):
     pass
