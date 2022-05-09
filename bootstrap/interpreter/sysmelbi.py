@@ -2,6 +2,7 @@
 import sys
 import os
 import os.path
+from evalmachine import *
 from environment import *
 from errors import *
 
@@ -31,8 +32,9 @@ def sysmelbiMain():
     #print(scriptsToEvaluate)
     bootstrapCompiler = BootstrapCompiler()
     bootstrapCompiler.activate()
-    for scriptToEvaluate in scriptsToEvaluate:
-        try:
+    evaluationMachine = EvaluationMachine()
+    try:
+        for scriptToEvaluate in scriptsToEvaluate:
             scriptEnvironment = bootstrapCompiler.makeScriptEvaluationEnvironment()
 
             if scriptToEvaluate == '-':
@@ -43,11 +45,11 @@ def sysmelbiMain():
                 scriptFilename = os.path.abspath(scriptToEvaluate)
                 scriptDirectory = os.path.dirname(scriptFilename)
                 with open(scriptFilename, 'r') as scriptFile:
-                    scriptEnvironment.evaluateScriptFile(scriptFile, scriptFilename, scriptDirectory)
-        except InterpreterError as error:
-            print(error)
-            sys.exit(1)
-
+                    scriptEnvironment.evaluateScriptFile(evaluationMachine, scriptFile, scriptFilename, scriptDirectory)
+    except InterpreterError as error:
+        print(error)
+        sys.exit(1)
+    evaluationMachine.finishPendingEvaluations()
 
 if __name__ == '__main__':
     sysmelbiMain()

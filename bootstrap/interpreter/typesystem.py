@@ -21,22 +21,22 @@ class SymbolImmutableValueBinding(SymbolBinding):
         return self.value
 
 class ValueInterface:
-    def performWithArguments(self, selector, arguments):
+    def performWithArguments(self, machine, selector, arguments):
         raise NotImplementedError()
 
     def getSymbolBindingReferenceValue(self):
         return self
 
 class TypeInterface:
-    def runWithIn(self, selector, arguments, receiver):
+    def runWithIn(self, machine, selector, arguments, receiver):
         raise NotImplementedError()
 
 class TypedValue(ValueInterface):
     def getType(self):
         raise NotImplementedError()
 
-    def performWithArguments(self, selector, arguments):
-        return self.getType().runWithIn(selector, arguments, self)
+    def performWithArguments(self, machine, selector, arguments):
+        return self.getType().runWithIn(machine, selector, arguments, self)
 
 class Integer(int, TypedValue):
     def getType(self):
@@ -81,7 +81,7 @@ class PrimitiveMethod:
     def getType(self):
         return getBasicTypeNamed(Symbol('PrimitiveMethod'))
 
-    def runWithIn(self, selector, arguments, receiver):
+    def runWithIn(self, machine, selector, arguments, receiver):
         return self.method(receiver, *arguments)
 
 class BlockClosure:
@@ -89,8 +89,8 @@ class BlockClosure:
         self.node = node
         self.environment = environment
 
-    def runWithIn(self, selector, arguments, receiver):
-        return self.node.evaluateClosureWithEnvironmentAndArguments(self.environment, [receiver] + arguments)
+    def runWithIn(self, machine, selector, arguments, receiver):
+        return self.node.evaluateClosureWithEnvironmentAndArguments(machine, self.environment, [receiver] + arguments)
 
 class TypeSchema:
     pass
@@ -155,11 +155,11 @@ class BehaviorType(TypedValue, TypeInterface):
             return self.supertype.lookupSelectorRecursively(selector)
         return None
 
-    def runWithIn(self, selector, arguments, receiver):
+    def runWithIn(self, machine, selector, arguments, receiver):
         method = self.lookupSelectorRecursively(selector)
         if method is None:
             raise DoesNotUnderstand('%s does not understand message %s' % (str(receiver), repr(selector)))
-        return method.runWithIn(selector, arguments, receiver)
+        return method.runWithIn(machine, selector, arguments, receiver)
 
     def addMethodWithSelector(self, method, selector):
         self.methodDict[selector] = method

@@ -37,23 +37,23 @@ class NamespaceLevelEnvironment(LexicalScope):
     def __init__(self, parentScope = None):
         super().__init__(parentScope)
 
-    def performWithArguments(self, selector, arguments):
+    def performWithArguments(self, machine, selector, arguments):
         if len(arguments) == 0:
             boundSymbol = self.lookupSymbol(selector)
             if boundSymbol is not None:
                 return boundSymbol.getSymbolBindingReferenceValue()
-        return super().performWithArguments(selector, arguments)
+        return super().performWithArguments(machine, selector, arguments)
 
 class ScriptEvaluationEnvironment(LexicalScope):
     def __init__(self, parentScope):
         super().__init__(parentScope)
 
-    def evaluateScriptFile(self, scriptFile, scriptFilename, scriptDirectory):
+    def evaluateScriptFile(self, evaluationMachine, scriptFile, scriptFilename, scriptDirectory):
         self.setSymbolBinding(Symbol('__CurrentScriptFilename__'), String(scriptFilename))
         self.setSymbolBinding(Symbol('__CurrentScriptDirectory__'), String(scriptDirectory))
         scriptSource = scriptFile.read()
         parseTree = parseString(scriptSource, scriptFilename)
-        return parseTree.evaluateWithEnvironment(self)
+        return parseTree.evaluateWithEnvironment(evaluationMachine, self)
 
 class BootstrapCompiler(BehaviorTypedObject):
     def __init__(self):

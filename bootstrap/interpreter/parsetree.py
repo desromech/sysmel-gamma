@@ -153,7 +153,7 @@ class PTNode:
     def isError(self):
         return False
 
-    def evaluateWithEnvironment(self, environment):
+    def evaluateWithEnvironment(self, machine, environment):
         raise NotImplementedError("Implement evaluateWithEnvironment() in subclass")
 
     def raiseEvaluationError(self, message):
@@ -174,10 +174,10 @@ class PTExpressionList(PTNode):
     def isExpressionList(self):
         return True
 
-    def evaluateWithEnvironment(self, environment):
+    def evaluateWithEnvironment(self, machine, environment):
         result = None
         for expression in self.expressions:
-            result = expression.evaluateWithEnvironment(environment)
+            result = expression.evaluateWithEnvironment(machine, environment)
         return result
 
     def asNonEmptyExpressionOrNone(self):
@@ -215,12 +215,12 @@ class PTBinaryExpression(PTNode):
     def asMessageChainMessage(self):
         return PTChainedMessage(self.operation, [self.right])
 
-    def evaluateWithEnvironment(self, environment):
-        receiver = self.receiver.evaluateWithEnvironment(environment)
-        selector = self.selector.evaluateWithEnvironment(environment)
-        left = self.left.evaluateWithEnvironment(environment)
-        right = self.right.evaluateWithEnvironment(environment)
-        return receiver.performWithArguments(selector, [left, right])
+    def evaluateWithEnvironment(self, machine, environment):
+        receiver = self.receiver.evaluateWithEnvironment(machine, environment)
+        selector = self.selector.evaluateWithEnvironment(machine, environment)
+        left = self.left.evaluateWithEnvironment(machine, environment)
+        right = self.right.evaluateWithEnvironment(machine, environment)
+        return receiver.performWithArguments(machine, selector, [left, right])
 
 class PTUnaryMessage(PTNode):
     def __init__(self, receiver, selector):
@@ -241,10 +241,10 @@ class PTUnaryMessage(PTNode):
     def asMessageChainMessage(self):
         return PTChainedMessage(self.selector, [])
 
-    def evaluateWithEnvironment(self, environment):
-        receiver = self.receiver.evaluateWithEnvironment(environment)
-        selector = self.selector.evaluateWithEnvironment(environment)
-        return receiver.performWithArguments(selector, [])
+    def evaluateWithEnvironment(self, machine, environment):
+        receiver = self.receiver.evaluateWithEnvironment(machine, environment)
+        selector = self.selector.evaluateWithEnvironment(machine, environment)
+        return receiver.performWithArguments(machine, selector, [])
 
 class PTChainedMessage(PTNode):
     def __init__(self, selector, arguments):
@@ -256,10 +256,10 @@ class PTChainedMessage(PTNode):
     def isChainedMessage(self):
         return True
 
-    def evaluateWithReceiverAndEnvironment(self, receiver, environment):
-        selector = self.selector.evaluateWithEnvironment(environment)
-        arguments = list(map(lambda arg: arg.evaluateWithEnvironment(environment), self.arguments))
-        return receiver.performWithArguments(selector, arguments)
+    def evaluateWithReceiverAndEnvironment(self, machine, receiver, environment):
+        selector = self.selector.evaluateWithEnvironment(machine, environment)
+        arguments = list(map(lambda arg: arg.evaluateWithEnvironment(machine, environment), self.arguments))
+        return receiver.performWithArguments(machine, selector, arguments)
 
 class PTKeywordMessage(PTNode):
     def __init__(self, receiver, selector, arguments):
@@ -272,11 +272,11 @@ class PTKeywordMessage(PTNode):
     def isKeywordMessage(self):
         return True
 
-    def evaluateWithEnvironment(self, environment):
-        receiver = self.receiver.evaluateWithEnvironment(environment)
-        selector = self.selector.evaluateWithEnvironment(environment)
-        arguments = list(map(lambda arg: arg.evaluateWithEnvironment(environment), self.arguments))
-        return receiver.performWithArguments(selector, arguments)
+    def evaluateWithEnvironment(self, machine, environment):
+        receiver = self.receiver.evaluateWithEnvironment(machine, environment)
+        selector = self.selector.evaluateWithEnvironment(machine, environment)
+        arguments = list(map(lambda arg: arg.evaluateWithEnvironment(machine, environment), self.arguments))
+        return receiver.performWithArguments(machine, selector, arguments)
 
 class PTMessageChain(PTNode):
     def __init__(self, receiver, messages):
@@ -288,11 +288,11 @@ class PTMessageChain(PTNode):
     def isMessageChain(self):
         return True
 
-    def evaluateWithEnvironment(self, environment):
-        receiver = self.receiver.evaluateWithEnvironment(environment)
+    def evaluateWithEnvironment(self, machine, environment):
+        receiver = self.receiver.evaluateWithEnvironment(machine, environment)
         result = receiver
         for message in self.messages:
-            result = message.evaluateWithReceiverAndEnvironment(receiver, environment)
+            result = message.evaluateWithReceiverAndEnvironment(machine, receiver, environment)
         return result
 
 class PTPrefixUnaryExpression(PTNode):
@@ -340,11 +340,11 @@ class PTCall(PTNode):
     def isCall(self):
         return True
 
-    def evaluateWithEnvironment(self, environment):
-        functional = self.functional.evaluateWithEnvironment(environment)
+    def evaluateWithEnvironment(self, machine, environment):
+        functional = self.functional.evaluateWithEnvironment(machine, environment)
         arguments = []
         if self.arguments is not None:
-            arguments = self.arguments.evaluateWithEnvironment(environment)
+            arguments = self.arguments.evaluateWithEnvironment(machine, environment)
         return functional.performWithArguments(Symbol('()'), arguments)
 
 class PTSubscript(PTNode):
@@ -357,12 +357,12 @@ class PTSubscript(PTNode):
     def isSubscript(self):
         return True
 
-    def evaluateWithEnvironment(self, environment):
-        sequenceable = self.sequenceable.evaluateWithEnvironment(environment)
+    def evaluateWithEnvironment(self, machine, environment):
+        sequenceable = self.sequenceable.evaluateWithEnvironment(machine, environment)
         indices = []
         if self.indices is not None:
-            indices = [self.indices.evaluateWithEnvironment(environment)]
-        return sequenceable.performWithArguments(Symbol('[]'), indices)
+            indices = [self.indices.evaluateWithEnvironment(machine, environment)]
+        return sequenceable.performWithArguments(machine, Symbol('[]'), indices)
 
 class PTApplyBlock(PTNode):
     def __init__(self, entity, block):
@@ -373,11 +373,11 @@ class PTApplyBlock(PTNode):
     def isApplyBlock(self):
         return True
 
-    def evaluateWithEnvironment(self, environment):
-        entity = self.entity.evaluateWithEnvironment(environment)
+    def evaluateWithEnvironment(self, machine, environment):
+        entity = self.entity.evaluateWithEnvironment(machine, environment)
         block = None
         if self.entity is not None:
-            block = self.block.evaluateWithEnvironment(block)
+            block = self.block.evaluateWithEnvironment(machine, block)
         return entity.performWithArguments(Symbol('{}'), [block])
 
 class PTIdentifierReference(PTNode):
@@ -392,7 +392,7 @@ class PTIdentifierReference(PTNode):
     def asSymbolEvaluatedExpression(self):
         return PTLiteralSymbol(self.value, self.asSourcePosition())
 
-    def evaluateWithEnvironment(self, environment):
+    def evaluateWithEnvironment(self, machine, environment):
         binding = environment.lookupSymbolRecursively(self.value)
         if binding is None:
             self.raiseEvaluationError('Symbol %s is not bound in current scope.' % self.value)
@@ -405,9 +405,9 @@ class PTLexicalBlock(PTNode):
         self.body = body
         self.sourcePosition = sourcePositionFromList([body] + tokens)
 
-    def evaluateWithEnvironment(self, environment):
+    def evaluateWithEnvironment(self, machine, environment):
         innerEnvironment = environment.makeChildLexicalScope()
-        return self.body.evaluateWithEnvironment(innerEnvironment)
+        return self.body.evaluateWithEnvironment(machine, innerEnvironment)
 
     def isLexicalBlock(self):
         return True
@@ -424,10 +424,10 @@ class PTBlockClosure(PTNode):
     def isBlockClosure(self):
         return True
 
-    def evaluateWithEnvironment(self, environment):
+    def evaluateWithEnvironment(self, machine, environment):
         return BlockClosure(self, environment)
 
-    def evaluateClosureWithEnvironmentAndArguments(self, closureEnvironment, arguments):
+    def evaluateClosureWithEnvironmentAndArguments(self, machine, closureEnvironment, arguments):
         if len(self.arguments) != len(arguments):
             self.raiseEvaluationError('Mismatching number of arguments for evaluating closure.')
         
@@ -435,10 +435,10 @@ class PTBlockClosure(PTNode):
         for i in range(len(self.arguments)):
             argumentDeclaration = self.arguments[i]
             argumentValue = arguments[i]
-            argumentName = argumentDeclaration.identifier.evaluateWithEnvironment(closureEnvironment)
+            argumentName = argumentDeclaration.identifier.evaluateWithEnvironment(machine, closureEnvironment)
             evaluationEnvironment.setSymbolBinding(argumentName, argumentValue)
 
-        return self.body.evaluateWithEnvironment(evaluationEnvironment)
+        return self.body.evaluateWithEnvironment(machine, evaluationEnvironment)
 
 class PTBlockArgument(PTNode):
     def __init__(self, type, identifier):
@@ -527,7 +527,7 @@ class PTLiteral(PTNode):
     def isLiteral(self):
         return True
 
-    def evaluateWithEnvironment(self, environment):
+    def evaluateWithEnvironment(self, machine, environment):
         return self.value
 
 class PTLiteralInteger(PTLiteral):
@@ -576,8 +576,8 @@ class PTLiteralArray(PTNode):
         self.elements = elements
         self.sourcePosition = sourcePositionFromList([sourcePositionFromTokens(tokens)] + elements)
 
-    def evaluateWithEnvironment(self, environment):
-        return Array(map(lambda el: el.evaluateWithEnvironment(environment), self.elements))
+    def evaluateWithEnvironment(self, machine, environment):
+        return Array(map(lambda el: el.evaluateWithEnvironment(machine, environment), self.elements))
 
     def isLiteralArray(self):
         return True
@@ -588,8 +588,8 @@ class PTMakeDictionary(PTNode):
         self.elements = elements
         self.sourcePosition = sourcePositionFromList([sourcePositionFromTokens(tokens)] + elements)
 
-    def evaluateWithEnvironment(self, environment):
-        return Dictionary(map(lambda el: el.evaluateWithEnvironment(environment), self.elements))
+    def evaluateWithEnvironment(self, machine, environment):
+        return Dictionary(map(lambda el: el.evaluateWithEnvironment(machine, environment), self.elements))
 
     def isMakeDictionary(self):
         return True
@@ -601,11 +601,11 @@ class PTDictionaryKeyValue(PTNode):
         self.value = value
         self.sourcePosition = sourcePositionFromList([key, value])
 
-    def evaluateWithEnvironment(self, environment):
-        key = self.key.evaluateWithEnvironment(environment)
+    def evaluateWithEnvironment(self, machine, environment):
+        key = self.key.evaluateWithEnvironment(machine, environment)
         value = None
         if self.value is not None:
-            value = self.value.evaluateWithEnvironment(environment)
+            value = self.value.evaluateWithEnvironment(machine, environment)
 
         return Association(key, value)
 
