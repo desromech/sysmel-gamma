@@ -154,7 +154,7 @@ class PTNode:
         return False
 
     def evaluateWithEnvironment(self, machine, environment):
-        raise NotImplementedError("Implement evaluateWithEnvironment() in subclass")
+        raise NotImplementedError("Implement evaluateWithEnvironment() in subclass " + repr(self.__class__))
 
     def raiseEvaluationError(self, message):
         raise InterpreterEvaluationError('%s: %s' % (str(self.sourcePosition), message))
@@ -321,11 +321,17 @@ class PTParenthesis(PTNode):
     def isParenthesis(self):
         return True
 
+    def evaluateWithEnvironment(self, machine, environment):
+        return self.expression.evaluateWithEnvironment(machine, environment)
+
 class PTMakeTuple(PTNode):
     def __init__(self, elements, tokens = []):
         PTNode.__init__(self)
         self.elements = elements
         self.sourcePosition = sourcePositionFromList(elements + tokens)
+
+    def evaluateWithEnvironment(self, machine, environment):
+        return tuple(map(lambda el: el.evaluateWithEnvironment(machine, environment), self.elements))
 
     def isMakeTuple(self):
         return True

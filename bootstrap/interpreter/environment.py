@@ -60,6 +60,7 @@ class BootstrapCompiler(BehaviorTypedObject):
         super().__init__()
         self.topLevelEnvironment = NamespaceLevelEnvironment()
         self.topLevelEnvironment.setSymbolBinding('__BootstrapCompiler__', self)
+        self.topLevelEnvironment.setSymbolBinding('__TypeBuilder__', TypeBuilder())
         self.basicTypeEnvironment = {}
         self.isTypeSystemEnabled = False
         self.enterTopLevelNamespace()
@@ -71,15 +72,8 @@ class BootstrapCompiler(BehaviorTypedObject):
     def initializeBehaviorType(cls, type):
         BehaviorTypedObject.initializeBehaviorType(type)
         type.addPrimitiveMethodsWithSelectors([
-            ## Type system
-            (cls.addBasicTypeWithName, 'addBasicType:withName:'),
-            (cls.addPrimitiveBooleanTypeNamedWithSizeAlignment, 'addPrimitiveBooleanTypeNamed:size:alignment:'),
-            (cls.addPrimitiveUnsignedIntegerTypeNamedWithSizeAlignment, 'addPrimitiveUnsignedIntegerTypeNamed:size:alignment:'),
-            (cls.addPrimitiveSignedIntegerTypeNamedWithSizeAlignment, 'addPrimitiveSignedIntegerTypeNamed:size:alignment:'),
-            (cls.addPrimitiveCharacterTypeNamedWithSizeAlignment, 'addPrimitiveCharacterTypeNamed:size:alignment:'),
-            (cls.addPrimitiveFloatTypeNamedWithSizeAlignment, 'addPrimitiveFloatTypeNamed:size:alignment:'),
-            (cls.addGCClassNamedWithInstanceVariables, 'addGCClassNamed:instanceVariables:'),
-            (cls.addGCClassNamedWithSuperclassInstanceVariables, 'addGCClassNamed:superclass:instanceVariables:'),
+            (cls.addBasicTypeNamedWith, 'addBasicTypeNamed:with:'),
+            (cls.addBindingNamedWith, 'addBindingNamed:with:'),
 
             (cls.enableTypeSystem, 'enableTypeSystem'),
             (cls.enterTopLevelNamespace, 'enterTopLevelNamespace'),
@@ -101,6 +95,15 @@ class BootstrapCompiler(BehaviorTypedObject):
             childNamespace = NamespaceLevelEnvironment(self.activeNamespace)
             self.activeNamespace.setSymbolBinding(namespaceName, childNamespace)
         self.activeNamespace = childNamespace
+
+    def addBindingNamedWith(self, bindingName, bindingValue):
+        self.activeNamespace.setSymbolBinding(bindingName, bindingValue)
+
+    def addBasicTypeNamedWith(self, bindingName, basicType):
+        self.addBindingNamedWith(bindingName, basicType)
+        self.basicTypeEnvironment[bindingName] = basicType
+        if bindingName == 'MetaType':
+            basicType.addMetaTypeRootMethods()
 
     def addBasicTypeWithName(self, basicType, basicTypeName):
         self.basicTypeEnvironment[basicTypeName] = basicType

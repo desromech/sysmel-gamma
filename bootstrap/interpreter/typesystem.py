@@ -95,11 +95,10 @@ class BlockClosure:
 class TypeSchema:
     pass
 
-class GCClassTypeSchema:
-    def __init__(self, instanceVariables):
-        self.instanceVariables = instanceVariables
-
 class EmptyTypeSchema(TypeSchema):
+    pass
+
+class AbsurdTypeSchema(TypeSchema):
     pass
 
 class PrimitiveTypeSchema(TypeSchema):
@@ -123,8 +122,28 @@ class PrimitiveCharacterTypeSchema(PrimitiveTypeSchema):
 class PrimitiveFloatTypeSchema(PrimitiveTypeSchema):
     pass
 
+class SumTypeSchema(TypeSchema):
+    def __init__(self, elementTypes):
+        self.elementTypes = elementTypes
+
+class ProductTypeSchema(TypeSchema):
+    def __init__(self, elementTypes):
+        self.elementTypes = elementTypes
+
+class RecordTypeSchema(TypeSchema):
+    def __init__(self, slots):
+        self.slots = slots
+
+class ArrayTypeSchema(TypeSchema):
+    def __init__(self, elementType, bounds):
+        self.elementType = elementType
+        self.bounds = bounds
+
+class GCClassTypeSchema(RecordTypeSchema):
+    pass
+
 class BehaviorType(TypedValue, TypeInterface):
-    def __init__(self, name = None, supertype = None, traits = [], schema = None, methodDict = {}):
+    def __init__(self, name = None, supertype = None, traits = [], schema = EmptyTypeSchema(), methodDict = {}):
         self.name = name
         self.methodDict = methodDict
         self.supertype = supertype
@@ -239,3 +258,67 @@ class MetaType(BehaviorType):
 
 class SimpleType(BehaviorType):
     pass
+
+class TypeBuilder(BehaviorTypedObject):
+    def __init__(self):
+        super().__init__()
+
+    @classmethod
+    def initializeBehaviorType(cls, type):
+        BehaviorTypedObject.initializeBehaviorType(type)
+        type.addPrimitiveMethodsWithSelectors([
+            (cls.newAbsurdType, 'newAbsurdType'),
+            (cls.newTrivialType, 'newTrivialType'),
+            (cls.newProductType, 'newProductTypeWith:'),
+            (cls.newSumTypeWith, 'newSumTypeWith:'),
+            (cls.newRecordTypeWith, 'newRecordTypeWith:'),
+            (cls.newArrayTypeForWithBounds, 'newArrayTypeFor:withBounds:'),
+
+            (cls.newBooleanTypeWithSizeAndAlignment, 'newBooleanTypeWithSize:alignment:'),
+            (cls.newUnsignedIntegerTypeWithSizeAndAlignment, 'newUnsignedIntegerTypeWithSize:alignment:'),
+            (cls.newSignedIntegerTypeWithSizeAndAlignment, 'newSignedIntegerTypeWithSize:alignment:'),
+            (cls.newCharacterTypeWithSizeAndAlignment, 'newCharacterTypeWithSize:alignment:'),
+            (cls.newFloatTypeWithSizeAndAlignment, 'newFloatTypeWithSize:alignment:'),
+
+            (cls.newGCClassWithSlots, 'newGCClassWithSlots:'),
+            (cls.newGCClassWithSuperclassSlots, 'newGCClassWithSuperclass:slots:')
+        ])
+
+    def newAbsurdType(self):
+        return SimpleType(schema=AbsurdTypeSchema())
+
+    def newTrivialType(self):
+        return SimpleType()
+
+    def newProductType(self, elementTypes):
+        return SimpleType(schema = ProductTypeSchema(elementTypes))
+
+    def newSumTypeWith(self, elementTypes):
+        return SimpleType(schema = SumTypeSchema(elementTypes))
+
+    def newRecordTypeWith(self, slots):
+        return SimpleType(schema = RecordTypeSchema(slots))
+
+    def newArrayTypeForWithBounds(self, elementType, bounds):
+        return SimpleType(schema = ArrayTypeSchema(elementType, bounds))
+
+    def newGCClassWithSuperclassSlots(self, supertype, instanceVariable):
+        return SimpleType(supertype = supertype, schema = GCClassTypeSchema(instanceVariable))
+
+    def newGCClassWithSlots(self, instanceVariable):
+        return SimpleType(schema = GCClassTypeSchema(instanceVariable))
+
+    def newBooleanTypeWithSizeAndAlignment(self, size, alignment):
+        return SimpleType(schema = PrimitiveBooleanTypeSchema(size, alignment))
+
+    def newUnsignedIntegerTypeWithSizeAndAlignment(self, size, alignment):
+        return SimpleType(schema = PrimitiveUnsignedIntegerTypeSchema(size, alignment))
+
+    def newSignedIntegerTypeWithSizeAndAlignment(self, size, alignment):
+        return SimpleType(schema = PrimitiveSignedIntegerTypeSchema(size, alignment))
+
+    def newCharacterTypeWithSizeAndAlignment(self, size, alignment):
+        return SimpleType(schema = PrimitiveCharacterTypeSchema(size, alignment))
+
+    def newFloatTypeWithSizeAndAlignment(self, size, alignment):
+        return SimpleType(schema = PrimitiveFloatTypeSchema(size, alignment))

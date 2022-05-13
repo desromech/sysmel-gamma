@@ -1,22 +1,58 @@
-## This is the Phase1, where the core basic type system is defined.
+## This is the Phase1, where the core basic type system is defined along with the global bindings.
 ## In this stage the compiler environment itself is completely empty,
 ## except for a single reference to the bootstrap compiler itself.
 
 __BootstrapCompiler__
-    ## The core runtime classes.
-    addGCClassNamed: #ProtoObject instanceVariables: #{};
-    addGCClassNamed: #Object superclass: ProtoObject instanceVariables: #{};
-    addGCClassNamed: #Type superclass: Object instanceVariables: #{};
-    addGCClassNamed: #SimpleType superclass: Type instanceVariables: #{};
-    addGCClassNamed: #MetaType superclass: Type instanceVariables: #{};
-    addGCClassNamed: #String instanceVariables: #{};
-    addGCClassNamed: #Symbol instanceVariables: #{};
-    addGCClassNamed: #Array instanceVariables: #{};
-    addGCClassNamed: #Integer instanceVariables: #{};
-    addGCClassNamed: #Float instanceVariables: #{};
-    addGCClassNamed: #Character instanceVariables: #{};
-    addGCClassNamed: #Boolean instanceVariables: #{};
+    enterTopLevelNamespace;
 
+    ## Type theory fundamentals
+    addBasicTypeNamed: #Absurd with: __TypeBuilder__ newAbsurdType;
+    addBasicTypeNamed: #Trivial with: __TypeBuilder__ newTrivialType;
+
+    addBasicTypeNamed: #True with: __TypeBuilder__ newTrivialType;
+    addBasicTypeNamed: #False with: __TypeBuilder__ newTrivialType;
+    addBasicTypeNamed: #Boolean with: (__TypeBuilder__ newSumTypeWith: (True, False));
+
+    ## Base type system
+    addBasicTypeNamed: #AnyValue with: (__TypeBuilder__ newGCClassWithSlots: #{});
+
+    addBasicTypeNamed: #Object with: (__TypeBuilder__ newGCClassWithSuperclass: AnyValue slots: #{});
+    addBasicTypeNamed: #Type with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
+    addBasicTypeNamed: #SimpleType with: (__TypeBuilder__ newGCClassWithSuperclass: Type slots: #{});
+    addBasicTypeNamed: #MetaType with: (__TypeBuilder__ newGCClassWithSuperclass: Type slots: #{});
+
+    addBasicTypeNamed: #String with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
+    addBasicTypeNamed: #Symbol with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
+    addBasicTypeNamed: #Array with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
+    addBasicTypeNamed: #Integer with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
+    addBasicTypeNamed: #Float with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
+
+    ## The primitive types
+    addBasicTypeNamed: #Boolean8 with: (__TypeBuilder__ newBooleanTypeWithSize: 1 alignment: 1);
+    addBasicTypeNamed: #Boolean16 with: (__TypeBuilder__ newBooleanTypeWithSize: 2 alignment: 2);
+    addBasicTypeNamed: #Boolean32 with: (__TypeBuilder__ newBooleanTypeWithSize: 4 alignment: 4);
+
+    addBasicTypeNamed: #UInt8 with: (__TypeBuilder__ newUnsignedIntegerTypeWithSize: 1 alignment: 1);
+    addBasicTypeNamed: #UInt16 with: (__TypeBuilder__ newUnsignedIntegerTypeWithSize: 2 alignment: 2);
+    addBasicTypeNamed: #UInt32 with: (__TypeBuilder__ newUnsignedIntegerTypeWithSize: 4 alignment: 4);
+    addBasicTypeNamed: #UInt64 with: (__TypeBuilder__ newUnsignedIntegerTypeWithSize: 8 alignment: 8);
+
+    addBasicTypeNamed: #Int8 with: (__TypeBuilder__ newSignedIntegerTypeWithSize: 1 alignment: 1);
+    addBasicTypeNamed: #Int16 with: (__TypeBuilder__ newSignedIntegerTypeWithSize: 2 alignment: 2);
+    addBasicTypeNamed: #Int32 with: (__TypeBuilder__ newSignedIntegerTypeWithSize: 4 alignment: 4);
+    addBasicTypeNamed: #Int64 with: (__TypeBuilder__ newSignedIntegerTypeWithSize: 8 alignment: 8);
+
+    addBasicTypeNamed: #Char8 with: (__TypeBuilder__ newCharacterTypeWithSize: 1 alignment: 1);
+    addBasicTypeNamed: #Char16 with: (__TypeBuilder__ newCharacterTypeWithSize: 2 alignment: 2);
+    addBasicTypeNamed: #Char32 with: (__TypeBuilder__ newCharacterTypeWithSize: 4 alignment: 4);
+
+    addBasicTypeNamed: #Float16 with: (__TypeBuilder__ newFloatTypeWithSize: 2 alignment: 2);
+    addBasicTypeNamed: #Float32 with: (__TypeBuilder__ newFloatTypeWithSize: 4 alignment: 4);
+    addBasicTypeNamed: #Float64 with: (__TypeBuilder__ newFloatTypeWithSize: 8 alignment: 8).
+
+#*
+__BootstrapCompiler__
+    ## The core runtime classes.
     addGCClassNamed: #Association instanceVariables: #{
         key: Object.
         value: Object.
@@ -27,33 +63,15 @@ __BootstrapCompiler__
         baseType: Type.
         bounds: Integer.
     };
-
-    ## The primitive types.
-    addPrimitiveBooleanTypeNamed: #Boolean8 size: 1 alignment: 1;
-    addPrimitiveBooleanTypeNamed: #Boolean16 size: 2 alignment: 2;
-    addPrimitiveBooleanTypeNamed: #Boolean32 size: 4 alignment: 4;
-
-    addPrimitiveUnsignedIntegerTypeNamed: #UInt8 size: 1 alignment: 1;
-    addPrimitiveUnsignedIntegerTypeNamed: #UInt16 size: 2 alignment: 2;
-    addPrimitiveUnsignedIntegerTypeNamed: #UInt32 size: 4 alignment: 4;
-    addPrimitiveUnsignedIntegerTypeNamed: #UInt64 size: 8 alignment: 8;
-
-    addPrimitiveSignedIntegerTypeNamed: #Int8 size: 1 alignment: 1;
-    addPrimitiveSignedIntegerTypeNamed: #Int16 size: 2 alignment: 2;
-    addPrimitiveSignedIntegerTypeNamed: #Int32 size: 4 alignment: 4;
-    addPrimitiveSignedIntegerTypeNamed: #Int64 size: 8 alignment: 8;
-
-    addPrimitiveCharacterTypeNamed: #Char8 size: 1 alignment: 1;
-    addPrimitiveCharacterTypeNamed: #Char16 size: 2 alignment: 2;
-    addPrimitiveCharacterTypeNamed: #Char32 size: 4 alignment: 4;
-
-    addPrimitiveUnsignedIntegerTypeNamed: #Float16 size: 2 alignment: 2;
-    addPrimitiveUnsignedIntegerTypeNamed: #Float32 size: 4 alignment: 4;
-    addPrimitiveUnsignedIntegerTypeNamed: #Float64 size: 8 alignment: 8.
+*#
 
 ## Basic type system methods.
 MetaType withSelector: #"[]" addMethod: {:(Type)self :: Type |
-    self
+    __TypeBuilder__ newArrayTypeFor: self withBounds: 0
+}.
+
+MetaType withSelector: #"[]" addMethod: {:(Type)self :(Integer)bounds :: Type |
+    __TypeBuilder__ newArrayTypeFor: self withBounds: bounds
 }.
 
 ## The AST nodes.
@@ -61,24 +79,24 @@ __BootstrapCompiler__
     enterTopLevelNamespace;
     enterNamespaceNamed: #BootstrapCompiler;
     enterNamespaceNamed: #AST;
-    addGCClassNamed: #SourceCollection instanceVariables: #{};
-    addGCClassNamed: #SourcePosition instanceVariables: #{};
-    addGCClassNamed: #Node instanceVariables: #{
+    addBindingNamed: #SourceCollection with: (__TypeBuilder__ newGCClassWithSlots: #{});
+    addBindingNamed: #SourcePosition with: (__TypeBuilder__ newGCClassWithSlots: #{});
+    addBindingNamed: #Node with: (__TypeBuilder__ newGCClassWithSlots: #{
         sourcePosition: BootstrapCompiler AST SourcePosition
-    };
-    addGCClassNamed: #ArgumentDefinitionNode superclass: BootstrapCompiler AST Node instanceVariables: #{
+    });
+    addBindingNamed: #ArgumentDefinitionNode with: (__TypeBuilder__ newGCClassWithSuperclass: BootstrapCompiler AST Node slots: #{
         name: BootstrapCompiler AST Node.
         type: BootstrapCompiler AST Node.
-    };
-    addGCClassNamed: #CleanUpScopeNode superclass: BootstrapCompiler AST Node instanceVariables: #{
+    });
+    addBindingNamed: #CleanUpScopeNode with: (__TypeBuilder__ newGCClassWithSuperclass: BootstrapCompiler AST Node slots: #{
         body: BootstrapCompiler AST Node
-    };
-    addGCClassNamed: #SequenceNode superclass: BootstrapCompiler AST Node instanceVariables: #{
-        expressions: BootstrapCompiler AST Node[]
-    };
-    addGCClassNamed: #SemanticErrorNode superclass: BootstrapCompiler AST Node instanceVariables: #{
+    });
+    addBindingNamed: #SequenceNode with: (__TypeBuilder__ newGCClassWithSuperclass: BootstrapCompiler AST Node slots: #{
+        ##expressions: BootstrapCompiler AST Node[]
+    });
+    addBindingNamed: #SemanticErrorNode with: (__TypeBuilder__ newGCClassWithSuperclass: BootstrapCompiler AST Node slots: #{
         message: String
-    }.
+    }).
 
 ## At the end of this phase we can enable the actual type system.
 __BootstrapCompiler__
