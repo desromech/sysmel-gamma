@@ -351,7 +351,9 @@ class PTCall(PTNode):
         arguments = []
         if self.arguments is not None:
             arguments = self.arguments.evaluateWithEnvironment(machine, environment)
-        return functional.performWithArguments(Symbol('()'), arguments)
+            if not isinstance(arguments, tuple):
+                arguments = (arguments,)
+        return functional.performWithArguments(machine, Symbol('()'), arguments)
 
 class PTSubscript(PTNode):
     def __init__(self, sequenceable, indices, tokens):
@@ -435,7 +437,7 @@ class PTBlockClosure(PTNode):
 
     def evaluateClosureWithEnvironmentAndArguments(self, machine, closureEnvironment, arguments):
         if len(self.arguments) != len(arguments):
-            self.raiseEvaluationError('Mismatching number of arguments for evaluating closure.')
+            self.raiseEvaluationError('Mismatching number of arguments for evaluating closure. Expected %d and received %d arguments.' % (len(self.arguments), len(arguments)))
         
         evaluationEnvironment = closureEnvironment.makeChildLexicalScope()
         for i in range(len(self.arguments)):

@@ -60,7 +60,7 @@ class Symbol(str, TypedValue):
 
 class Array(list, TypedValue):
     def getType(self):
-        return getBasicTypeNamed(Symbol('Array'))
+        return getBasicTypeNamed(Symbol('AnyArrayList'))
 
 class Association(TypedValue):
     def __init__(self, key, value):
@@ -68,11 +68,11 @@ class Association(TypedValue):
         self.value = value
 
     def getType(self):
-        return getBasicTypeNamed(Symbol('Association'))
+        return getBasicTypeNamed(Symbol('AnyAssociation'))
 
 class Dictionary(list, TypedValue):
     def getType(self):
-        return getBasicTypeNamed(Symbol('Dictionary'))
+        return getBasicTypeNamed(Symbol('AnyDictionary'))
 
 class PrimitiveMethod:
     def __init__(self, method):
@@ -84,13 +84,52 @@ class PrimitiveMethod:
     def runWithIn(self, machine, selector, arguments, receiver):
         return self.method(receiver, *arguments)
 
-class BlockClosure:
+class BlockClosure(TypedValue):
     def __init__(self, node, environment):
         self.node = node
         self.environment = environment
 
+    def performWithArguments(self, machine, selector, arguments):
+        if selector == '()':
+            return self.evaluateWithArguments(machine, arguments)
+        elif selector == 'memoized':
+            return self.asMemoizedBlockClosure()
+        elif selector == 'templated':
+            return self.asTemplatedBlockClosure()
+        return super().performWithArguments(machine, selector, arguments)
+
     def runWithIn(self, machine, selector, arguments, receiver):
-        return self.node.evaluateClosureWithEnvironmentAndArguments(machine, self.environment, [receiver] + arguments)
+        return self.evaluateWithArguments(machine, [receiver] + arguments)
+
+    def evaluateWithArguments(self, machine, arguments):
+        return self.node.evaluateClosureWithEnvironmentAndArguments(machine, self.environment, arguments)
+
+    def asMemoizedBlockClosure(self):
+        return MemoizedBlockClosure(self.node, self.environment)
+
+    def asTemplatedBlockClosure(self):
+        return TemplatedBlockClosure(self.node, self.environment)
+
+class AbstractMemoizedBlockClosure(BlockClosure):
+    def __init__(self, node, environment):
+        super().__init__(node, environment)
+        self.memoizationTable = {}
+
+    def evaluateWithArguments(self, machine, arguments):
+        if arguments in self.memoizationTable:
+            return self.memoizationTable[arguments]
+
+        result = super().evaluateWithArguments(machine, arguments)
+        self.memoizationTable[arguments] = result
+        return result
+
+class MemoizedBlockClosure(AbstractMemoizedBlockClosure):
+    def asMemoizedBlockClosure(self):
+        return self
+
+class TemplatedBlockClosure(AbstractMemoizedBlockClosure):
+    def asTemplatedBlockClosure(self):
+        return self
 
 class TypeSchema:
     pass
