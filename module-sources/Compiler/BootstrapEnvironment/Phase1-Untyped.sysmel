@@ -13,6 +13,8 @@ __BootstrapCompiler__
     addBasicTypeNamed: #True with: __TypeBuilder__ newTrivialType;
     addBasicTypeNamed: #Boolean with: (__TypeBuilder__ newSumTypeWith: (False, True));
 
+    addBasicTypeNamed: #Undefined with: __TypeBuilder__ newTrivialType;
+
     ## Base type system
     addBasicTypeNamed: #AnyValue with: (__TypeBuilder__ newGCClassWithSlots: #{});
 
@@ -27,9 +29,8 @@ __BootstrapCompiler__
     addBasicTypeNamed: #Float with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
 
     ## The polymorphic types
-    addBasicTypeNamed: #Nothing with: __TypeBuilder__ newTrivialType;
     addBindingNamed: #Optional with: {:(Type)optionalType :: Type |
-        __TypeBuilder__ newSumTypeWith: (Nothing, optionalType)
+        __TypeBuilder__ newSumTypeWith: (Undefined, optionalType)
     } templated;
 
     addBindingNamed: #Array with: {:(Type)elementType :(Integer)bounds :: Type |
@@ -73,17 +74,19 @@ __BootstrapCompiler__
     addBasicTypeNamed: #Float64 with: (__TypeBuilder__ newFloatTypeWithSize: 8 alignment: 8).
 
 ## Basic type system methods.
-MetaType withSelector: #"[]" addMethod: {:(Type)self :: Type |
-    Array(self, 0)
-}.
-
-MetaType withSelector: #"[]" addMethod: {:(Type)self :(Integer)bounds :: Type |
-    Array(self, bounds)
-}.
-
-MetaType withSelector: #"optional" addMethod: {:(Type)self :: Type |
-    Optional(self)
-}.
+MetaType
+    withSelector: #"[]" addMethod: {:(Type)self :: Type |
+        Array(self, 0)
+    };
+    withSelector: #"[]" addMethod: {:(Type)self :(Integer)bounds :: Type |
+        Array(self, bounds)
+    };
+    withSelector: #optional addMethod: {:(Type)self :: Type |
+        Optional(self)
+    };
+    withSelector: #arrayList addMethod: {:(Type)self :: Type |
+        ArrayList(self)
+    }.
 
 ## The AST nodes.
 __BootstrapCompiler__
@@ -101,12 +104,12 @@ __BootstrapCompiler__
         type: SysmelCompiler AST Node.
     });
     addBindingNamed: #BlockClosureNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
-        arguments: ArrayList(SysmelCompiler AST Node).
+        arguments: SysmelCompiler AST Node arrayList.
         body: SysmelCompiler AST Node.
     });
     addBindingNamed: #ChainedMessageNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
         selector: SysmelCompiler AST Node.
-        arguments: ArrayList(SysmelCompiler AST Node)
+        arguments: SysmelCompiler AST Node arrayList
     });
     addBindingNamed: #CleanUpScopeNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
         body: SysmelCompiler AST Node.
@@ -119,7 +122,7 @@ __BootstrapCompiler__
         value: AnyValue
     });
     addBindingNamed: #SequenceNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
-        expressions: ArrayList(SysmelCompiler AST Node)
+        expressions: SysmelCompiler AST Node arrayList
     });
 
     addBindingNamed: #MakeAssociationNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
@@ -127,20 +130,20 @@ __BootstrapCompiler__
         value: SysmelCompiler AST Node.
     });
     addBindingNamed: #MakeTupleNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
-        elements: ArrayList(SysmelCompiler AST Node).
+        elements: SysmelCompiler AST Node arrayList.
     });
     addBindingNamed: #MakeDictionaryNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
-        elements: ArrayList(SysmelCompiler AST Node).
+        elements: SysmelCompiler AST Node arrayList.
     });
 
     addBindingNamed: #MessageSendNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
         receiver: SysmelCompiler AST Node.
         selector: SysmelCompiler AST Node.
-        arguments: ArrayList(SysmelCompiler AST Node)
+        arguments: SysmelCompiler AST Node arrayList
     });
     addBindingNamed: #MessageChainNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
         receiver: SysmelCompiler AST Node.
-        chainedMessages: ArrayList(SysmelCompiler AST Node)
+        chainedMessages: SysmelCompiler AST Node arrayList
     });
 
     addBindingNamed: #SpliceNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
@@ -194,8 +197,19 @@ __BootstrapCompiler__
     enterTopLevelNamespace;
     enterNamespaceNamed: #SysmelCompiler;
     enterNamespaceNamed: #Semantic;
-    addBindingNamed: #Environment with: (__TypeBuilder__ newGCClassWithSlots: #{});
-    addBindingNamed: #EvaluationMachine with: (__TypeBuilder__ newGCClassWithSlots: #{}).
+    addBindingNamed: #ASTAnalyzer with: (__TypeBuilder__ newGCClassWithSlots: #{});
+    addBindingNamed: #EvaluationEnvironment with: (__TypeBuilder__ newGCClassWithSlots: #{}).
+
+SysmelCompiler AST Node
+    withSelector: #analyzeNodeIfNeededWith: addMethod: {:(Type)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Type |
+        __BootstrapCompiler__ subclassResponsibility
+    };
+    withSelector: #analyzeNodeWith: addMethod: {:(Type)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Type |
+        __BootstrapCompiler__ subclassResponsibility
+    };
+    withSelector: #evaluateNodeWith: addMethod: {:(Type)self :(SysmelCompiler Semantic EvaluationEnvironment)evaluationEnvironment :: Type |
+        __BootstrapCompiler__ subclassResponsibility
+    }.
 
 ## At the end of this phase we can enable the actual type system.
 __BootstrapCompiler__

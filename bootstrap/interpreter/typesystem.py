@@ -105,13 +105,16 @@ class BlockClosure(TypedValue):
         return self.evaluateWithArguments(machine, [receiver] + arguments)
 
     def evaluateWithArguments(self, machine, arguments):
-        return self.node.evaluateClosureWithEnvironmentAndArguments(machine, self.environment, arguments)
+        return self.applyResultTransform(machine, self.node.evaluateClosureWithEnvironmentAndArguments(machine, self.environment, arguments))
 
     def asMemoizedBlockClosure(self):
         return MemoizedBlockClosure(self.node, self.environment)
 
     def asTemplatedBlockClosure(self):
         return TemplatedBlockClosure(self.node, self.environment)
+
+    def applyResultTransform(self, machine, result):
+        return result
 
 class AbstractMemoizedBlockClosure(BlockClosure):
     def __init__(self, node, environment):
@@ -131,8 +134,29 @@ class MemoizedBlockClosure(AbstractMemoizedBlockClosure):
         return self
 
 class TemplatedBlockClosure(AbstractMemoizedBlockClosure):
+    def __init__(self, node, environment):
+        super().__init__(node, environment)
+        self.resultExtensionList = []
+
     def asTemplatedBlockClosure(self):
         return self
+
+    def applyResultTransform(self, machine, result):
+        callSymbol = Symbol('()')
+        callArguments = (result,)
+        for resultExtension in self.resultExtensionList:
+            resultExtension.performWithArguments(machine, callSymbol, callArguments)
+
+    def extendWith(self, machine, extension):
+        callSymbol = Symbol('()')
+        for arguments, result in self.memoizationTable.items():
+            extension.performWithArguments(machine, callSymbol, (result,))
+        self.resultExtensionList.append(extension)
+
+    def performWithArguments(self, machine, selector, arguments):
+        if selector == 'extendWith:':
+            return self.extendWith(machine, arguments[0])
+        return super().performWithArguments(machine, selector, arguments)
 
 class TypeSchema:
     pass
