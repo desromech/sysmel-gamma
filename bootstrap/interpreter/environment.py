@@ -75,9 +75,14 @@ class BootstrapCompiler(BehaviorTypedObject):
             (cls.addBasicTypeNamedWith, 'addBasicTypeNamed:with:'),
             (cls.addBindingNamedWith, 'addBindingNamed:with:'),
 
+            (cls.setParseTreeASTMaping, 'setParseTreeASTMaping:'),
+
             (cls.enableTypeSystem, 'enableTypeSystem'),
             (cls.enterTopLevelNamespace, 'enterTopLevelNamespace'),
             (cls.enterNamespaceNamed, 'enterNamespaceNamed:'),
+
+            (cls.primitiveFailed, 'primitiveFailed'),
+            (cls.subclassResponsibility, 'subclassResponsibility'),
 
             ## Utility
             (cls.print, 'print:')
@@ -139,8 +144,18 @@ class BootstrapCompiler(BehaviorTypedObject):
         type = SimpleType(name = typeNameSymbol, supertype = superclass, schema = GCClassTypeSchema(instanceVariables))
         self.addBasicTypeWithName(type, typeNameSymbol)
 
+    def setParseTreeASTMaping(self, parseTreeASTMapping):
+        self.parseTreeASTMapping = parseTreeASTMapping
+        print(parseTreeASTMapping)
+
     def enableTypeSystem(self):
         self.isTypeSystemEnabled = True
 
     def print(self, string):
         print(string)
+
+    def subclassResponsibility(self):
+        raise SubclassResponsibility()
+
+    def primitiveFailed(self):
+        raise PrimitiveFailed()

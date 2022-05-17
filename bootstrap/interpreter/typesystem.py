@@ -27,6 +27,9 @@ class ValueInterface:
     def getSymbolBindingReferenceValue(self):
         return self
 
+    def yourself(self):
+        return self
+
 class TypeInterface:
     def runWithIn(self, machine, selector, arguments, receiver):
         raise NotImplementedError()
@@ -320,7 +323,9 @@ class TypeBuilder(BehaviorTypedObject):
             (cls.newFloatTypeWithSizeAndAlignment, 'newFloatTypeWithSize:alignment:'),
 
             (cls.newGCClassWithSlots, 'newGCClassWithSlots:'),
-            (cls.newGCClassWithSuperclassSlots, 'newGCClassWithSuperclass:slots:')
+            (cls.newGCClassWithSuperclassSlots, 'newGCClassWithSuperclass:slots:'),
+            (cls.newGCClassWithPublicSlots, 'newGCClassWithPublicSlots:'),
+            (cls.newGCClassWithSuperclassPublicSlots, 'newGCClassWithSuperclass:publicSlots:')
         ])
 
     def newAbsurdType(self):
@@ -345,6 +350,12 @@ class TypeBuilder(BehaviorTypedObject):
         return SimpleType(supertype = supertype, schema = GCClassTypeSchema(instanceVariable))
 
     def newGCClassWithSlots(self, instanceVariable):
+        return SimpleType(schema = GCClassTypeSchema(instanceVariable))
+
+    def newGCClassWithSuperclassPublicSlots(self, supertype, instanceVariable):
+        return SimpleType(supertype = supertype, schema = GCClassTypeSchema(instanceVariable))
+
+    def newGCClassWithPublicSlots(self, instanceVariable):
         return SimpleType(schema = GCClassTypeSchema(instanceVariable))
 
     def newBooleanTypeWithSizeAndAlignment(self, size, alignment):

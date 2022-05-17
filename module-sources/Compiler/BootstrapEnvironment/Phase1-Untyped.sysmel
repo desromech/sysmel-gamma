@@ -9,9 +9,9 @@ __BootstrapCompiler__
     addBasicTypeNamed: #Absurd with: __TypeBuilder__ newAbsurdType;
     addBasicTypeNamed: #Trivial with: __TypeBuilder__ newTrivialType;
 
-    addBasicTypeNamed: #True with: __TypeBuilder__ newTrivialType;
     addBasicTypeNamed: #False with: __TypeBuilder__ newTrivialType;
-    addBasicTypeNamed: #Boolean with: (__TypeBuilder__ newSumTypeWith: (True, False));
+    addBasicTypeNamed: #True with: __TypeBuilder__ newTrivialType;
+    addBasicTypeNamed: #Boolean with: (__TypeBuilder__ newSumTypeWith: (False, True));
 
     ## Base type system
     addBasicTypeNamed: #AnyValue with: (__TypeBuilder__ newGCClassWithSlots: #{});
@@ -27,6 +27,11 @@ __BootstrapCompiler__
     addBasicTypeNamed: #Float with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
 
     ## The polymorphic types
+    addBasicTypeNamed: #Nothing with: __TypeBuilder__ newTrivialType;
+    addBindingNamed: #Optional with: {:(Type)optionalType :: Type |
+        __TypeBuilder__ newSumTypeWith: (Nothing, optionalType)
+    } templated;
+
     addBindingNamed: #Array with: {:(Type)elementType :(Integer)bounds :: Type |
         __TypeBuilder__ newArrayTypeFor: elementType withBounds: bounds
     } templated;
@@ -76,29 +81,121 @@ MetaType withSelector: #"[]" addMethod: {:(Type)self :(Integer)bounds :: Type |
     Array(self, bounds)
 }.
 
+MetaType withSelector: #"optional" addMethod: {:(Type)self :: Type |
+    Optional(self)
+}.
+
 ## The AST nodes.
 __BootstrapCompiler__
     enterTopLevelNamespace;
-    enterNamespaceNamed: #BootstrapCompiler;
+    enterNamespaceNamed: #SysmelCompiler;
     enterNamespaceNamed: #AST;
     addBindingNamed: #SourceCollection with: (__TypeBuilder__ newGCClassWithSlots: #{});
     addBindingNamed: #SourcePosition with: (__TypeBuilder__ newGCClassWithSlots: #{});
-    addBindingNamed: #Node with: (__TypeBuilder__ newGCClassWithSlots: #{
-        sourcePosition: BootstrapCompiler AST SourcePosition
+    addBindingNamed: #Node with: (__TypeBuilder__ newGCClassWithPublicSlots: #{
+        sourcePosition: SysmelCompiler AST SourcePosition.
+        analyzedType: Type optional
     });
-    addBindingNamed: #ArgumentDefinitionNode with: (__TypeBuilder__ newGCClassWithSuperclass: BootstrapCompiler AST Node slots: #{
-        name: BootstrapCompiler AST Node.
-        type: BootstrapCompiler AST Node.
+    addBindingNamed: #ArgumentDefinitionNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
+        name: SysmelCompiler AST Node.
+        type: SysmelCompiler AST Node.
     });
-    addBindingNamed: #CleanUpScopeNode with: (__TypeBuilder__ newGCClassWithSuperclass: BootstrapCompiler AST Node slots: #{
-        body: BootstrapCompiler AST Node
+    addBindingNamed: #BlockClosureNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
+        arguments: ArrayList(SysmelCompiler AST Node).
+        body: SysmelCompiler AST Node.
     });
-    addBindingNamed: #SequenceNode with: (__TypeBuilder__ newGCClassWithSuperclass: BootstrapCompiler AST Node slots: #{
-        expressions: ArrayList(BootstrapCompiler AST)
+    addBindingNamed: #ChainedMessageNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
+        selector: SysmelCompiler AST Node.
+        arguments: ArrayList(SysmelCompiler AST Node)
     });
-    addBindingNamed: #SemanticErrorNode with: (__TypeBuilder__ newGCClassWithSuperclass: BootstrapCompiler AST Node slots: #{
+    addBindingNamed: #CleanUpScopeNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
+        body: SysmelCompiler AST Node.
+        cleanUpAction: SysmelCompiler AST Node optional.
+    });
+    addBindingNamed: #LexicalScopeNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
+        body: SysmelCompiler AST Node
+    });
+    addBindingNamed: #LiteralValueNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
+        value: AnyValue
+    });
+    addBindingNamed: #SequenceNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
+        expressions: ArrayList(SysmelCompiler AST Node)
+    });
+
+    addBindingNamed: #MakeAssociationNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
+        key: SysmelCompiler AST Node.
+        value: SysmelCompiler AST Node.
+    });
+    addBindingNamed: #MakeTupleNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
+        elements: ArrayList(SysmelCompiler AST Node).
+    });
+    addBindingNamed: #MakeDictionaryNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
+        elements: ArrayList(SysmelCompiler AST Node).
+    });
+
+    addBindingNamed: #MessageSendNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
+        receiver: SysmelCompiler AST Node.
+        selector: SysmelCompiler AST Node.
+        arguments: ArrayList(SysmelCompiler AST Node)
+    });
+    addBindingNamed: #MessageChainNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
+        receiver: SysmelCompiler AST Node.
+        chainedMessages: ArrayList(SysmelCompiler AST Node)
+    });
+
+    addBindingNamed: #SpliceNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
+        expression: SysmelCompiler AST Node.
+    });
+    addBindingNamed: #QuoteNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
+        expression: SysmelCompiler AST Node.
+    });
+    addBindingNamed: #QuasiQuoteNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
+        expression: SysmelCompiler AST Node.
+    });
+    addBindingNamed: #QuasiUnquoteNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
+        expression: SysmelCompiler AST Node.
+    });
+
+    addBindingNamed: #ErrorNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
         message: String
-    }).
+    });
+    addBindingNamed: #ParseErrorNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST ErrorNode publicSlots: #{});
+    addBindingNamed: #SemanticErrorNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST ErrorNode publicSlots: #{});
+
+    ## Stablish the basic ast node mapping that is required for converting a parse tree onto the actual AST object.
+    setParseTreeASTMaping: #{
+        SourceCollection: SysmelCompiler AST SourceCollection.
+        SourcePosition: SysmelCompiler AST SourcePosition.
+        Node: SysmelCompiler AST Node.
+
+        ArgumentDefinitionNode: SysmelCompiler AST ArgumentDefinitionNode.
+        BlockClosureNode: SysmelCompiler AST BlockClosureNode.
+        ChainedMessageNode: SysmelCompiler AST ChainedMessageNode.
+        CleanUpScopeNode: SysmelCompiler AST CleanUpScopeNode.
+        MakeAssociationNode: SysmelCompiler AST MakeAssociationNode.
+        MakeDictionaryNode: SysmelCompiler AST MakeDictionaryNode.
+        MakeTupleNode: SysmelCompiler AST MakeTupleNode.
+        MessageSendNode: SysmelCompiler AST MessageSendNode.
+        MessageChainNode: SysmelCompiler AST MessageChainNode.
+        SequenceNode: SysmelCompiler AST SequenceNode.
+        SpliceNode: SysmelCompiler AST SpliceNode.
+        QuoteNode: SysmelCompiler AST QuoteNode.
+        QuasiQuoteNode: SysmelCompiler AST QuasiQuoteNode.
+        QuasiUnquoteNode: SysmelCompiler AST QuasiUnquoteNode.
+        LiteralValueNode: SysmelCompiler AST LiteralValueNode.
+
+        ErrorNode: SysmelCompiler AST ErrorNode.
+        ParseErrorNode: SysmelCompiler AST ParseErrorNode.
+        SemanticErrorNode: SysmelCompiler AST SemanticErrorNode.
+    }.
+
+## Semantic analysis types.
+__BootstrapCompiler__
+    enterTopLevelNamespace;
+    enterNamespaceNamed: #SysmelCompiler;
+    enterNamespaceNamed: #Semantic;
+    addBindingNamed: #Environment with: (__TypeBuilder__ newGCClassWithSlots: #{});
+    addBindingNamed: #EvaluationMachine with: (__TypeBuilder__ newGCClassWithSlots: #{}).
 
 ## At the end of this phase we can enable the actual type system.
 __BootstrapCompiler__

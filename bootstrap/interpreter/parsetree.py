@@ -216,11 +216,10 @@ class PTBinaryExpression(PTNode):
         return PTChainedMessage(self.operation, [self.right])
 
     def evaluateWithEnvironment(self, machine, environment):
-        receiver = self.receiver.evaluateWithEnvironment(machine, environment)
-        selector = self.selector.evaluateWithEnvironment(machine, environment)
+        selector = self.operation.evaluateWithEnvironment(machine, environment)
         left = self.left.evaluateWithEnvironment(machine, environment)
         right = self.right.evaluateWithEnvironment(machine, environment)
-        return receiver.performWithArguments(machine, selector, [left, right])
+        return left.performWithArguments(machine, selector, [right])
 
 class PTUnaryMessage(PTNode):
     def __init__(self, receiver, selector):

@@ -9,3 +9,9 @@ class InterpreterEvaluationError(InterpreterError):
 
 class DoesNotUnderstand(InterpreterError):
     pass
+
+class SubclassResponsibility(InterpreterError):
+    pass
+
+class PrimitiveFailed(InterpreterError):
+    pass
