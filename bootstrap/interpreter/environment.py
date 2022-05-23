@@ -81,6 +81,7 @@ class BootstrapCompiler(BehaviorTypedObject):
             (cls.addKeywordBindingNamedWith, 'addKeywordBindingNamed:with:'),
 
             (cls.setParseTreeASTMaping, 'setParseTreeASTMaping:'),
+            (cls.setSemanticAnalysisMapping, 'setSemanticAnalysisMapping:'),
 
             (cls.enableTypeSystem, 'enableTypeSystem'),
             (cls.enterTopLevelNamespace, 'enterTopLevelNamespace'),
@@ -155,6 +156,10 @@ class BootstrapCompiler(BehaviorTypedObject):
     def setParseTreeASTMaping(self, parseTreeASTMapping):
         self.parseTreeASTMapping = parseTreeASTMapping
         print(parseTreeASTMapping)
+
+    def setSemanticAnalysisMapping(self, semanticAnalysisMapping):
+        self.semanticAnalysisMapping = semanticAnalysisMapping
+        print(semanticAnalysisMapping)
 
     def enableTypeSystem(self):
         self.isTypeSystemEnabled = True
