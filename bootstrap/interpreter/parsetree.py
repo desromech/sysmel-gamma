@@ -272,6 +272,21 @@ class PTKeywordMessage(PTNode):
         return True
 
     def evaluateWithEnvironment(self, machine, environment):
+        if self.receiver is None:
+            selector = self.selector.evaluateWithEnvironment(machine, environment)
+            if selector == 'if:then:else:':
+                condition = self.arguments[0].evaluateWithEnvironment(machine, environment)
+                if condition.asBooleanValue():
+                    return self.arguments[1].evaluateWithEnvironment(machine, environment)
+                else:
+                    return self.arguments[2].evaluateWithEnvironment(machine, environment)
+
+            boundMessage = environment.lookupSymbolRecursively(selector)
+            if boundMessage is None:
+                self.raiseEvaluationError('Failed to lookup message without receiver and selector %s.' % selector)
+            arguments = list(map(lambda arg: arg.evaluateWithEnvironment(machine, environment), self.arguments))
+            return boundMessage.runWithIn(machine, selector, arguments, environment)
+
         receiver = self.receiver.evaluateWithEnvironment(machine, environment)
         selector = self.selector.evaluateWithEnvironment(machine, environment)
         arguments = list(map(lambda arg: arg.evaluateWithEnvironment(machine, environment), self.arguments))

@@ -1,3 +1,4 @@
+from queue import Empty
 from errors import *
 
 BasicTypeEnvironment = None
@@ -27,8 +28,14 @@ class ValueInterface:
     def getSymbolBindingReferenceValue(self):
         return self
 
+    def onGlobalBindingWithSymbolAdded(self, symbol):
+        pass
+
     def yourself(self):
         return self
+
+    def asBooleanValue(self):
+        raise NonBooleanEvaluableValue()
 
 class TypeInterface:
     def runWithIn(self, machine, selector, arguments, receiver):
@@ -73,6 +80,12 @@ class Association(TypedValue):
     def getType(self):
         return getBasicTypeNamed(Symbol('AnyAssociation'))
 
+    def __str__(self) -> str:
+        return str(self.key) + ' : ' + str(self.value)
+
+    def __repr__(self) -> str:
+        return repr(self.key) + ' : ' + repr(self.value)
+
 class Dictionary(list, TypedValue):
     def getType(self):
         return getBasicTypeNamed(Symbol('AnyDictionary'))
@@ -83,6 +96,16 @@ class PrimitiveMethod:
 
     def getType(self):
         return getBasicTypeNamed(Symbol('PrimitiveMethod'))
+
+    def runWithIn(self, machine, selector, arguments, receiver):
+        return self.method(receiver, *arguments)
+
+class TypeSchemaPrimitiveMethod:
+    def __init__(self, method):
+        self.method = method
+
+    def getType(self):
+        return getBasicTypeNamed(Symbol('TypeSchemaPrimitiveMethod'))
 
     def runWithIn(self, machine, selector, arguments, receiver):
         return self.method(receiver, *arguments)
@@ -146,6 +169,7 @@ class TemplatedBlockClosure(AbstractMemoizedBlockClosure):
         callArguments = (result,)
         for resultExtension in self.resultExtensionList:
             resultExtension.performWithArguments(machine, callSymbol, callArguments)
+        return result
 
     def extendWith(self, machine, extension):
         callSymbol = Symbol('()')
@@ -159,13 +183,94 @@ class TemplatedBlockClosure(AbstractMemoizedBlockClosure):
         return super().performWithArguments(machine, selector, arguments)
 
 class TypeSchema:
+    def __init__(self):
+        self.methodDict = {}
+        self.metaTypeMethodDict = {}
+        self.buildPrimitiveMethodDictionary()
+
+    def isDefaultConstructible(self):
+        return False
+
+    def buildPrimitiveMethodDictionary(self):
+        pass
+
+    def lookupPrimitiveWithSelector(self, selector):
+        if selector in self.methodDict:
+            return self.methodDict[selector]
+        return None
+
+    def lookupMetaTypePrimitiveWithSelector(self, selector):
+        if selector in self.metaTypeMethodDict:
+            return self.metaTypeMethodDict[selector]
+        return None
+
+    def basicNew(self, type):
+        raise NonInstanceableType()
+
+    def basicNewWithValue(self, type, value):
+        raise NonInstanceableType()
+
+    def basicNewWithSequentialSlots(self, type, namedSlots):
+        raise NonInstanceableType()
+
+    def basicNewWithNamedSlots(self, type, namedSlots):
+        raise NonInstanceableType()
+
+    def isTrivialTypeSchema(self):
+        return False
+
+class TrivialTypedValue(TypedValue):
+    def __init__(self, type):
+        self.type = type
+        self.globalBindingName = None
+
+    def getType(self):
+        return self.type
+
+    def onGlobalBindingWithSymbolAdded(self, bindingName):
+        self.globalBindingName = bindingName
+
+    def __repr__(self):
+        if self.globalBindingName is not None:
+            return self.globalBindingName
+        return str(self.type) + '()'
+
+class OpaqueTypeSchema(TypeSchema):
     pass
 
 class EmptyTypeSchema(TypeSchema):
-    pass
+    def __init__(self):
+        super().__init__()
+        self.uniqueInstance = None
+
+    def isDefaultConstructible(self):
+        return True
+
+    def buildPrimitiveMethodDictionary(self):
+        self.metaTypeMethodDict[Symbol('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew)
+        return super().buildPrimitiveMethodDictionary()
+
+    def basicNew(self, valueType):
+        if self.uniqueInstance is None:
+            self.uniqueInstance = TrivialTypedValue(valueType)
+        return self.uniqueInstance
+
+    def isTrivialTypeSchema(self):
+        return True
 
 class AbsurdTypeSchema(TypeSchema):
     pass
+
+class PrimitiveNumberTypeValue(TypedValue):
+    def __init__(self, type, value):
+        self.type = type
+        self.value = value
+
+    def getType(self):
+        return self.type
+
+    def __repr__(self):
+        return '%s(%s)' % (str(self.type), str(self.value))
 
 class PrimitiveTypeSchema(TypeSchema):
     def __init__(self, size, alignment):
@@ -173,35 +278,182 @@ class PrimitiveTypeSchema(TypeSchema):
         self.size = size
         self.alignment = alignment
 
-class PrimitiveUnsignedIntegerTypeSchema(PrimitiveTypeSchema):
+class PrimitiveNumberTypeSchema(PrimitiveTypeSchema):
+    def buildPrimitiveMethodDictionary(self):
+        self.metaTypeMethodDict[Symbol('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew)
+        self.metaTypeMethodDict[Symbol('basicNew:')] = TypeSchemaPrimitiveMethod(self.basicNewWithValue)
+        return super().buildPrimitiveMethodDictionary()
+
+    def basicNew(self, valueType):
+        return self.basicNewWithValue(valueType, 0)
+
+    def basicNewWithValue(self, valueType, initialValue):
+        return PrimitiveNumberTypeValue(valueType, self.normalizeValueToValidRange(initialValue))
+
+    def normalizeValueToValidRange(self, value):
+        return value
+
+class PrimitiveIntegerTypeSchema(PrimitiveNumberTypeSchema):
+    def __init__(self, size, alignment):
+        super().__init__(size, alignment)
+        self.memoryBits = size*8
+        self.memoryBitMask = (1<<(self.memoryBits)) - 1
+
+    def normalizeValueToValidRange(self, value):
+        return int(value) & self.memoryBitMask
+
+class PrimitiveUnsignedIntegerTypeSchema(PrimitiveIntegerTypeSchema):
     pass
 
-class PrimitiveSignedIntegerTypeSchema(PrimitiveTypeSchema):
+class PrimitiveSignedIntegerTypeSchema(PrimitiveIntegerTypeSchema):
+    def __init__(self, size, alignment):
+        super().__init__(size, alignment)
+        self.signBit = 1 << (self.memoryBits - 1)
+        self.unsignedBitMask = self.memoryBitMask ^ self.signBit
+
+    def normalizeValueToValidRange(self, value):
+        intValue = int(value)
+        return (intValue & self.unsignedBitMask) - (intValue & self.signBit)
+
+class PrimitiveBooleanTypeSchema(PrimitiveIntegerTypeSchema):
+    def normalizeValueToValidRange(self, value):
+        if value == 0 or value == False:
+            return 0
+        else:
+            return 1
+
+class PrimitiveCharacterTypeSchema(PrimitiveIntegerTypeSchema):
     pass
 
-class PrimitiveBooleanTypeSchema(PrimitiveTypeSchema):
-    pass
+class PrimitiveFloatTypeSchema(PrimitiveNumberTypeSchema):
+    def normalizeValueToValidRange(self, value):
+        return float(value)
 
-class PrimitiveCharacterTypeSchema(PrimitiveTypeSchema):
-    pass
+class SumTypeValue(TypedValue):
+    def __init__(self, type, typeSelector, wrappedValue):
+        self.type = type
+        self.typeSelector = typeSelector
+        self.wrappedValue = wrappedValue
 
-class PrimitiveFloatTypeSchema(PrimitiveTypeSchema):
-    pass
+    def asBooleanValue(self):
+        if self.type.isTypeTheoryBoolean():
+            return self.typeSelector == 1
+        super().asBooleanValue()
+
+    def getType(self):
+        return self.type
+
+    def __repr__(self) -> str:
+        return '%s(%d: %s)' % (repr(self.type), self.typeSelector, repr(self.wrappedValue))
 
 class SumTypeSchema(TypeSchema):
     def __init__(self, elementTypes):
+        super().__init__()
         self.elementTypes = elementTypes
+
+    def isDefaultConstructible(self):
+        return self.elementTypes[0].isDefaultConstructible()
+
+    def buildPrimitiveMethodDictionary(self):
+        self.metaTypeMethodDict[Symbol('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew)
+        self.metaTypeMethodDict[Symbol('basicNew:')] = TypeSchemaPrimitiveMethod(self.basicNewWithValue)
+        return super().buildPrimitiveMethodDictionary()
+
+    def basicNew(self, sumType):
+        return SumTypeValue(sumType, 0, self.elementTypes[0].basicNew())
+
+    def basicNewWithValue(self, sumType, value):
+        wrappedValueType = value.getType()
+        return SumTypeValue(sumType, self.elementTypes.index(wrappedValueType), value)
+
+    def isTypeTheoryBoolean(self):
+        return len(self.elementTypes) == 2 and self.elementTypes[0].hasTrivialTypeSchema() and self.elementTypes[1].hasTrivialTypeSchema()
+
+class ProductTypeValue(TypedValue):
+    def __init__(self, type, elements):
+        self.type = type
+        self.elements = elements
+
+    def getType(self):
+        return self.type
+
+    def __repr__(self) -> str:
+        result = str(self.type) + '('
+        isFirst = True
+        for element in self.elements:
+            if isFirst:
+                isFirst = False
+            else:
+                result += ', '
+            result += repr(element)
+        result += ')'
+        return result
 
 class ProductTypeSchema(TypeSchema):
     def __init__(self, elementTypes):
+        super().__init__()
         self.elementTypes = elementTypes
+        self.isDefaultConstructibleCache = None
 
-class RecordTypeSchema(TypeSchema):
+    def buildPrimitiveMethodDictionary(self):
+        self.metaTypeMethodDict[Symbol('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew)
+        self.metaTypeMethodDict[Symbol('basicNewWithSlots:')] = TypeSchemaPrimitiveMethod(self.basicNewWithSequentialSlots)
+        return super().buildPrimitiveMethodDictionary()
+
+    def basicNew(self, productType):
+        return ProductTypeValue(productType, list(map(lambda t: t.basicNew(), self.elementTypes)))
+
+    def isDefaultConstructible(self):
+        if self.isDefaultConstructibleCache is None:
+            ## Set temporary result to False with the objective of avoiding cycles.
+            self.isDefaultConstructibleCache = False
+            for type in self.elementTypes:
+                if not type.isDefaultConstructible():
+                    return False
+            self.isDefaultConstructibleCache = True
+        return self.isDefaultConstructibleCache
+
+    def basicNewWithSequentialSlots(self, productType, slots):
+        if len(slots) != len(self.elementTypes):
+            raise MissingSlotsForInstancingType()
+        return ProductTypeValue(productType, list(slots))
+
+class RecordTypeSchema(ProductTypeSchema):
     def __init__(self, slots):
+        super().__init__(list(map(lambda s: s.value, slots)))
         self.slots = slots
+        self.slotNameDictionary = {}
+        self.slotNameTable = list(map(lambda s: s.key, slots))
+
+        slotIndex = 0
+        for assoc in self.slots:
+            slotName = assoc.key
+            self.slotNameDictionary[slotName] = slotIndex
+
+
+    def buildPrimitiveMethodDictionary(self):
+        self.metaTypeMethodDict[Symbol('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew)
+        self.metaTypeMethodDict[Symbol('basicNewWithSlots:')] = TypeSchemaPrimitiveMethod(self.basicNewWithSequentialSlots)
+        self.metaTypeMethodDict[Symbol('basicNewWithNamedSlots:')] = TypeSchemaPrimitiveMethod(self.basicNewWithNamedSlots)
+        return super().buildPrimitiveMethodDictionary()
+
+    def basicNewWithNamedSlots(self, recordType, namedSlots):
+        linearSlots = [None,] * len(self.slots)
+        for assoc in namedSlots:
+            linearSlots[self.slotNameDictionary[assoc.key]] = assoc.value
+
+        for i in range(len(linearSlots)):
+            if linearSlots[i] is None:
+                expectedSlotType = self.elementTypes[i]
+                if not expectedSlotType.isDefaultConstructible():
+                    raise MissingSlotsForInstancingType()
+                linearSlots[i] = expectedSlotType.basicNew()
+
+        return self.basicNewWithSequentialSlots(recordType, linearSlots)
 
 class ArrayTypeSchema(TypeSchema):
     def __init__(self, elementType, bounds):
+        super().__init__()
         self.elementType = elementType
         self.bounds = bounds
 
@@ -217,18 +469,33 @@ class BehaviorType(TypedValue, TypeInterface):
         self.schema = schema
         self.type = None
 
+    def onGlobalBindingWithSymbolAdded(self, symbol):
+        if self.name is None:
+            self.name = symbol
+
+    def performWithArguments(self, machine, selector, arguments):
+        return super().performWithArguments(machine, selector, arguments)
+
     def directTraits(self):
         return self.traits
 
     def lookupSelector(self, selector):
-        return self.methodDict.get(selector, None)
+        found = self.methodDict.get(selector, None)
+        if found is not None:
+            return found
+
+        ## Check a schema inserted primitive.
+        found = self.schema.lookupPrimitiveWithSelector(selector)
+        if found is not None:
+            return found
+        return None
 
     def lookupSelectorRecursively(self, selector):
         ## Check in the local method dictionary.
         found = self.lookupSelector(selector)
         if found is not None:
             return found
-        
+
         ## Find in a direct trait.
         for trait in self.directTraits():
             found = trait.lookupSelector(found)
@@ -263,7 +530,10 @@ class BehaviorType(TypedValue, TypeInterface):
     def getName(self):
         if self.name is not None:
             return self.name
-        return String('')
+        return 'a ' + self.getType().getDirectName()
+
+    def getDirectName(self):
+        return self.name
 
     def getType(self):
         if self.type is None:
@@ -279,7 +549,7 @@ class BehaviorType(TypedValue, TypeInterface):
             typeSupertype = self.supertype.getType()
         else:
             typeSupertype = self.getMetaTypeRoot()
-        return MetaType(thisType = self, supertype = typeSupertype)
+        return MetaType(thisType = self, supertype = typeSupertype, schema = OpaqueTypeSchema())
 
     def __str__(self):
         return self.getName()
@@ -295,6 +565,27 @@ class BehaviorType(TypedValue, TypeInterface):
 
     def asArrayType(self):
         return self
+
+    def basicNew(self):
+        return self.schema.basicNew(self)
+
+    def basicNewWithValue(self, value):
+        return self.schema.basicNewWithValue(self, value)
+
+    def basicNewWithSequentialSlots(self, slots):
+        return self.schema.basicNewWithSequentialSlots(self, slots)
+
+    def basicNewWithNamedSlots(self, namedSlots):
+        return self.schema.basicNewWithNamedSlots(self, namedSlots)
+
+    def hasTrivialTypeSchema(self):
+        return self.schema.isTrivialTypeSchema()
+
+    def isTypeTheoryBoolean(self):
+        return self.schema.isTypeTheoryBoolean()
+
+    def isDefaultConstructible(self):
+        return self.schema.isDefaultConstructible()
 
 class BehaviorTypedObject(TypedValue):
     def __init__(self) -> None:
@@ -314,8 +605,28 @@ class MetaType(BehaviorType):
         super().__init__(name, supertype, traits, schema, methodDict)
         self.thisType = thisType
 
+    def lookupSelector(self, selector):
+        found = self.methodDict.get(selector, None)
+        if found is not None:
+            return found
+
+        ## Check a schema inserted primitive.
+        found = self.schema.lookupPrimitiveWithSelector(selector)
+        if found is not None:
+            return found
+
+        ## Check a schema inserted meta primitive.
+        if self.thisType is not None:
+            found = self.thisType.schema.lookupMetaTypePrimitiveWithSelector(selector)
+            if found is not None:
+                return found
+        return None
+
     def getMetaTypeRoot(self):
         return None
+
+    def getDirectName(self):
+        return 'MetaType'
 
     def getName(self):
         if self.thisType is not None:
@@ -353,12 +664,14 @@ class TypeBuilder(BehaviorTypedObject):
         ])
 
     def newAbsurdType(self):
-        return SimpleType(schema=AbsurdTypeSchema())
+        return SimpleType(schema = AbsurdTypeSchema())
 
     def newTrivialType(self):
-        return SimpleType()
+        return SimpleType(schema = EmptyTypeSchema())
 
     def newProductType(self, elementTypes):
+        if len(elementTypes) == 0:
+            return self.newTrivialType()
         return SimpleType(schema = ProductTypeSchema(elementTypes))
 
     def newSumTypeWith(self, elementTypes):

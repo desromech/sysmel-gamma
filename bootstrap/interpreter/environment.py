@@ -37,6 +37,10 @@ class NamespaceLevelEnvironment(LexicalScope):
     def __init__(self, parentScope = None):
         super().__init__(parentScope)
 
+    def setSymbolBinding(self, symbol, value):
+        super().setSymbolBinding(symbol, value)
+        value.onGlobalBindingWithSymbolAdded(symbol)
+
     def performWithArguments(self, machine, selector, arguments):
         if len(arguments) == 0:
             boundSymbol = self.lookupSymbol(selector)
@@ -74,6 +78,7 @@ class BootstrapCompiler(BehaviorTypedObject):
         type.addPrimitiveMethodsWithSelectors([
             (cls.addBasicTypeNamedWith, 'addBasicTypeNamed:with:'),
             (cls.addBindingNamedWith, 'addBindingNamed:with:'),
+            (cls.addKeywordBindingNamedWith, 'addKeywordBindingNamed:with:'),
 
             (cls.setParseTreeASTMaping, 'setParseTreeASTMaping:'),
 
@@ -103,6 +108,9 @@ class BootstrapCompiler(BehaviorTypedObject):
 
     def addBindingNamedWith(self, bindingName, bindingValue):
         self.activeNamespace.setSymbolBinding(bindingName, bindingValue)
+
+    def addKeywordBindingNamedWith(self, bindingName, bindingValue):
+        self.addBindingNamedWith(bindingName, bindingValue)
 
     def addBasicTypeNamedWith(self, bindingName, basicType):
         self.addBindingNamedWith(bindingName, basicType)

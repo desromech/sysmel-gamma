@@ -15,3 +15,12 @@ class SubclassResponsibility(InterpreterError):
 
 class PrimitiveFailed(InterpreterError):
     pass
+
+class NonInstanceableType(InterpreterError):
+    pass
+
+class NonBooleanEvaluableValue(InterpreterError):
+    pass
+
+class MissingSlotsForInstancingType(InterpreterError):
+    pass
