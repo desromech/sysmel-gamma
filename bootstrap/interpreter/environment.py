@@ -49,15 +49,19 @@ class NamespaceLevelEnvironment(LexicalScope):
         return super().performWithArguments(machine, selector, arguments)
 
 class ScriptEvaluationEnvironment(LexicalScope):
-    def __init__(self, parentScope):
+    def __init__(self, parentScope, bootstrapCompiler):
         super().__init__(parentScope)
+        self.bootstrapCompiler = bootstrapCompiler
 
     def evaluateScriptFile(self, evaluationMachine, scriptFile, scriptFilename, scriptDirectory):
         self.setSymbolBinding(Symbol('__CurrentScriptFilename__'), String(scriptFilename))
         self.setSymbolBinding(Symbol('__CurrentScriptDirectory__'), String(scriptDirectory))
         scriptSource = scriptFile.read()
         parseTree = parseString(scriptSource, scriptFilename)
-        return parseTree.evaluateWithEnvironment(evaluationMachine, self)
+        if self.bootstrapCompiler.isTypeSystemEnabled:
+            print(parseTree.convertIntoGenericASTWith(self.bootstrapCompiler))
+        else:
+            return parseTree.evaluateWithEnvironment(evaluationMachine, self)
 
 class BootstrapCompiler(BehaviorTypedObject):
     def __init__(self):
@@ -67,10 +71,12 @@ class BootstrapCompiler(BehaviorTypedObject):
         self.topLevelEnvironment.setSymbolBinding('__TypeBuilder__', TypeBuilder())
         self.basicTypeEnvironment = {}
         self.isTypeSystemEnabled = False
+        self.parseTreeASTMapping = None
+        self.semanticAnalysisMapping = None
         self.enterTopLevelNamespace()
 
     def makeScriptEvaluationEnvironment(self):
-        return ScriptEvaluationEnvironment(self.topLevelEnvironment)
+        return ScriptEvaluationEnvironment(self.topLevelEnvironment, self)
 
     @classmethod
     def initializeBehaviorType(cls, type):
@@ -93,6 +99,9 @@ class BootstrapCompiler(BehaviorTypedObject):
             ## Utility
             (cls.print, 'print:')
         ])
+
+    def makeASTNodeWithSlots(self, nodeName, **namedSlots):
+        nodeType = self.parseTreeASTMapping[nodeName]
 
     def activate(self):
         setActiveBasicTypeEnvironment(self.basicTypeEnvironment)

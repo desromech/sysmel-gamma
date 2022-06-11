@@ -156,6 +156,9 @@ class PTNode:
     def evaluateWithEnvironment(self, machine, environment):
         raise NotImplementedError("Implement evaluateWithEnvironment() in subclass " + repr(self.__class__))
 
+    def convertIntoGenericASTWith(self, bootstrapCompiler):
+        raise NotImplementedError("Implement convertIntoGenericAST() in subclass " + repr(self.__class__))
+
     def raiseEvaluationError(self, message):
         raise InterpreterEvaluationError('%s: %s' % (str(self.sourcePosition), message))
 
@@ -184,6 +187,10 @@ class PTExpressionList(PTNode):
         if len(self.expressions) == 0:
             return None
         return self
+
+    def convertIntoGenericASTWith(self, bootstrapCompiler):
+        expressions = list(map(lambda expr: expr.convertIntoGenericASTWith(bootstrapCompiler), self.expressions))
+        print(expressions)
 
 class PTAssignment(PTNode):
     def __init__(self, reference, value):
