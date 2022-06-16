@@ -1,5 +1,7 @@
 from parser import parseString
 from types import MethodType
+
+from numpy import source
 from typesystem import *
 
 class IdentifierLookupScope(BehaviorTypedObject):
@@ -100,8 +102,20 @@ class BootstrapCompiler(BehaviorTypedObject):
             (cls.print, 'print:')
         ])
 
+    def convertASTSourcePosition(self, sourcePosition):
+        return sourcePosition
+
+    def makeASTNodeArraySlice(self, elements):
+        arraySliceType = self.parseTreeASTMapping.at('NodeArraySlice')
+        return arraySliceType.basicNewWithArraySliceElements(list(elements))
+
+    def makeASTNodeArrayList(self, elements):
+        arrayListType = self.parseTreeASTMapping.at('NodeArrayList')
+        return arrayListType.basicNewWithArrayListElements(list(elements))
+
     def makeASTNodeWithSlots(self, nodeName, **namedSlots):
-        nodeType = self.parseTreeASTMapping[nodeName]
+        nodeType = self.parseTreeASTMapping.at(nodeName)
+        return nodeType.basicNewWithNamedSlots(Dictionary.fromDict(namedSlots))
 
     def activate(self):
         setActiveBasicTypeEnvironment(self.basicTypeEnvironment)

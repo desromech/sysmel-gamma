@@ -1,4 +1,6 @@
 from queue import Empty
+
+from numpy import record
 from errors import *
 
 BasicTypeEnvironment = None
@@ -80,6 +82,12 @@ class Association(TypedValue):
     def getType(self):
         return getBasicTypeNamed(Symbol('AnyAssociation'))
 
+    def getKey(self):
+        return self.key
+
+    def getValue(self):
+        return self.value
+
     def __str__(self) -> str:
         return str(self.key) + ' : ' + str(self.value)
 
@@ -87,8 +95,23 @@ class Association(TypedValue):
         return repr(self.key) + ' : ' + repr(self.value)
 
 class Dictionary(list, TypedValue):
+
+    @classmethod
+    def fromDict(cls, d):
+        return cls(map(lambda pair: Association(pair[0], pair[1]), d.items()))
+
     def getType(self):
         return getBasicTypeNamed(Symbol('AnyDictionary'))
+
+    def getHashTable(self):
+        if not hasattr(self, 'hashTable'):
+            self.hashTable = {}
+            for assoc in self:
+                self.hashTable[assoc.getKey()] = assoc.getValue()
+        return self.hashTable
+
+    def at(self, key):
+        return self.getHashTable()[key]
 
 class PrimitiveMethod:
     def __init__(self, method):
@@ -279,6 +302,9 @@ class PrimitiveTypeSchema(TypeSchema):
         self.alignment = alignment
 
 class PrimitiveNumberTypeSchema(PrimitiveTypeSchema):
+    def isDefaultConstructible(self):
+        return True
+
     def buildPrimitiveMethodDictionary(self):
         self.metaTypeMethodDict[Symbol('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew)
         self.metaTypeMethodDict[Symbol('basicNew:')] = TypeSchemaPrimitiveMethod(self.basicNewWithValue)
@@ -419,16 +445,21 @@ class ProductTypeSchema(TypeSchema):
         return ProductTypeValue(productType, list(slots))
 
 class RecordTypeSchema(ProductTypeSchema):
-    def __init__(self, slots):
-        super().__init__(list(map(lambda s: s.value, slots)))
+    def __init__(self, slots, supertypeSchema = None):
         self.slots = slots
+        self.allSlots = slots
+        if supertypeSchema is not None:
+            self.allSlots = supertypeSchema.allSlots + self.allSlots
         self.slotNameDictionary = {}
-        self.slotNameTable = list(map(lambda s: s.key, slots))
+        self.slotNameTable = list(map(lambda s: s.key, self.allSlots))
+
+        super().__init__(list(map(lambda s: s.value, self.allSlots)))
 
         slotIndex = 0
-        for assoc in self.slots:
+        for assoc in self.allSlots:
             slotName = assoc.key
             self.slotNameDictionary[slotName] = slotIndex
+            slotIndex += 1
 
 
     def buildPrimitiveMethodDictionary(self):
@@ -438,24 +469,65 @@ class RecordTypeSchema(ProductTypeSchema):
         return super().buildPrimitiveMethodDictionary()
 
     def basicNewWithNamedSlots(self, recordType, namedSlots):
-        linearSlots = [None,] * len(self.slots)
+        linearSlots = [None,] * len(self.allSlots)
         for assoc in namedSlots:
-            linearSlots[self.slotNameDictionary[assoc.key]] = assoc.value
+            linearSlots[self.slotNameDictionary[assoc.getKey()]] = assoc.getValue()
 
         for i in range(len(linearSlots)):
             if linearSlots[i] is None:
                 expectedSlotType = self.elementTypes[i]
                 if not expectedSlotType.isDefaultConstructible():
-                    raise MissingSlotsForInstancingType()
+                    raise MissingSlotsForInstancingType('MissingSlotsForInstancingType %s' % repr(recordType))
                 linearSlots[i] = expectedSlotType.basicNew()
 
         return self.basicNewWithSequentialSlots(recordType, linearSlots)
+
+    def basicNewWithArrayListElements(self, recordType, elements):
+        return elements
+
+    def basicNewWithArraySliceElements(self, recordType, elements):
+        assert len(self.elementTypes) == 2
+        return self.basicNewWithSequentialSlots(recordType, [
+            self.elementTypes[0].basicNewWithValue(elements),
+            self.elementTypes[1].basicNewWithValue(len(elements))
+        ])
 
 class ArrayTypeSchema(TypeSchema):
     def __init__(self, elementType, bounds):
         super().__init__()
         self.elementType = elementType
         self.bounds = bounds
+
+class PointerTypeValue(TypedValue):
+    def __init__(self, type, value, baseIndex = 0):
+        self.type = type
+        self.value = value
+        self.baseIndex = baseIndex
+
+    def getType(self):
+        return self.type
+
+    def __repr__(self):
+        return '%s(%s:%d)' % (str(self.type), str(self.value), self.baseIndex)
+
+class PointerTypeSchema(TypeSchema):
+    def __init__(self, elementType):
+        super().__init__()
+        self.elementType = elementType
+
+    def isDefaultConstructible(self):
+        return True
+
+    def buildPrimitiveMethodDictionary(self):
+        self.metaTypeMethodDict[Symbol('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew)
+        self.metaTypeMethodDict[Symbol('basicNew:')] = TypeSchemaPrimitiveMethod(self.basicNewWithValue)
+        return super().buildPrimitiveMethodDictionary()
+
+    def basicNew(self, valueType):
+        return PointerTypeValue(valueType, 0)
+
+    def basicNewWithValue(self, valueType, initialValue):
+        return PointerTypeValue(valueType, initialValue)
 
 class GCClassTypeSchema(RecordTypeSchema):
     pass
@@ -578,6 +650,12 @@ class BehaviorType(TypedValue, TypeInterface):
     def basicNewWithNamedSlots(self, namedSlots):
         return self.schema.basicNewWithNamedSlots(self, namedSlots)
 
+    def basicNewWithArrayListElements(self, elements):
+        return self.schema.basicNewWithArrayListElements(self, elements)
+
+    def basicNewWithArraySliceElements(self, elements):
+        return self.schema.basicNewWithArraySliceElements(self, elements)
+
     def hasTrivialTypeSchema(self):
         return self.schema.isTrivialTypeSchema()
 
@@ -650,6 +728,7 @@ class TypeBuilder(BehaviorTypedObject):
             (cls.newSumTypeWith, 'newSumTypeWith:'),
             (cls.newRecordTypeWith, 'newRecordTypeWith:'),
             (cls.newArrayTypeForWithBounds, 'newArrayTypeFor:withBounds:'),
+            (cls.newPointerTypeFor, 'newPointerTypeFor:'),
 
             (cls.newBooleanTypeWithSizeAndAlignment, 'newBooleanTypeWithSize:alignment:'),
             (cls.newUnsignedIntegerTypeWithSizeAndAlignment, 'newUnsignedIntegerTypeWithSize:alignment:'),
@@ -683,14 +762,17 @@ class TypeBuilder(BehaviorTypedObject):
     def newArrayTypeForWithBounds(self, elementType, bounds):
         return SimpleType(schema = ArrayTypeSchema(elementType, bounds))
 
+    def newPointerTypeFor(self, elementType):
+        return SimpleType(schema = PointerTypeSchema(elementType))
+
     def newGCClassWithSuperclassSlots(self, supertype, instanceVariable):
-        return SimpleType(supertype = supertype, schema = GCClassTypeSchema(instanceVariable))
+        return SimpleType(supertype = supertype, schema = GCClassTypeSchema(instanceVariable, supertypeSchema = supertype.schema))
 
     def newGCClassWithSlots(self, instanceVariable):
         return SimpleType(schema = GCClassTypeSchema(instanceVariable))
 
     def newGCClassWithSuperclassPublicSlots(self, supertype, instanceVariable):
-        return SimpleType(supertype = supertype, schema = GCClassTypeSchema(instanceVariable))
+        return SimpleType(supertype = supertype, schema = GCClassTypeSchema(instanceVariable, supertypeSchema = supertype.schema))
 
     def newGCClassWithPublicSlots(self, instanceVariable):
         return SimpleType(schema = GCClassTypeSchema(instanceVariable))

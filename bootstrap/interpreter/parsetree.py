@@ -1,3 +1,4 @@
+from ast import Expression
 from source_collection import *
 from errors import *
 from typesystem import *
@@ -189,8 +190,10 @@ class PTExpressionList(PTNode):
         return self
 
     def convertIntoGenericASTWith(self, bootstrapCompiler):
-        expressions = list(map(lambda expr: expr.convertIntoGenericASTWith(bootstrapCompiler), self.expressions))
-        print(expressions)
+        return bootstrapCompiler.makeASTNodeWithSlots('SequenceNode',
+            sourcePosition = bootstrapCompiler.convertASTSourcePosition(self.sourcePosition),
+            expressions = bootstrapCompiler.makeASTNodeArraySlice(map(lambda expr: expr.convertIntoGenericASTWith(bootstrapCompiler), self.expressions))
+        )
 
 class PTAssignment(PTNode):
     def __init__(self, reference, value):
@@ -228,6 +231,14 @@ class PTBinaryExpression(PTNode):
         right = self.right.evaluateWithEnvironment(machine, environment)
         return left.performWithArguments(machine, selector, [right])
 
+    def convertIntoGenericASTWith(self, bootstrapCompiler):
+        return bootstrapCompiler.makeASTNodeWithSlots('MessageSendNode',
+            sourcePosition = bootstrapCompiler.convertASTSourcePosition(self.sourcePosition),
+            selector = self.operation.convertIntoGenericASTWith(bootstrapCompiler),
+            receiver = self.left.convertIntoGenericASTWith(bootstrapCompiler),
+            arguments = bootstrapCompiler.makeASTNodeArraySlice([self.right.convertIntoGenericASTWith(bootstrapCompiler)])
+        )
+
 class PTUnaryMessage(PTNode):
     def __init__(self, receiver, selector):
         PTNode.__init__(self)
@@ -251,6 +262,13 @@ class PTUnaryMessage(PTNode):
         receiver = self.receiver.evaluateWithEnvironment(machine, environment)
         selector = self.selector.evaluateWithEnvironment(machine, environment)
         return receiver.performWithArguments(machine, selector, [])
+
+    def convertIntoGenericASTWith(self, bootstrapCompiler):
+        return bootstrapCompiler.makeASTNodeWithSlots('MessageSendNode',
+            sourcePosition = bootstrapCompiler.convertASTSourcePosition(self.sourcePosition),
+            selector = self.selector.convertIntoGenericASTWith(bootstrapCompiler),
+            receiver = self.receiver.convertIntoGenericASTWith(bootstrapCompiler)
+        )
 
 class PTChainedMessage(PTNode):
     def __init__(self, selector, arguments):
@@ -298,6 +316,21 @@ class PTKeywordMessage(PTNode):
         selector = self.selector.evaluateWithEnvironment(machine, environment)
         arguments = list(map(lambda arg: arg.evaluateWithEnvironment(machine, environment), self.arguments))
         return receiver.performWithArguments(machine, selector, arguments)
+
+    def convertIntoGenericASTWith(self, bootstrapCompiler):
+        if self.receiver is not None:
+            return bootstrapCompiler.makeASTNodeWithSlots('MessageSendNode',
+                sourcePosition = bootstrapCompiler.convertASTSourcePosition(self.sourcePosition),
+                selector = self.selector.convertIntoGenericASTWith(bootstrapCompiler),
+                receiver = self.receiver.convertIntoGenericASTWith(bootstrapCompiler),
+                arguments = bootstrapCompiler.makeASTNodeArraySlice(map(lambda arg: arg.convertIntoGenericASTWith(bootstrapCompiler), self.arguments))
+            )
+        else:
+            return bootstrapCompiler.makeASTNodeWithSlots('MessageSendNode',
+                sourcePosition = bootstrapCompiler.convertASTSourcePosition(self.sourcePosition),
+                selector = self.selector.convertIntoGenericASTWith(bootstrapCompiler),
+                arguments = bootstrapCompiler.makeASTNodeArraySlice(map(lambda arg: arg.convertIntoGenericASTWith(bootstrapCompiler), self.arguments))
+            )
 
 class PTMessageChain(PTNode):
     def __init__(self, receiver, messages):
@@ -426,6 +459,12 @@ class PTIdentifierReference(PTNode):
         if binding is None:
             self.raiseEvaluationError('Symbol %s is not bound in current scope.' % self.value)
         return binding.getSymbolBindingReferenceValue()
+
+    def convertIntoGenericASTWith(self, bootstrapCompiler):
+        return bootstrapCompiler.makeASTNodeWithSlots('IdentifierReferenceNode',
+            sourcePosition = bootstrapCompiler.convertASTSourcePosition(self.sourcePosition),
+            value = self.value
+        )
 
 class PTLexicalBlock(PTNode):
     def __init__(self, pragmas, body, tokens):
@@ -558,6 +597,12 @@ class PTLiteral(PTNode):
 
     def evaluateWithEnvironment(self, machine, environment):
         return self.value
+
+    def convertIntoGenericASTWith(self, bootstrapCompiler):
+        return bootstrapCompiler.makeASTNodeWithSlots('LiteralValueNode',
+            sourcePosition = bootstrapCompiler.convertASTSourcePosition(self.sourcePosition),
+            value = self.value
+        )
 
 class PTLiteralInteger(PTLiteral):
     def isLiteralInteger(self):

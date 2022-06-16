@@ -32,28 +32,6 @@ __BootstrapCompiler__
     addKeywordBindingNamed: #true with: True basicNew;
     addKeywordBindingNamed: #nil with: Undefined basicNew;
 
-    ## The polymorphic types
-    addBindingNamed: #Optional with: {:(Type)optionalType :: Type |
-        __TypeBuilder__ newSumTypeWith: (Undefined, optionalType)
-    } templated;
-
-    addBindingNamed: #Array with: {:(Type)elementType :(Integer)bounds :: Type |
-        __TypeBuilder__ newArrayTypeFor: elementType withBounds: bounds
-    } templated;
-
-    addBindingNamed: #Association with: {:(Type)key :(Type)value :: Type |
-        __TypeBuilder__ newRecordTypeWith: #{
-            key: key.
-            value: value.
-        }
-    } templated;
-    addBasicTypeNamed: #AnyAssociation with: Association(AnyValue, AnyValue);
-
-    addBindingNamed: #ArrayList with: {:(Type)elementType :: Type |
-        __TypeBuilder__ newGCClassWithSlots: #{}
-    } templated;
-    addBasicTypeNamed: #AnyArrayList with: ArrayList(AnyValue);
-
     ## The primitive types
     addBasicTypeNamed: #Boolean8 with: (__TypeBuilder__ newBooleanTypeWithSize: 1 alignment: 1);
     addBasicTypeNamed: #Boolean16 with: (__TypeBuilder__ newBooleanTypeWithSize: 2 alignment: 2);
@@ -63,6 +41,11 @@ __BootstrapCompiler__
     addBasicTypeNamed: #UInt16 with: (__TypeBuilder__ newUnsignedIntegerTypeWithSize: 2 alignment: 2);
     addBasicTypeNamed: #UInt32 with: (__TypeBuilder__ newUnsignedIntegerTypeWithSize: 4 alignment: 4);
     addBasicTypeNamed: #UInt64 with: (__TypeBuilder__ newUnsignedIntegerTypeWithSize: 8 alignment: 8);
+
+    ## TODO: Add support for 32 bits targets:
+    addBasicTypeNamed: #UIntPointer with: UInt64;
+    addBasicTypeNamed: #IntPointer with: UInt64;
+    addBasicTypeNamed: #Size with: UIntPointer;
 
     addBasicTypeNamed: #Int8 with: (__TypeBuilder__ newSignedIntegerTypeWithSize: 1 alignment: 1);
     addBasicTypeNamed: #Int16 with: (__TypeBuilder__ newSignedIntegerTypeWithSize: 2 alignment: 2);
@@ -75,7 +58,44 @@ __BootstrapCompiler__
 
     addBasicTypeNamed: #Float16 with: (__TypeBuilder__ newFloatTypeWithSize: 2 alignment: 2);
     addBasicTypeNamed: #Float32 with: (__TypeBuilder__ newFloatTypeWithSize: 4 alignment: 4);
-    addBasicTypeNamed: #Float64 with: (__TypeBuilder__ newFloatTypeWithSize: 8 alignment: 8).
+    addBasicTypeNamed: #Float64 with: (__TypeBuilder__ newFloatTypeWithSize: 8 alignment: 8);
+
+    ## The polymorphic types
+    addBindingNamed: #Optional with: {:(Type)optionalType :: Type |
+        __TypeBuilder__ newSumTypeWith: (Undefined, optionalType)
+    } templated;
+
+    addBindingNamed: #Array with: {:(Type)elementType :(Integer)bounds :: Type |
+        __TypeBuilder__ newArrayTypeFor: elementType withBounds: bounds
+    } templated;
+
+    addBindingNamed: #Pointer with: {:(Type)elementType :: Type |
+        __TypeBuilder__ newPointerTypeFor: elementType
+    } templated;
+
+    addBindingNamed: #ArraySlice with: {:(Type)elementType :: Type |
+        __TypeBuilder__ newRecordTypeWith: #{
+            elements: Pointer(elementType).
+            size: Size.
+        }
+    } templated;
+    addBasicTypeNamed: #AnyArraySlice with: ArraySlice(AnyValue);
+
+    addBindingNamed: #Association with: {:(Type)key :(Type)value :: Type |
+        __TypeBuilder__ newRecordTypeWith: #{
+            key: key.
+            value: value.
+        }
+    } templated;
+    addBasicTypeNamed: #AnyAssociation with: Association(AnyValue, AnyValue);
+
+    addBindingNamed: #ArrayList with: {:(Type)elementType :: Type |
+        __TypeBuilder__ newGCClassWithSlots: #{
+            size: Size.
+            storage: ArraySlice(elementType)
+        }
+    } templated;
+    addBasicTypeNamed: #AnyArrayList with: ArrayList(AnyValue).
 
 ## Basic type system methods.
 MetaType
@@ -87,6 +107,9 @@ MetaType
     };
     withSelector: #optional addMethod: {:(Type)self :: Type |
         Optional(self)
+    };
+    withSelector: #arraySlice addMethod: {:(Type)self :: Type |
+        ArraySlice(self)
     };
     withSelector: #arrayList addMethod: {:(Type)self :: Type |
         ArrayList(self)
@@ -120,12 +143,12 @@ __BootstrapCompiler__
         type: SysmelCompiler AST Node.
     });
     addBindingNamed: #BlockClosureNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
-        arguments: SysmelCompiler AST Node arrayList.
+        arguments: SysmelCompiler AST Node arraySlice.
         body: SysmelCompiler AST Node.
     });
     addBindingNamed: #ChainedMessageNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
         selector: SysmelCompiler AST Node.
-        arguments: SysmelCompiler AST Node arrayList
+        arguments: SysmelCompiler AST Node arraySlice
     });
     addBindingNamed: #CleanUpScopeNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
         body: SysmelCompiler AST Node.
@@ -138,7 +161,11 @@ __BootstrapCompiler__
         value: AnyValue
     });
     addBindingNamed: #SequenceNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
-        expressions: SysmelCompiler AST Node arrayList
+        expressions: SysmelCompiler AST Node arraySlice
+    });
+
+    addBindingNamed: #IdentifierReferenceNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
+        value: AnyValue.
     });
 
     addBindingNamed: #MakeAssociationNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
@@ -146,20 +173,20 @@ __BootstrapCompiler__
         value: SysmelCompiler AST Node.
     });
     addBindingNamed: #MakeTupleNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
-        elements: SysmelCompiler AST Node arrayList.
+        elements: SysmelCompiler AST Node arraySlice.
     });
     addBindingNamed: #MakeDictionaryNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
-        elements: SysmelCompiler AST Node arrayList.
+        elements: SysmelCompiler AST Node arraySlice.
     });
 
     addBindingNamed: #MessageSendNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
         receiver: SysmelCompiler AST Node.
         selector: SysmelCompiler AST Node.
-        arguments: SysmelCompiler AST Node arrayList
+        arguments: SysmelCompiler AST Node arraySlice
     });
     addBindingNamed: #MessageChainNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
         receiver: SysmelCompiler AST Node.
-        chainedMessages: SysmelCompiler AST Node arrayList
+        chainedMessages: SysmelCompiler AST Node arraySlice
     });
 
     addBindingNamed: #SpliceNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
@@ -186,11 +213,14 @@ __BootstrapCompiler__
         SourceCollection: SysmelCompiler AST SourceCollection.
         SourcePosition: SysmelCompiler AST SourcePosition.
         Node: SysmelCompiler AST Node.
+        NodeArrayList: SysmelCompiler AST Node arrayList.
+        NodeArraySlice: SysmelCompiler AST Node arraySlice.
 
         ArgumentDefinitionNode: SysmelCompiler AST ArgumentDefinitionNode.
         BlockClosureNode: SysmelCompiler AST BlockClosureNode.
         ChainedMessageNode: SysmelCompiler AST ChainedMessageNode.
         CleanUpScopeNode: SysmelCompiler AST CleanUpScopeNode.
+        IdentifierReferenceNode: SysmelCompiler AST IdentifierReferenceNode.
         MakeAssociationNode: SysmelCompiler AST MakeAssociationNode.
         MakeDictionaryNode: SysmelCompiler AST MakeDictionaryNode.
         MakeTupleNode: SysmelCompiler AST MakeTupleNode.
