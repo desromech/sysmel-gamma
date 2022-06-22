@@ -189,9 +189,10 @@ class PTExpressionList(PTNode):
             return None
         return self
 
-    def convertIntoGenericASTWith(self, bootstrapCompiler):
+    def convertIntoGenericASTWith(self, bootstrapCompiler, pragmas = []):
         return bootstrapCompiler.makeASTNodeWithSlots('SequenceNode',
             sourcePosition = bootstrapCompiler.convertASTSourcePosition(self.sourcePosition),
+            pragmas = bootstrapCompiler.makeASTNodeArraySlice(map(lambda expr: expr.convertIntoGenericASTWith(bootstrapCompiler), pragmas)),
             expressions = bootstrapCompiler.makeASTNodeArraySlice(map(lambda expr: expr.convertIntoGenericASTWith(bootstrapCompiler), self.expressions))
         )
 
@@ -476,6 +477,16 @@ class PTLexicalBlock(PTNode):
     def evaluateWithEnvironment(self, machine, environment):
         innerEnvironment = environment.makeChildLexicalScope()
         return self.body.evaluateWithEnvironment(machine, innerEnvironment)
+
+    def convertIntoGenericASTWith(self, bootstrapCompiler):
+        sourcePosition = bootstrapCompiler.convertASTSourcePosition(self.sourcePosition),
+        return bootstrapCompiler.makeASTNodeWithSlots('CleanUpScopeNode',
+            sourcePosition = sourcePosition,
+            body = bootstrapCompiler.makeASTNodeWithSlots('LexicalScopeNode',
+                sourcePosition = sourcePosition,
+                body = self.body.convertIntoGenericASTWith(bootstrapCompiler, pragmas = self.pragmas)
+            )
+        )
 
     def isLexicalBlock(self):
         return True

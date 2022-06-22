@@ -123,7 +123,8 @@ __BootstrapCompiler__
     addBindingNamed: #SourceCollection with: (__TypeBuilder__ newGCClassWithSlots: #{});
     addBindingNamed: #SourcePosition with: (__TypeBuilder__ newGCClassWithSlots: #{});
     addBindingNamed: #SourceStringCollection with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST SourceCollection publicSlots: #{
-        sourceString: String
+        sourceString: String.
+        name: String.
     });
     addBindingNamed: #SourceStringPosition with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST SourcePosition publicSlots: #{
         sourceCollection: SysmelCompiler AST SourceCollection.
@@ -160,10 +161,6 @@ __BootstrapCompiler__
     addBindingNamed: #LiteralValueNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
         value: AnyValue
     });
-    addBindingNamed: #SequenceNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
-        expressions: SysmelCompiler AST Node arraySlice
-    });
-
     addBindingNamed: #IdentifierReferenceNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
         value: AnyValue.
     });
@@ -187,6 +184,10 @@ __BootstrapCompiler__
     addBindingNamed: #MessageChainNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
         receiver: SysmelCompiler AST Node.
         chainedMessages: SysmelCompiler AST Node arraySlice
+    });
+    addBindingNamed: #SequenceNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
+        expressions: SysmelCompiler AST Node arraySlice.
+        pragmas: SysmelCompiler AST Node arraySlice.
     });
 
     addBindingNamed: #SpliceNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
@@ -212,6 +213,9 @@ __BootstrapCompiler__
     setParseTreeASTMaping: #{
         SourceCollection: SysmelCompiler AST SourceCollection.
         SourcePosition: SysmelCompiler AST SourcePosition.
+        SourceStringCollection: SysmelCompiler AST SourceStringCollection.
+        SourceStringPosition: SysmelCompiler AST SourceStringPosition.
+
         Node: SysmelCompiler AST Node.
         NodeArrayList: SysmelCompiler AST Node arrayList.
         NodeArraySlice: SysmelCompiler AST Node arraySlice.
@@ -221,17 +225,18 @@ __BootstrapCompiler__
         ChainedMessageNode: SysmelCompiler AST ChainedMessageNode.
         CleanUpScopeNode: SysmelCompiler AST CleanUpScopeNode.
         IdentifierReferenceNode: SysmelCompiler AST IdentifierReferenceNode.
+        LexicalScopeNode: SysmelCompiler AST LexicalScopeNode.
+        LiteralValueNode: SysmelCompiler AST LiteralValueNode.
         MakeAssociationNode: SysmelCompiler AST MakeAssociationNode.
         MakeDictionaryNode: SysmelCompiler AST MakeDictionaryNode.
         MakeTupleNode: SysmelCompiler AST MakeTupleNode.
         MessageSendNode: SysmelCompiler AST MessageSendNode.
         MessageChainNode: SysmelCompiler AST MessageChainNode.
-        SequenceNode: SysmelCompiler AST SequenceNode.
-        SpliceNode: SysmelCompiler AST SpliceNode.
         QuoteNode: SysmelCompiler AST QuoteNode.
         QuasiQuoteNode: SysmelCompiler AST QuasiQuoteNode.
         QuasiUnquoteNode: SysmelCompiler AST QuasiUnquoteNode.
-        LiteralValueNode: SysmelCompiler AST LiteralValueNode.
+        SequenceNode: SysmelCompiler AST SequenceNode.
+        SpliceNode: SysmelCompiler AST SpliceNode.
 
         ErrorNode: SysmelCompiler AST ErrorNode.
         ParseErrorNode: SysmelCompiler AST ParseErrorNode.

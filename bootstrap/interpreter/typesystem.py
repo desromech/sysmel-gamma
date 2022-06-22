@@ -137,6 +137,7 @@ class BlockClosure(TypedValue):
     def __init__(self, node, environment):
         self.node = node
         self.environment = environment
+        self.name = None
 
     def performWithArguments(self, machine, selector, arguments):
         if selector == '()':
@@ -162,6 +163,15 @@ class BlockClosure(TypedValue):
     def applyResultTransform(self, machine, result):
         return result
 
+    def onGlobalBindingWithSymbolAdded(self, symbol):
+        if self.name is None:
+            self.name = symbol
+
+    def __repr__(self) -> str:
+        if self.name is not None:
+            return self.name
+        return super().__repr__()
+
 class AbstractMemoizedBlockClosure(BlockClosure):
     def __init__(self, node, environment):
         super().__init__(node, environment)
@@ -172,8 +182,12 @@ class AbstractMemoizedBlockClosure(BlockClosure):
             return self.memoizationTable[arguments]
 
         result = super().evaluateWithArguments(machine, arguments)
+        self.applyNameToResult(machine, arguments, result)
         self.memoizationTable[arguments] = result
         return result
+
+    def applyNameToResult(self, machine, arguments, result):
+        pass
 
 class MemoizedBlockClosure(AbstractMemoizedBlockClosure):
     def asMemoizedBlockClosure(self):
@@ -204,6 +218,20 @@ class TemplatedBlockClosure(AbstractMemoizedBlockClosure):
         if selector == 'extendWith:':
             return self.extendWith(machine, arguments[0])
         return super().performWithArguments(machine, selector, arguments)
+
+    def applyNameToResult(self, machine, arguments, result):
+        if self.name is None:
+            return
+
+        valueName = self.name + '('
+        i = 0
+        for arg in arguments:
+            if i > 0:
+                valueName += ', '
+            valueName += repr(arg)
+            i += 1
+        valueName += ')'
+        result.onGlobalBindingWithSymbolAdded(Symbol(valueName))
 
 class TypeSchema:
     def __init__(self):
