@@ -1,5 +1,8 @@
+import typesystem
+
 class SourceCollection:
-    pass
+    def convertIntoTargetSourceCollectionWith(self, bootstrapCompiler):
+        raise Exception("convertIntoTargetSourceCollectionWith subclassResponsibility")
 
 class EmptySourceCollection(SourceCollection):
     def __init__(self):
@@ -7,6 +10,9 @@ class EmptySourceCollection(SourceCollection):
 
     def positionForRange(self, range):
         return EmptySourcePosition()
+
+    def convertIntoTargetSourceCollectionWith(self, bootstrapCompiler):
+        return bootstrapCompiler.getEmptySourceSourceCollection()
 
 class StringSourceCollection(SourceCollection):
     def __init__(self, string, stringName):
@@ -33,12 +39,21 @@ class StringSourceCollection(SourceCollection):
             if self.string[i] == '\n':
                 self.lineIndex.append(i)
 
+    def convertIntoTargetSourceCollectionWith(self, bootstrapCompiler):
+        return bootstrapCompiler.makeASTNodeWithSlots('SourceStringCollection',
+            sourceString = typesystem.String(self.string),
+            name = typesystem.String(self.stringName)
+        )
+
 class SourcePosition:
     def asSourcePosition(self):
         return self
 
     def isEmptySourcePosition(self):
         return False
+
+    def convertIntoTargetSourcePositionWith(self, bootstrapCompiler):
+        raise Exception("convertIntoTargetSourcePositionWith subclassResponsibility")
 
 class EmptySourcePosition(SourcePosition):
     def mergeWith(self, other):
@@ -50,6 +65,9 @@ class EmptySourcePosition(SourcePosition):
     def __str__(self):
         return 'unknown'
 
+    def convertIntoTargetSourcePositionWith(self, bootstrapCompiler):
+        return bootstrapCompiler.getEmptySourcePosition()
+
 class SourceCollectionPosition(SourcePosition):
     def __init__(self, sourceCollection, range):
         self.sourceCollection = sourceCollection
@@ -60,6 +78,19 @@ class SourceCollectionPosition(SourcePosition):
             return self
         assert self.sourceCollection == other.sourceCollection
         return SourceCollectionPosition(self.sourceCollection, (min(self.start, other.start), max(self.stop, other.stop)))
+
+    def convertIntoTargetSourcePositionWith(self, bootstrapCompiler):
+        startLine, startColumn = self.sourceCollection.getLineAndColumnForPosition(self.start)
+        endLine, endColumn = self.sourceCollection.getLineAndColumnForPosition(self.stop)
+        return bootstrapCompiler.makeASTNodeWithSlots('SourceStringPosition',
+            sourceCollection = bootstrapCompiler.convertASTSourceCollection(self.sourceCollection),
+            startPosition = self.start,
+            endPosition = self.stop,
+            startLine = startLine,
+            startColumn = startColumn,
+            endLine = endLine,
+            endColumn = endColumn
+        )
 
     def __str__(self):
         startLine, startColumn = self.sourceCollection.getLineAndColumnForPosition(self.start)

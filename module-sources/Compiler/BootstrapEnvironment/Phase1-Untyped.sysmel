@@ -135,6 +135,8 @@ __BootstrapCompiler__
         endLine: Integer.
         endColumn: Integer.
     });
+    addBindingNamed: #EmptySourcePosition with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST SourcePosition publicSlots: #{});
+
     addBindingNamed: #Node with: (__TypeBuilder__ newGCClassWithPublicSlots: #{
         sourcePosition: SysmelCompiler AST SourcePosition.
         analyzedType: Type optional
@@ -215,6 +217,7 @@ __BootstrapCompiler__
         SourcePosition: SysmelCompiler AST SourcePosition.
         SourceStringCollection: SysmelCompiler AST SourceStringCollection.
         SourceStringPosition: SysmelCompiler AST SourceStringPosition.
+        EmptySourcePosition: SysmelCompiler AST EmptySourcePosition.
 
         Node: SysmelCompiler AST Node.
         NodeArrayList: SysmelCompiler AST Node arrayList.

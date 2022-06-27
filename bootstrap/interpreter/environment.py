@@ -75,6 +75,9 @@ class BootstrapCompiler(BehaviorTypedObject):
         self.isTypeSystemEnabled = False
         self.parseTreeASTMapping = None
         self.semanticAnalysisMapping = None
+        self.sourcePositionMemoizationTable = {}
+        self.sourceCollectionMemoizationTable = {}
+        self.emptySourcePosition = None
         self.enterTopLevelNamespace()
 
     def makeScriptEvaluationEnvironment(self):
@@ -102,8 +105,26 @@ class BootstrapCompiler(BehaviorTypedObject):
             (cls.print, 'print:')
         ])
 
+    def getEmptySourcePosition(self):
+        if self.emptySourcePosition is None:
+            self.emptySourcePosition = self.makeASTNodeWithSlots('EmptySourcePosition')
+        return self.emptySourcePosition
+
     def convertASTSourcePosition(self, sourcePosition):
-        return sourcePosition
+        if sourcePosition in self.sourcePositionMemoizationTable:
+            return self.sourcePositionMemoizationTable[sourcePosition]
+
+        convertedSourcePosition = sourcePosition.convertIntoTargetSourcePositionWith(self)
+        self.sourcePositionMemoizationTable[sourcePosition] = convertedSourcePosition
+        return convertedSourcePosition
+
+    def convertASTSourceCollection(self, sourceCollection):
+        if sourceCollection in self.sourceCollectionMemoizationTable:
+            return self.sourceCollectionMemoizationTable[sourceCollection]
+
+        convertedSourceCollection = sourceCollection.convertIntoTargetSourceCollectionWith(self)
+        self.sourceCollectionMemoizationTable[sourceCollection] = convertedSourceCollection
+        return convertedSourceCollection
 
     def makeASTNodeArraySlice(self, elements):
         arraySliceType = self.parseTreeASTMapping.at('NodeArraySlice')
