@@ -33,6 +33,7 @@ def sysmelbiMain():
     bootstrapCompiler = BootstrapCompiler()
     bootstrapCompiler.activate()
     evaluationMachine = EvaluationMachine()
+    evaluationMachine.makeActive()
     try:
         for scriptToEvaluate in scriptsToEvaluate:
             scriptEnvironment = bootstrapCompiler.makeScriptEvaluationEnvironment()

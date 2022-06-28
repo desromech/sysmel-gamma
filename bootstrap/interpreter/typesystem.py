@@ -2,6 +2,7 @@ from queue import Empty
 
 from numpy import record
 from errors import *
+from evalmachine import *
 
 BasicTypeEnvironment = None
 
@@ -39,6 +40,33 @@ class ValueInterface:
     def asBooleanValue(self):
         raise NonBooleanEvaluableValue()
 
+    def answersTo(self, selector):
+        return False
+
+    def __str__(self):
+        return self.toString()
+
+    def __repr__(self):
+        return self.printString()
+
+    def toString(self):
+        selector = Symbol('toString')
+        if self.answersTo(selector):
+            return self.performWithArguments(EvaluationMachine.getActive(), selector, [])
+        return self.defaultToString()
+
+    def printString(self):
+        selector = Symbol('printString')
+        if self.answersTo(selector):
+            return self.performWithArguments(EvaluationMachine.getActive(), selector, [])
+        return self.defaultPrintString()
+
+    def defaultToString(self):
+        return self.printString()
+
+    def defaultPrintString(self):
+        return 'a ' + str(self.__class__)
+
 class TypeInterface:
     def runWithIn(self, machine, selector, arguments, receiver):
         raise NotImplementedError()
@@ -49,6 +77,9 @@ class TypedValue(ValueInterface):
 
     def performWithArguments(self, machine, selector, arguments):
         return self.getType().runWithIn(machine, selector, arguments, self)
+
+    def answersTo(self, selector):
+        return self.getType().lookupSelector(selector) is not None
 
 class Integer(int, TypedValue):
     def getType(self):
@@ -66,9 +97,15 @@ class String(str, TypedValue):
     def getType(self):
         return getBasicTypeNamed(Symbol('String'))
 
+    def defaultToString(self):
+        return self
+
 class Symbol(str, TypedValue):
     def getType(self):
         return getBasicTypeNamed(Symbol('Symbol'))
+
+    def defaultToString(self):
+        return self
 
 class Array(list, TypedValue):
     def getType(self):
@@ -88,10 +125,10 @@ class Association(TypedValue):
     def getValue(self):
         return self.value
 
-    def __str__(self) -> str:
+    def defaultToString(self) -> str:
         return str(self.key) + ' : ' + str(self.value)
 
-    def __repr__(self) -> str:
+    def defaultPrintString(self) -> str:
         return repr(self.key) + ' : ' + repr(self.value)
 
 class Dictionary(list, TypedValue):
@@ -101,7 +138,7 @@ class Dictionary(list, TypedValue):
         return cls(map(lambda pair: Association(pair[0], pair[1]), d.items()))
 
     def getType(self):
-        return getBasicTypeNamed(Symbol('AnyDictionary'))
+        return getBasicTypeNamed(Symbol('AnyArrayDictionary'))
 
     def getHashTable(self):
         if not hasattr(self, 'hashTable'):
@@ -112,6 +149,17 @@ class Dictionary(list, TypedValue):
 
     def at(self, key):
         return self.getHashTable()[key]
+
+    def defaultPrintString(self):
+        result = '#{'
+        i = 0
+        for element in self:
+            if i > 0:
+                result += '. '
+            result += repr(element)
+            i += 1
+        result += '}'
+        return result
 
 class PrimitiveMethod:
     def __init__(self, method):
@@ -167,10 +215,10 @@ class BlockClosure(TypedValue):
         if self.name is None:
             self.name = symbol
 
-    def __repr__(self) -> str:
+    def defaultPrintString(self) -> str:
         if self.name is not None:
             return self.name
-        return super().__repr__()
+        return super().defaultPrintString()
 
 class AbstractMemoizedBlockClosure(BlockClosure):
     def __init__(self, node, environment):
@@ -281,7 +329,7 @@ class TrivialTypedValue(TypedValue):
     def onGlobalBindingWithSymbolAdded(self, bindingName):
         self.globalBindingName = bindingName
 
-    def __repr__(self):
+    def defaultPrintString(self):
         if self.globalBindingName is not None:
             return self.globalBindingName
         return str(self.type) + '()'
@@ -320,7 +368,7 @@ class PrimitiveNumberTypeValue(TypedValue):
     def getType(self):
         return self.type
 
-    def __repr__(self):
+    def defaultPrintString(self):
         return '%s(%s)' % (str(self.type), str(self.value))
 
 class PrimitiveTypeSchema(TypeSchema):
@@ -397,7 +445,7 @@ class SumTypeValue(TypedValue):
     def getType(self):
         return self.type
 
-    def __repr__(self) -> str:
+    def defaultPrintString(self) -> str:
         return '%s(%d: %s)' % (repr(self.type), self.typeSelector, repr(self.wrappedValue))
 
 class SumTypeSchema(TypeSchema):
@@ -431,7 +479,7 @@ class ProductTypeValue(TypedValue):
     def getType(self):
         return self.type
 
-    def __repr__(self) -> str:
+    def defaultPrintString(self) -> str:
         result = str(self.type) + '('
         isFirst = True
         for element in self.elements:
@@ -535,7 +583,7 @@ class PointerTypeValue(TypedValue):
     def getType(self):
         return self.type
 
-    def __repr__(self):
+    def defaultPrintString(self):
         return '%s(%s:%d)' % (str(self.type), str(self.value), self.baseIndex)
 
 class PointerTypeSchema(TypeSchema):
@@ -651,10 +699,10 @@ class BehaviorType(TypedValue, TypeInterface):
             typeSupertype = self.getMetaTypeRoot()
         return MetaType(thisType = self, supertype = typeSupertype, schema = OpaqueTypeSchema())
 
-    def __str__(self):
+    def defaultToString(self):
         return self.getName()
 
-    def __repr__(self):
+    def defaultPrintString(self):
         return self.getName()
 
     def addMetaTypeRootMethods(self):

@@ -89,6 +89,14 @@ __BootstrapCompiler__
     } templated;
     addBasicTypeNamed: #AnyAssociation with: Association(AnyValue, AnyValue);
 
+    addBindingNamed: #ArrayDictionary with: {:(Type)keyType :(Type)valueType :: Type |
+        __TypeBuilder__ newRecordTypeWith: #{
+            associationList: ArraySlice(Association(keyType, valueType)).
+            hashTable: ArraySlice(UInt32).
+        }
+    } templated;
+    addBasicTypeNamed: #AnyArrayDictionary with: ArrayDictionary(AnyValue, AnyValue);
+
     addBindingNamed: #ArrayList with: {:(Type)elementType :: Type |
         __TypeBuilder__ newGCClassWithSlots: #{
             size: Size.
