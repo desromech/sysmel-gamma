@@ -132,7 +132,7 @@ def p_pragma_keyword(p):
     'pragma : LESS_THAN pragmaKeywordArguments GREATER_THAN'
     selector = ''
     arguments = []
-    for keyword, argument in p[1]:
+    for keyword, argument in p[2]:
         selector += keyword
         arguments.append(argument)
     p[0] = PTKeywordPragma(selector, arguments, [tokenAt(p, 1), tokenAt(p, 3)])

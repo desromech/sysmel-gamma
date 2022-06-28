@@ -85,6 +85,12 @@ class Integer(int, TypedValue):
     def getType(self):
         return getBasicTypeNamed(Symbol('Integer'))
 
+    def defaultPrintString(self):
+        return str(int(self))
+
+    def defaultToString(self):
+        return str(int(self))
+
 class Character(int, TypedValue):
     def getType(self):
         return getBasicTypeNamed(Symbol('Character'))
@@ -92,6 +98,12 @@ class Character(int, TypedValue):
 class Float(float, TypedValue):
     def getType(self):
         return getBasicTypeNamed(Symbol('Float'))
+
+    def defaultPrintString(self):
+        return str(float(self))
+
+    def defaultToString(self):
+        return str(float(self))
 
 class String(str, TypedValue):
     def getType(self):
@@ -203,10 +215,11 @@ class RecordTypeSetterPrimitiveMethod(RecordTypeAccessorPrimitiveMethod):
         return receiver.setSlotWithIndexAndName(self.slotIndex, self.slotName, arguments[0])
 
 class BlockClosure(TypedValue):
-    def __init__(self, node, environment):
+    def __init__(self, node, environment, primitiveName = None):
         self.node = node
         self.environment = environment
         self.name = None
+        self.primitiveName = primitiveName
 
     def performWithArguments(self, machine, selector, arguments):
         if selector == '()':
@@ -478,12 +491,16 @@ class SumTypeSchema(TypeSchema):
         return self.elementTypes[0].isDefaultConstructible()
 
     def buildPrimitiveMethodDictionary(self):
+        self.methodDict[Symbol('__typeSelector__')] = TypeSchemaPrimitiveMethod(self.getTypeSelector)
         self.metaTypeMethodDict[Symbol('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew)
         self.metaTypeMethodDict[Symbol('basicNew:')] = TypeSchemaPrimitiveMethod(self.basicNewWithValue)
         return super().buildPrimitiveMethodDictionary()
 
+    def getTypeSelector(self, sumValue):
+        return sumValue.typeSelector
+
     def basicNew(self, sumType):
-        return SumTypeValue(sumType, 0, self.elementTypes[0].basicNew())
+        return SumTypeValue(sumType, Integer(0), self.elementTypes[0].basicNew())
 
     def basicNewWithValue(self, sumType, value):
         wrappedValueType = value.getType()

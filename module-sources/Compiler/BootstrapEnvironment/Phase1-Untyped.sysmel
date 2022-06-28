@@ -62,7 +62,16 @@ __BootstrapCompiler__
 
     ## The polymorphic types
     addBindingNamed: #Optional with: {:(Type)optionalType :: Type |
-        __TypeBuilder__ newSumTypeWith: (Undefined, optionalType)
+        {:(Type)sumType :: Type |
+            sumType
+                withSelector: #isNil addMethod: {:(sumType)self :: Boolean |
+                    self __typeSelector__ = 0
+                };
+                withSelector: #isNotNil addMethod: {:(sumType)self :: Boolean |
+                    self __typeSelector__ ~= 0
+                }.
+            sumType
+        }(__TypeBuilder__ newSumTypeWith: (Undefined, optionalType))
     } templated;
 
     addBindingNamed: #Array with: {:(Type)elementType :(Integer)bounds :: Type |
@@ -104,6 +113,38 @@ __BootstrapCompiler__
         }
     } templated;
     addBasicTypeNamed: #AnyArrayList with: ArrayList(AnyValue).
+
+## Integer arithmetics primitive methods
+Integer
+    withSelector: #+ addMethod: {:(Integer)self :(Integer)other :: Integer |
+        <primitive: #"integer.arithmetic.add">
+        __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #- addMethod: {:(Integer)self :(Integer)other :: Integer |
+        <primitive: #"integer.arithmetic.sub">
+        __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #"*" addMethod: {:(Integer)self :(Integer)other :: Integer |
+        <primitive: #"integer.arithmetic.mul">
+        __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #// addMethod: {:(Integer)self :(Integer)other :: Integer |
+        <primitive: #"integer.arithmetic.div">
+        __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #% addMethod: {:(Integer)self :(Integer)other :: Integer |
+        <primitive: #"integer.arithmetic.rem">
+        __BootstrapCompiler__ primitiveFailed
+    };
+
+    withSelector: #= addMethod: {:(Integer)self :(Integer)other :: Boolean |
+        <primitive: #"integer.comparison.equals">
+        __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #~= addMethod: {:(Integer)self :(Integer)other :: Boolean |
+        <primitive: #"integer.comparison.notEquals">
+        __BootstrapCompiler__ primitiveFailed
+    }.
 
 ## Basic type system methods.
 MetaType

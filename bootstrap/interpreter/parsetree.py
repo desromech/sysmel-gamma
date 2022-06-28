@@ -588,7 +588,7 @@ class PTKeywordPragma(PTPragma):
         PTNode.__init__(self)
         self.selector = selector
         self.arguments = arguments
-        self.sourcePosition = sourcePositionFromList([sourcePositionFromTokens(tokens), selector] + arguments)
+        self.sourcePosition = sourcePositionFromList([sourcePositionFromTokens(tokens)] + arguments)
 
     def isKeywordPragma(self):
         return True

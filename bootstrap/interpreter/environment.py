@@ -217,7 +217,7 @@ class BootstrapCompiler(BehaviorTypedObject):
         print(string)
 
     def subclassResponsibility(self):
-        raise SubclassResponsibility()
+        raise SubclassResponsibility('Subclass responsibility')
 
     def primitiveFailed(self):
-        raise PrimitiveFailed()
+        raise PrimitiveFailed('Primitive failed')
