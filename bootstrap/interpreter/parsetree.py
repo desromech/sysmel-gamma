@@ -139,6 +139,9 @@ class PTNode:
     def isLiteralSymbol(self):
         return False
 
+    def isLiteralSymbolEqualTo(self, expectedValue):
+        return False
+
     def isLiteralArray(self):
         return False
 
@@ -152,6 +155,9 @@ class PTNode:
         return False
 
     def isError(self):
+        return False
+
+    def isPrimitivePragma(self):
         return False
 
     def evaluateWithEnvironment(self, machine, environment):
@@ -499,12 +505,16 @@ class PTBlockClosure(PTNode):
         self.pragmas = pragmas
         self.body = body
         self.sourcePosition = sourcePositionFromList(arguments + [resultType, body] + tokens)
+        self.primitiveName = None
+        for pragma in self.pragmas:
+            if pragma.isPrimitivePragma():
+                self.primitiveName = pragma.getPrimitiveName()
 
     def isBlockClosure(self):
         return True
 
     def evaluateWithEnvironment(self, machine, environment):
-        return BlockClosure(self, environment)
+        return BlockClosure(self, environment, primitiveName = self.primitiveName)
 
     def evaluateClosureWithEnvironmentAndArguments(self, machine, closureEnvironment, arguments):
         if len(self.arguments) != len(arguments):
@@ -593,6 +603,12 @@ class PTKeywordPragma(PTPragma):
     def isKeywordPragma(self):
         return True
 
+    def isPrimitivePragma(self):
+        return self.selector == 'primitive:' and len(self.arguments) == 1 and self.arguments[0].isLiteralSymbol()
+
+    def getPrimitiveName(self):
+        return self.arguments[0].value
+
 class PTLiteral(PTNode):
     def __init__(self, value, valuePosition = None):
         PTNode.__init__(self)
@@ -649,6 +665,9 @@ class PTLiteralString(PTLiteral):
 class PTLiteralSymbol(PTLiteral):
     def isLiteralSymbol(self):
         return True
+
+    def isLiteralSymbolEqualTo(self, expectedValue):
+        return self.value == expectedValue
 
     def parseLiteralString(self, value):
         if value.startswith('#"'):

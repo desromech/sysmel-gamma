@@ -144,7 +144,53 @@ Integer
     withSelector: #~= addMethod: {:(Integer)self :(Integer)other :: Boolean |
         <primitive: #"integer.comparison.notEquals">
         __BootstrapCompiler__ primitiveFailed
+    };
+    
+    withSelector: #< addMethod: {:(Integer)self :(Integer)other :: Boolean |
+        <primitive: #"integer.comparison.lessThan">
+        __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #<= addMethod: {:(Integer)self :(Integer)other :: Boolean |
+        <primitive: #"integer.comparison.lessOrEqual">
+        __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #> addMethod: {:(Integer)self :(Integer)other :: Boolean |
+        <primitive: #"integer.comparison.greaterThan">
+        __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #>= addMethod: {:(Integer)self :(Integer)other :: Boolean |
+        <primitive: #"integer.comparison.greaterOrEqual">
+        __BootstrapCompiler__ primitiveFailed
+    };
+
+    withSelector: #asString addMethod: {:(Integer)self :: String |
+        <primitive: #"integer.conversion.toString">
+        __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #printString addMethod: {:(Integer)self :: String |
+        <primitive: #"integer.conversion.toString">
+        __BootstrapCompiler__ primitiveFailed
     }.
+
+
+## String primitive methods
+String
+    withSelector: #-- addMethod: {:(String)self :(String)other :: String |
+        <primitive: #"string.concat">
+        __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #format: addMethod: {:(String)self :(String arraySlice)parameters :: String |
+        <primitive: #"string.format">
+        __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #asSymbol addMethod: {:(String)self :: Symbol |
+        <primitive: #"symbol.internString">
+        __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #asString addMethod: {:(String)self :: String |
+        self
+    }.
+
 
 ## Basic type system methods.
 MetaType
@@ -447,6 +493,15 @@ __BootstrapCompiler__
     print: (Boolean basicNew: false);
     print: (Boolean basicNew: true);
 
+    print: 1 + 1;
+    print: 2 * 3;
+    print: 6 // 3;
+
+    print: 2 = 2;
+
+    print: "Some number: " -- 1 asString;
+    print: ("Some number {0} " format: (1 asString,));
+
     print: SysmelCompiler AST SourcePosition basicNew;
     print: (SysmelCompiler AST Node basicNewWithNamedSlots: #{
         sourcePosition: SysmelCompiler AST SourcePosition basicNew
@@ -454,9 +509,9 @@ __BootstrapCompiler__
     print: Int32 basicNew;
     print: (Int32 basicNew: -42);
     ##print: (`'1 analyzedType);
-    print: (`'1 analyzeNodeIfNeededWith: (SysmelCompiler Semantic ASTAnalyzer basicNewWithNamedSlots: #{
+    #*print: (`'1 analyzeNodeIfNeededWith: (SysmelCompiler Semantic ASTAnalyzer basicNewWithNamedSlots: #{
         environment: __BootstrapCompiler__ getTopLevelEnvironment
-    }));
+    }));*#
     print: nil isNil;
     print: nil isNotNil.
 

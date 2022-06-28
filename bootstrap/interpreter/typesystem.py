@@ -6,12 +6,34 @@ from evalmachine import *
 
 BasicTypeEnvironment = None
 
+PrimitiveMethodTable = {}
+
+class PrimitiveMethod:
+    def __init__(self, method):
+        self.method = method
+
+    def getType(self):
+        return getBasicTypeNamed(Symbol('PrimitiveMethod'))
+
+    def runWithIn(self, machine, selector, arguments, receiver):
+        return self.method(receiver, *arguments)
+
+def primitiveNamed(primitiveName):
+    def decorator(primitiveImplementation):
+        primitiveMethod = PrimitiveMethod(primitiveImplementation)
+        PrimitiveMethodTable[primitiveName] = primitiveMethod
+        return primitiveMethod
+    return decorator
+
 def setActiveBasicTypeEnvironment(basicTypeEnvironment):
     global BasicTypeEnvironment
     BasicTypeEnvironment = basicTypeEnvironment
 
 def getBasicTypeNamed(symbol):
     return BasicTypeEnvironment[symbol]
+
+def getBooleanValue(value):
+    return getBasicTypeNamed('Boolean').basicNewWithTypeTheoryBoolean(value)
 
 class SymbolBinding:
     def getSymbolBindingReferenceValue(self):
@@ -91,6 +113,54 @@ class Integer(int, TypedValue):
     def defaultToString(self):
         return str(int(self))
 
+    @primitiveNamed('integer.arithmetic.add')
+    def primitiveAdd(self, other):
+        return Integer(self + other)
+
+    @primitiveNamed('integer.arithmetic.sub')
+    def primitiveSub(self, other):
+        return Integer(self - other)
+
+    @primitiveNamed('integer.arithmetic.mul')
+    def primitiveMul(self, other):
+        return Integer(self * other)
+
+    @primitiveNamed('integer.arithmetic.div')
+    def primitiveDiv(self, other):
+        return Integer(self / other)
+
+    @primitiveNamed('integer.arithmetic.rem')
+    def primitiveRem(self, other):
+        return Integer(self % other)
+
+    @primitiveNamed('integer.comparison.equals')
+    def primitiveEquals(self, other):
+        return getBooleanValue(self == other)
+
+    @primitiveNamed('integer.comparison.notEquals')
+    def primitiveNotEquals(self, other):
+        return getBooleanValue(self != other)
+
+    @primitiveNamed('integer.comparison.lessThan')
+    def primitiveLessThan(self, other):
+        return getBooleanValue(self < other)
+
+    @primitiveNamed('integer.comparison.lessOrEqual')
+    def primitiveLessOrEqual(self, other):
+        return getBooleanValue(self <= other)
+
+    @primitiveNamed('integer.comparison.greaterThan')
+    def primitiveGreaterThan(self, other):
+        return getBooleanValue(self > other)
+
+    @primitiveNamed('integer.comparison.greaterOrEqual')
+    def primitiveGreaterOrEqual(self, other):
+        return getBooleanValue(self >= other)
+
+    @primitiveNamed('integer.conversion.toString')
+    def primitiveToString(self):
+        return String(str(int(self)))
+
 class Character(int, TypedValue):
     def getType(self):
         return getBasicTypeNamed(Symbol('Character'))
@@ -111,6 +181,18 @@ class String(str, TypedValue):
 
     def defaultToString(self):
         return self
+
+    @primitiveNamed('string.concat')
+    def primitiveConcat(self, other):
+        return String(self + other)
+
+    @primitiveNamed('string.format')
+    def primitiveConcat(self, parameters):
+        return self
+
+    @primitiveNamed('symbol.internString')
+    def primitiveIntern(self):
+        return Symbol(self)
 
 class Symbol(str, TypedValue):
     def getType(self):
@@ -173,16 +255,6 @@ class Dictionary(list, TypedValue):
         result += '}'
         return result
 
-class PrimitiveMethod:
-    def __init__(self, method):
-        self.method = method
-
-    def getType(self):
-        return getBasicTypeNamed(Symbol('PrimitiveMethod'))
-
-    def runWithIn(self, machine, selector, arguments, receiver):
-        return self.method(receiver, *arguments)
-
 class TypeSchemaPrimitiveMethod:
     def __init__(self, method):
         self.method = method
@@ -234,7 +306,11 @@ class BlockClosure(TypedValue):
         return self.evaluateWithArguments(machine, [receiver] + arguments)
 
     def evaluateWithArguments(self, machine, arguments):
-        return self.applyResultTransform(machine, self.node.evaluateClosureWithEnvironmentAndArguments(machine, self.environment, arguments))
+        if self.primitiveName is not None and self.primitiveName in PrimitiveMethodTable:
+            rawResult = PrimitiveMethodTable[self.primitiveName].runWithIn(machine, Symbol('()'), arguments[1:], arguments[0])
+        else:
+            rawResult = self.node.evaluateClosureWithEnvironmentAndArguments(machine, self.environment, arguments)
+        return self.applyResultTransform(machine, rawResult)
 
     def asMemoizedBlockClosure(self):
         return MemoizedBlockClosure(self.node, self.environment)
@@ -505,6 +581,12 @@ class SumTypeSchema(TypeSchema):
     def basicNewWithValue(self, sumType, value):
         wrappedValueType = value.getType()
         return SumTypeValue(sumType, self.elementTypes.index(wrappedValueType), value)
+
+    def basicNewWithTypeTheoryBoolean(self, sumType, value):
+        if value:
+            return SumTypeValue(sumType, Integer(1), self.elementTypes[1].basicNew())
+        else:
+            return SumTypeValue(sumType, Integer(0), self.elementTypes[0].basicNew())
 
     def isTypeTheoryBoolean(self):
         return len(self.elementTypes) == 2 and self.elementTypes[0].hasTrivialTypeSchema() and self.elementTypes[1].hasTrivialTypeSchema()
@@ -784,6 +866,9 @@ class BehaviorType(TypedValue, TypeInterface):
 
     def basicNewWithArraySliceElements(self, elements):
         return self.schema.basicNewWithArraySliceElements(self, elements)
+
+    def basicNewWithTypeTheoryBoolean(self, value):
+        return self.schema.basicNewWithTypeTheoryBoolean(self, value)
 
     def hasTrivialTypeSchema(self):
         return self.schema.isTrivialTypeSchema()
