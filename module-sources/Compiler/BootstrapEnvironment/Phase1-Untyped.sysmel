@@ -389,6 +389,19 @@ SysmelCompiler AST Node
         __BootstrapCompiler__ subclassResponsibility
     }.
 
+SysmelCompiler AST SourceStringCollection
+    withSelector: #printString addMethod: {:(SysmelCompiler AST SourceStringCollection)self :: String |
+        self name
+    }.
+
+SysmelCompiler AST SourceStringPosition
+    withSelector: #printString addMethod: {:(SysmelCompiler AST SourceStringCollection)self :: String |
+        "{0}:{1}.{2}-{3}.{4}" format: (self sourceCollection printString,
+            self startLine printString, self startColumn printString,
+            self endLine printString, self endColumn printString,
+        )
+    }.
+
 SysmelCompiler AST LiteralValueNode
     withSelector: #analyzeNodeWith: addMethod: {:(SysmelCompiler AST LiteralValueNode)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
         self copy
