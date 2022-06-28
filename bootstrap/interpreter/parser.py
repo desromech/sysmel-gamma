@@ -74,19 +74,19 @@ def p_primaryExpression_primaryTerm(p):
 
 def p_primaryExpression_quote(p):
     'primaryExpression : QUOTE primaryTerm'
-    p[0] = PTQuote(tokenAt(p, 2), [tokenAt(p, 1)])
+    p[0] = PTQuote(p[2], [tokenAt(p, 1)])
 
 def p_primaryExpression_quasiQuote(p):
     'primaryExpression : QUASI_QUOTE primaryTerm'
-    p[0] = PTQuasiQuote(tokenAt(p, 2), [tokenAt(p, 1)])
+    p[0] = PTQuasiQuote(p[2], [tokenAt(p, 1)])
 
 def p_primaryExpression_quasiUnquote(p):
     'primaryExpression : QUASI_UNQUOTE primaryTerm'
-    p[0] = PTQuasiUnquote(tokenAt(p, 2), [tokenAt(p, 1)])
+    p[0] = PTQuasiUnquote(p[2], [tokenAt(p, 1)])
 
 def p_primaryExpression_splice(p):
     'primaryExpression : SPLICE primaryTerm'
-    p[0] = PTSplice(tokenAt(p, 2), [tokenAt(p, 1)])
+    p[0] = PTSplice(p[2], [tokenAt(p, 1)])
 
 def p_primaryExpression_unaryMessage(p):
     'primaryExpression : primaryExpression expandableIdentifier'

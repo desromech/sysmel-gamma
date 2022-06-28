@@ -181,6 +181,27 @@ class TypeSchemaPrimitiveMethod:
     def runWithIn(self, machine, selector, arguments, receiver):
         return self.method(receiver, *arguments)
 
+class RecordTypeAccessorPrimitiveMethod:
+    def __init__(self, selector, slotName, slotIndex, slotType):
+        self.selector = selector
+        self.slotName = slotName
+        self.slotIndex = slotIndex
+        self.slotType = slotType
+
+    def getType(self):
+        return getBasicTypeNamed(Symbol('RecordTypeAccessorPrimitiveMethod'))
+
+    def runWithIn(self, machine, selector, arguments, receiver):
+        return self.method(receiver, *arguments)
+
+class RecordTypeGetterPrimitiveMethod(RecordTypeAccessorPrimitiveMethod):
+    def runWithIn(self, machine, selector, arguments, receiver):
+        return receiver.getSlotWithIndexAndName(self.slotIndex, self.slotName)
+
+class RecordTypeSetterPrimitiveMethod(RecordTypeAccessorPrimitiveMethod):
+    def runWithIn(self, machine, selector, arguments, receiver):
+        return receiver.setSlotWithIndexAndName(self.slotIndex, self.slotName, arguments[0])
+
 class BlockClosure(TypedValue):
     def __init__(self, node, environment):
         self.node = node
@@ -479,6 +500,13 @@ class ProductTypeValue(TypedValue):
     def getType(self):
         return self.type
 
+    def getSlotWithIndexAndName(self, slotIndex, slotName):
+        return self.elements[slotIndex]
+
+    def setSlotWithIndexAndName(self, slotIndex, slotName, value):
+        self.elements[slotIndex] = value
+        return value
+
     def defaultPrintString(self) -> str:
         result = str(self.type) + '('
         isFirst = True
@@ -524,7 +552,9 @@ class RecordTypeSchema(ProductTypeSchema):
     def __init__(self, slots, supertypeSchema = None):
         self.slots = slots
         self.allSlots = slots
+        self.startSlotIndex = 0
         if supertypeSchema is not None:
+            self.startSlotIndex = len(supertypeSchema.allSlots)
             self.allSlots = supertypeSchema.allSlots + self.allSlots
         self.slotNameDictionary = {}
         self.slotNameTable = list(map(lambda s: s.key, self.allSlots))
@@ -537,11 +567,17 @@ class RecordTypeSchema(ProductTypeSchema):
             self.slotNameDictionary[slotName] = slotIndex
             slotIndex += 1
 
-
     def buildPrimitiveMethodDictionary(self):
         self.metaTypeMethodDict[Symbol('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew)
         self.metaTypeMethodDict[Symbol('basicNewWithSlots:')] = TypeSchemaPrimitiveMethod(self.basicNewWithSequentialSlots)
         self.metaTypeMethodDict[Symbol('basicNewWithNamedSlots:')] = TypeSchemaPrimitiveMethod(self.basicNewWithNamedSlots)
+        for slotIndex in range(len(self.slots)):
+            slotAssociation = self.slots[slotIndex]
+            slotName = slotAssociation.key
+            getterName = Symbol(slotName)
+            setterName = Symbol(slotName + ':')
+            self.methodDict[getterName] = RecordTypeGetterPrimitiveMethod(getterName, getterName, slotIndex, slotAssociation.value)
+            self.methodDict[setterName] = RecordTypeSetterPrimitiveMethod(setterName, getterName, slotIndex, slotAssociation.value)
         return super().buildPrimitiveMethodDictionary()
 
     def basicNewWithNamedSlots(self, recordType, namedSlots):
@@ -611,7 +647,7 @@ class GCClassTypeSchema(RecordTypeSchema):
 class BehaviorType(TypedValue, TypeInterface):
     def __init__(self, name = None, supertype = None, traits = [], schema = EmptyTypeSchema(), methodDict = {}):
         self.name = name
-        self.methodDict = methodDict
+        self.methodDict = dict(methodDict)
         self.supertype = supertype
         self.traits = traits
         self.schema = schema

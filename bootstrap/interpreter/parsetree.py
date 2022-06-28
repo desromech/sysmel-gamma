@@ -537,6 +537,9 @@ class PTQuote(PTNode):
     def isQuote(self):
         return True
 
+    def evaluateWithEnvironment(self, machine, environment):
+        return self.expression.convertIntoGenericASTWith(environment.lookupSymbolRecursively(Symbol('__BootstrapCompiler__')))
+
 class PTQuasiQuote(PTNode):
     def __init__(self, expression, tokens):
         PTNode.__init__(self)

@@ -101,6 +101,8 @@ class BootstrapCompiler(BehaviorTypedObject):
             (cls.primitiveFailed, 'primitiveFailed'),
             (cls.subclassResponsibility, 'subclassResponsibility'),
 
+            (cls.getTopLevelEnvironment, 'getTopLevelEnvironment'),
+
             ## Utility
             (cls.print, 'print:')
         ])
@@ -109,6 +111,9 @@ class BootstrapCompiler(BehaviorTypedObject):
         if self.emptySourcePosition is None:
             self.emptySourcePosition = self.makeASTNodeWithSlots('EmptySourcePosition')
         return self.emptySourcePosition
+
+    def getTopLevelEnvironment(self):
+        return self.topLevelEnvironment
 
     def convertASTSourcePosition(self, sourcePosition):
         if sourcePosition in self.sourcePositionMemoizationTable:
