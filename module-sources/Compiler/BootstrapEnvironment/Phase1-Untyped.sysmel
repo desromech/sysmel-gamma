@@ -75,7 +75,19 @@ __BootstrapCompiler__
     } templated;
 
     addBindingNamed: #Array with: {:(Type)elementType :(Integer)bounds :: Type |
-        __TypeBuilder__ newArrayTypeFor: elementType withBounds: bounds
+        {:(Type)arrayType :: Type |
+            arrayType
+                withSelector: #asArraySlice addMethod: {:(arrayType)self :: ArraySlice(elementType) |
+                    ArraySlice(elementType) basicNewWithNamedSlots: #{
+                        elements: self.
+                        size: bounds
+                    }
+                };
+                withSelector: #size addMethod: {:(arrayType)self :: Integer |
+                    bounds
+                }.
+            arrayType
+        } (__TypeBuilder__ newArrayTypeFor: elementType withBounds: bounds)
     } templated;
 
     addBindingNamed: #Pointer with: {:(Type)elementType :: Type |
@@ -83,10 +95,19 @@ __BootstrapCompiler__
     } templated;
 
     addBindingNamed: #ArraySlice with: {:(Type)elementType :: Type |
-        __TypeBuilder__ newRecordTypeWith: #{
+        {:(Type)arraySliceType :: Type |
+            arraySliceType
+                withSelector: #isEmpty addMethod: {:(arraySliceType)self :: Boolean |
+                    self size = 0
+                };
+                withSelector: #isNotEmpty addMethod: {:(arraySliceType)self :: Boolean |
+                    self size ~= 0
+                }.
+            arraySliceType
+        } (__TypeBuilder__ newRecordTypeWith: #{
             elements: Pointer(elementType).
             size: Size.
-        }
+        })
     } templated;
     addBasicTypeNamed: #AnyArraySlice with: ArraySlice(AnyValue);
 
@@ -418,7 +439,7 @@ SysmelCompiler AST SequenceNode
             self copy
                 pragmas: analyzedPragmas;
                 expressions: analyzedExpressions;
-                analyzedType: (analyzedExpressions ifEmpty: Void ifNotEmpty: analyzedExpressions last);
+                analyzedType: (if: analyzedExpressions isEmpty then: Void else: analyzedExpressions last);
                 yourself
         }(
             self pragmas collect: {:(SysmelCompiler AST Node)node :: SysmelCompiler AST Node |
