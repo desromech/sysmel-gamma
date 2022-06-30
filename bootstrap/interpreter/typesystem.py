@@ -161,9 +161,15 @@ class Integer(int, TypedValue):
     def primitiveToString(self):
         return String(str(int(self)))
 
+    def shallowCopy(self):
+        return self
+        
 class Character(int, TypedValue):
     def getType(self):
         return getBasicTypeNamed(Symbol('Character'))
+
+    def shallowCopy(self):
+        return self
 
 class Float(float, TypedValue):
     def getType(self):
@@ -174,6 +180,9 @@ class Float(float, TypedValue):
 
     def defaultToString(self):
         return str(float(self))
+
+    def shallowCopy(self):
+        return self
 
 class String(str, TypedValue):
     def getType(self):
@@ -209,6 +218,9 @@ class String(str, TypedValue):
     def primitiveIntern(self):
         return Symbol(self)
 
+    def shallowCopy(self):
+        return String(self)
+
 class Symbol(str, TypedValue):
     def getType(self):
         return getBasicTypeNamed(Symbol('Symbol'))
@@ -216,9 +228,15 @@ class Symbol(str, TypedValue):
     def defaultToString(self):
         return self
 
+    def shallowCopy(self):
+        return Symbol(self)
+
 class Array(list, TypedValue):
     def getType(self):
         return getBasicTypeNamed(Symbol('AnyArrayList'))
+
+    def shallowCopy(self):
+        return Array(map(lambda el: el.shallowCopy(), self))
 
 class Association(TypedValue):
     def __init__(self, key, value):
@@ -239,6 +257,9 @@ class Association(TypedValue):
 
     def defaultPrintString(self) -> str:
         return repr(self.key) + ' : ' + repr(self.value)
+
+    def shallowCopy(self):
+        return Association(self.key.shallowCopy, self.value.shallowCopy)
 
 class Dictionary(list, TypedValue):
 
@@ -416,7 +437,9 @@ class TypeSchema:
         return False
 
     def buildPrimitiveMethodDictionary(self):
-        pass
+        self.methodDict[Symbol('shallowCopy')] = TypeSchemaPrimitiveMethod(self.shallowCopy)
+        self.methodDict[Symbol('yourself')] = TypeSchemaPrimitiveMethod(self.yourself)
+        self.methodDict[Symbol('__type__')] = TypeSchemaPrimitiveMethod(self.getTypeFromValue)
 
     def lookupPrimitiveWithSelector(self, selector):
         if selector in self.methodDict:
@@ -427,6 +450,15 @@ class TypeSchema:
         if selector in self.metaTypeMethodDict:
             return self.metaTypeMethodDict[selector]
         return None
+
+    def shallowCopy(self, value):
+        return value.shallowCopy()
+
+    def yourself(self, value):
+        return value
+
+    def getTypeFromValue(self, value):
+        return value.getType()
 
     def basicNew(self, type):
         raise NonInstanceableType()
@@ -447,6 +479,9 @@ class TrivialTypedValue(TypedValue):
     def __init__(self, type):
         self.type = type
         self.globalBindingName = None
+
+    def shallowCopy(self):
+        return self
 
     def getType(self):
         return self.type
@@ -483,7 +518,8 @@ class EmptyTypeSchema(TypeSchema):
         return True
 
 class AbsurdTypeSchema(TypeSchema):
-    pass
+    def buildPrimitiveMethodDictionary(self):
+        pass
 
 class PrimitiveNumberTypeValue(TypedValue):
     def __init__(self, type, value):
@@ -569,6 +605,9 @@ class SumTypeValue(TypedValue):
 
     def getType(self):
         return self.type
+    
+    def shallowCopy(self):
+        return SumTypeValue(self.type, self.typeSelector, self.wrappedValue.shallowCopy())
 
     def defaultPrintString(self) -> str:
         return '%s(%d: %s)' % (repr(self.type), self.typeSelector, repr(self.wrappedValue))
@@ -610,6 +649,9 @@ class ProductTypeValue(TypedValue):
     def __init__(self, type, elements):
         self.type = type
         self.elements = elements
+
+    def shallowCopy(self):
+        return ProductTypeValue(self.type, list(map(lambda el: el.shallowCopy(), self.elements)))
 
     def getType(self):
         return self.type
@@ -690,8 +732,8 @@ class RecordTypeSchema(ProductTypeSchema):
             slotName = slotAssociation.key
             getterName = Symbol(slotName)
             setterName = Symbol(slotName + ':')
-            self.methodDict[getterName] = RecordTypeGetterPrimitiveMethod(getterName, getterName, slotIndex, slotAssociation.value)
-            self.methodDict[setterName] = RecordTypeSetterPrimitiveMethod(setterName, getterName, slotIndex, slotAssociation.value)
+            self.methodDict[getterName] = RecordTypeGetterPrimitiveMethod(getterName, getterName, self.startSlotIndex + slotIndex, slotAssociation.value)
+            self.methodDict[setterName] = RecordTypeSetterPrimitiveMethod(setterName, getterName, self.startSlotIndex + slotIndex, slotAssociation.value)
         return super().buildPrimitiveMethodDictionary()
 
     def basicNewWithNamedSlots(self, recordType, namedSlots):
@@ -729,6 +771,9 @@ class PointerTypeValue(TypedValue):
         self.type = type
         self.value = value
         self.baseIndex = baseIndex
+
+    def shallowCopy(self):
+        return self
 
     def getType(self):
         return self.type

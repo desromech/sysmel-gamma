@@ -241,7 +241,7 @@ def p_chainedMessage_keyword(p):
 
 def p_chainedMessage_unary(p):
     'chainedMessage : expandableIdentifier'
-    p[0] = PTChainedMessage(p[1], [])
+    p[0] = PTChainedMessage(p[1].asSymbolEvaluatedExpression(), [])
 
 def p_chainedMessages_first(p):
     'chainedMessages : SEMICOLON chainedMessage'

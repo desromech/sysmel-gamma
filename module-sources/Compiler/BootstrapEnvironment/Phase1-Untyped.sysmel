@@ -425,7 +425,7 @@ SysmelCompiler AST SourceStringPosition
 
 SysmelCompiler AST LiteralValueNode
     withSelector: #analyzeNodeWith: addMethod: {:(SysmelCompiler AST LiteralValueNode)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
-        self copy
+        self shallowCopy
             analyzedType: self value __type__;
             yourself
     };
@@ -436,7 +436,7 @@ SysmelCompiler AST LiteralValueNode
 SysmelCompiler AST SequenceNode
     withSelector: #analyzeNodeWith: addMethod: {:(SysmelCompiler AST SequenceNode)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
         {:(SysmelCompiler AST Node arraySlice)analyzedPragmas :(SysmelCompiler AST Node arraySlice)analyzedExpressions :: SysmelCompiler AST Node  |
-            self copy
+            self shallowCopy
                 pragmas: analyzedPragmas;
                 expressions: analyzedExpressions;
                 analyzedType: (if: analyzedExpressions isEmpty then: Void else: analyzedExpressions last);
@@ -479,7 +479,7 @@ SysmelCompiler AST MessageSendNode
                         if: binding isNil then: {
                             __BootstrapCompiler__ makeSemanticAnalysisError: ("Failed to binding for selector {0}." format: (self analyzedSelector printString, )) at: self sourcePosition
                         } else: {
-                            binding analyzeMessageSendNode: (self copy
+                            binding analyzeMessageSendNode: (self shallowCopy
                                 selector: analyzedSelector;
                                 yourself) with: analyzer
                         }
@@ -489,7 +489,7 @@ SysmelCompiler AST MessageSendNode
                 }
             } else: {
                 {:(SysmelCompiler AST)analyzedReceiver :: SysmelCompiler AST Node |
-                    analyzedReceiver analyzedType analyzeMessageSendNode: (self copy
+                    analyzedReceiver analyzedType analyzeMessageSendNode: (self shallowCopy
                         receiver: analyzedReceiver;
                         selector: analyzedSelector;
                         yourself) with: analyzer
@@ -542,10 +542,9 @@ __BootstrapCompiler__
     });
     print: Int32 basicNew;
     print: (Int32 basicNew: -42);
-    ##print: (`'1 analyzedType);
-    #*print: (`'1 analyzeNodeIfNeededWith: (SysmelCompiler Semantic ASTAnalyzer basicNewWithNamedSlots: #{
+    print: (`'1 analyzeNodeIfNeededWith: (SysmelCompiler Semantic ASTAnalyzer basicNewWithNamedSlots: #{
         environment: __BootstrapCompiler__ getTopLevelEnvironment
-    }));*#
+    }));
     print: nil isNil;
     print: nil isNotNil.
 
