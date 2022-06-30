@@ -103,6 +103,9 @@ class BootstrapCompiler(BehaviorTypedObject):
 
             (cls.getTopLevelEnvironment, 'getTopLevelEnvironment'),
 
+            ## Target platform
+            (cls.getPointerSize, 'getPointerSize'),
+
             ## Utility
             (cls.print, 'print:')
         ])
@@ -221,3 +224,6 @@ class BootstrapCompiler(BehaviorTypedObject):
 
     def primitiveFailed(self):
         raise PrimitiveFailed('Primitive failed')
+
+    def getPointerSize(self):
+        return Integer(8)

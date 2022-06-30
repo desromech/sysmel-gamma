@@ -25,7 +25,69 @@ __BootstrapCompiler__
     addBasicTypeNamed: #String with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
     addBasicTypeNamed: #Symbol with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
     addBasicTypeNamed: #Integer with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
-    addBasicTypeNamed: #Float with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
+    addBasicTypeNamed: #Float with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{}).
+
+## Integer arithmetics primitive methods
+Integer
+    withSelector: #+ addMethod: {:(Integer)self :(Integer)other :: Integer |
+        <primitive: #"integer.arithmetic.add">
+        __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #- addMethod: {:(Integer)self :(Integer)other :: Integer |
+        <primitive: #"integer.arithmetic.sub">
+        __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #"*" addMethod: {:(Integer)self :(Integer)other :: Integer |
+        <primitive: #"integer.arithmetic.mul">
+        __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #// addMethod: {:(Integer)self :(Integer)other :: Integer |
+        <primitive: #"integer.arithmetic.div">
+        __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #% addMethod: {:(Integer)self :(Integer)other :: Integer |
+        <primitive: #"integer.arithmetic.rem">
+        __BootstrapCompiler__ primitiveFailed
+    };
+
+    withSelector: #= addMethod: {:(Integer)self :(Integer)other :: Boolean |
+        <primitive: #"integer.comparison.equals">
+        __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #~= addMethod: {:(Integer)self :(Integer)other :: Boolean |
+        <primitive: #"integer.comparison.notEquals">
+        __BootstrapCompiler__ primitiveFailed
+    };
+    
+    withSelector: #< addMethod: {:(Integer)self :(Integer)other :: Boolean |
+        <primitive: #"integer.comparison.lessThan">
+        __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #<= addMethod: {:(Integer)self :(Integer)other :: Boolean |
+        <primitive: #"integer.comparison.lessOrEqual">
+        __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #> addMethod: {:(Integer)self :(Integer)other :: Boolean |
+        <primitive: #"integer.comparison.greaterThan">
+        __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #>= addMethod: {:(Integer)self :(Integer)other :: Boolean |
+        <primitive: #"integer.comparison.greaterOrEqual">
+        __BootstrapCompiler__ primitiveFailed
+    };
+
+    withSelector: #asString addMethod: {:(Integer)self :: String |
+        <primitive: #"integer.conversion.toString">
+        __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #printString addMethod: {:(Integer)self :: String |
+        <primitive: #"integer.conversion.toString">
+        __BootstrapCompiler__ primitiveFailed
+    }.
+
+
+__BootstrapCompiler__
+    enterTopLevelNamespace;
 
     ## Important keywords
     addKeywordBindingNamed: #false with: False basicNew;
@@ -42,11 +104,6 @@ __BootstrapCompiler__
     addBasicTypeNamed: #UInt32 with: (__TypeBuilder__ newUnsignedIntegerTypeWithSize: 4 alignment: 4);
     addBasicTypeNamed: #UInt64 with: (__TypeBuilder__ newUnsignedIntegerTypeWithSize: 8 alignment: 8);
 
-    ## TODO: Add support for 32 bits targets:
-    addBasicTypeNamed: #UIntPointer with: UInt64;
-    addBasicTypeNamed: #IntPointer with: UInt64;
-    addBasicTypeNamed: #Size with: UIntPointer;
-
     addBasicTypeNamed: #Int8 with: (__TypeBuilder__ newSignedIntegerTypeWithSize: 1 alignment: 1);
     addBasicTypeNamed: #Int16 with: (__TypeBuilder__ newSignedIntegerTypeWithSize: 2 alignment: 2);
     addBasicTypeNamed: #Int32 with: (__TypeBuilder__ newSignedIntegerTypeWithSize: 4 alignment: 4);
@@ -59,6 +116,10 @@ __BootstrapCompiler__
     addBasicTypeNamed: #Float16 with: (__TypeBuilder__ newFloatTypeWithSize: 2 alignment: 2);
     addBasicTypeNamed: #Float32 with: (__TypeBuilder__ newFloatTypeWithSize: 4 alignment: 4);
     addBasicTypeNamed: #Float64 with: (__TypeBuilder__ newFloatTypeWithSize: 8 alignment: 8);
+
+    addBasicTypeNamed: #UIntPointer with: (if: __BootstrapCompiler__ getPointerSize = 4 then: UInt32 else: UInt64);
+    addBasicTypeNamed: #IntPointer with: (if: __BootstrapCompiler__ getPointerSize = 4 then: Int32 else: Int64);
+    addBasicTypeNamed: #Size with: UIntPointer;
 
     ## The polymorphic types
     addBindingNamed: #Optional with: {:(Type)optionalType :: Type |
@@ -134,65 +195,6 @@ __BootstrapCompiler__
         }
     } templated;
     addBasicTypeNamed: #AnyArrayList with: ArrayList(AnyValue).
-
-## Integer arithmetics primitive methods
-Integer
-    withSelector: #+ addMethod: {:(Integer)self :(Integer)other :: Integer |
-        <primitive: #"integer.arithmetic.add">
-        __BootstrapCompiler__ primitiveFailed
-    };
-    withSelector: #- addMethod: {:(Integer)self :(Integer)other :: Integer |
-        <primitive: #"integer.arithmetic.sub">
-        __BootstrapCompiler__ primitiveFailed
-    };
-    withSelector: #"*" addMethod: {:(Integer)self :(Integer)other :: Integer |
-        <primitive: #"integer.arithmetic.mul">
-        __BootstrapCompiler__ primitiveFailed
-    };
-    withSelector: #// addMethod: {:(Integer)self :(Integer)other :: Integer |
-        <primitive: #"integer.arithmetic.div">
-        __BootstrapCompiler__ primitiveFailed
-    };
-    withSelector: #% addMethod: {:(Integer)self :(Integer)other :: Integer |
-        <primitive: #"integer.arithmetic.rem">
-        __BootstrapCompiler__ primitiveFailed
-    };
-
-    withSelector: #= addMethod: {:(Integer)self :(Integer)other :: Boolean |
-        <primitive: #"integer.comparison.equals">
-        __BootstrapCompiler__ primitiveFailed
-    };
-    withSelector: #~= addMethod: {:(Integer)self :(Integer)other :: Boolean |
-        <primitive: #"integer.comparison.notEquals">
-        __BootstrapCompiler__ primitiveFailed
-    };
-    
-    withSelector: #< addMethod: {:(Integer)self :(Integer)other :: Boolean |
-        <primitive: #"integer.comparison.lessThan">
-        __BootstrapCompiler__ primitiveFailed
-    };
-    withSelector: #<= addMethod: {:(Integer)self :(Integer)other :: Boolean |
-        <primitive: #"integer.comparison.lessOrEqual">
-        __BootstrapCompiler__ primitiveFailed
-    };
-    withSelector: #> addMethod: {:(Integer)self :(Integer)other :: Boolean |
-        <primitive: #"integer.comparison.greaterThan">
-        __BootstrapCompiler__ primitiveFailed
-    };
-    withSelector: #>= addMethod: {:(Integer)self :(Integer)other :: Boolean |
-        <primitive: #"integer.comparison.greaterOrEqual">
-        __BootstrapCompiler__ primitiveFailed
-    };
-
-    withSelector: #asString addMethod: {:(Integer)self :: String |
-        <primitive: #"integer.conversion.toString">
-        __BootstrapCompiler__ primitiveFailed
-    };
-    withSelector: #printString addMethod: {:(Integer)self :: String |
-        <primitive: #"integer.conversion.toString">
-        __BootstrapCompiler__ primitiveFailed
-    }.
-
 
 ## String primitive methods
 String
@@ -519,6 +521,21 @@ SysmelCompiler AST MessageSendNode
         }
     }.
 
+SysmelCompiler Semantic EvaluationEnvironment __type__
+    withSelector: #default addMethod: {:(SysmelCompiler Semantic EvaluationEnvironment __type__)self :: self |
+        __BootstrapCompiler__ getTopLevelEnvironment
+    }.
+
+SysmelCompiler Semantic ASTAnalyzer __type__
+    withSelector: #forEnvironment: addMethod: {:(SysmelCompiler Semantic ASTAnalyzer __type__)self :(SysmelCompiler Semantic EvaluationEnvironment)environment :: self |
+        self basicNewWithNamedSlots: #{
+            environment: environment
+        }
+    };
+    withSelector: #forDefaultEnvironment addMethod: {:(SysmelCompiler Semantic ASTAnalyzer __type__)self :: self |
+        self forEnvironment: SysmelCompiler Semantic EvaluationEnvironment default
+    }.
+
 __BootstrapCompiler__
     print: false;
     print: true;
@@ -542,9 +559,8 @@ __BootstrapCompiler__
     });
     print: Int32 basicNew;
     print: (Int32 basicNew: -42);
-    print: (`'1 analyzeNodeIfNeededWith: (SysmelCompiler Semantic ASTAnalyzer basicNewWithNamedSlots: #{
-        environment: __BootstrapCompiler__ getTopLevelEnvironment
-    }));
+    print: SysmelCompiler Semantic ASTAnalyzer __type__;
+    print: (`'1 analyzeNodeIfNeededWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
     print: nil isNil;
     print: nil isNotNil.
 
