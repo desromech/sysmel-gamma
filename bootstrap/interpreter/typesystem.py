@@ -187,8 +187,23 @@ class String(str, TypedValue):
         return String(self + other)
 
     @primitiveNamed('string.format')
-    def primitiveConcat(self, parameters):
-        return self
+    def primitiveFormat(self, parameters):
+        formattedString = ''
+        i = 0
+        while i < len(self):
+            c = self[i]
+            if c == '{':
+                i += 1
+                parameterIndex = ''
+                while i < len(self) and self[i] != '}':
+                    parameterIndex += self[i]
+                    i += 1
+                parameter = parameters[int(parameterIndex)]
+                formattedString += str(parameter)
+            else:
+                formattedString += c
+            i += 1
+        return String(formattedString)
 
     @primitiveNamed('symbol.internString')
     def primitiveIntern(self):
