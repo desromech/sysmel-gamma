@@ -28,16 +28,29 @@ class StringSourceCollection(SourceCollection):
 
     def getLineAndColumnForPosition(self, position):
         self.ensureLineIndexIsBuilt()
-        return (1, 1)
+        bestLineFound = 0
+        lowerBound = 0
+        upperBound = len(self.lineIndex)
+        while lowerBound < upperBound:
+            middle = (lowerBound + upperBound) // 2
+            middlePosition = self.lineIndex[middle]
+            if middlePosition <= position:
+                bestLineFound = middle
+                lowerBound = middle + 1
+            else:
+                upperBound = middle 
+
+        return (bestLineFound + 1, position - self.lineIndex[bestLineFound] + 1)
 
     def ensureLineIndexIsBuilt(self):
         if self.lineIndex is not None:
             return
 
         self.lineIndex = []
+        self.lineIndex.append(0)
         for i in range(len(self.string)):
             if self.string[i] == '\n':
-                self.lineIndex.append(i)
+                self.lineIndex.append(i + 1)
 
     def convertIntoTargetSourceCollectionWith(self, bootstrapCompiler):
         return bootstrapCompiler.makeASTNodeWithSlots('SourceStringCollection',
