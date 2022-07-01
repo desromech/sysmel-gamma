@@ -1,7 +1,6 @@
 from parser import parseString
 from types import MethodType
 
-from numpy import source
 from typesystem import *
 
 SemanticAnalysisTypeMapping = None

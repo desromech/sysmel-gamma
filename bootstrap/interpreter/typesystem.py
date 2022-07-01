@@ -1,6 +1,5 @@
 from queue import Empty
 
-from numpy import record
 from errors import *
 from evalmachine import *
 
