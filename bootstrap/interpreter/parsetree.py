@@ -530,7 +530,13 @@ class PTBlockClosure(PTNode):
             argumentName = argumentDeclaration.identifier.evaluateWithEnvironment(machine, closureEnvironment)
             evaluationEnvironment.setSymbolBinding(argumentName, argumentValue)
 
-        return self.body.evaluateWithEnvironment(machine, evaluationEnvironment)
+        ## Coerce the result value into the result type
+        result = self.body.evaluateWithEnvironment(machine, evaluationEnvironment)
+        if self.resultType is not None:
+            resultType = self.resultType.evaluateWithEnvironment(machine, evaluationEnvironment)
+            result = resultType.coerceValue(result)
+
+        return result
 
 class PTBlockArgument(PTNode):
     def __init__(self, type, identifier):

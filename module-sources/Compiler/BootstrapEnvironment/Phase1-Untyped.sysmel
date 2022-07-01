@@ -423,6 +423,12 @@ SysmelCompiler AST Node
     };
     withSelector: #evaluateNodeWith: addMethod: {:(SysmelCompiler AST Node)self :(SysmelCompiler Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         __BootstrapCompiler__ subclassResponsibility
+    };
+    withSelector: #isLiteralValueNode addMethod: {:(SysmelCompiler AST Node)self :: Boolean |
+        false
+    };
+    withSelector: #evaluateLiteralValue addMethod: {:(SysmelCompiler AST Node)self :: AnyValue |
+        __BootstrapCompiler__ error: "Not a literal value node."
     }.
 
 SysmelCompiler AST SourceStringCollection
@@ -446,7 +452,14 @@ SysmelCompiler AST LiteralValueNode
     };
     withSelector: #evaluateNodeWith: addMethod: {:(SysmelCompiler AST LiteralValueNode)self :(SysmelCompiler Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         self value
-    }.
+    };
+    withSelector: #isLiteralValueNode addMethod: {:(SysmelCompiler AST LiteralValueNode)self :: Boolean |
+        true
+    };
+    withSelector: #evaluateLiteralValue addMethod: {:(SysmelCompiler AST LiteralValueNode)self :: AnyValue |
+        self value
+    }.    
+    .
 
 SysmelCompiler AST SequenceNode
     withSelector: #analyzeNodeWith: addMethod: {:(SysmelCompiler AST SequenceNode)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
@@ -475,7 +488,7 @@ SysmelCompiler AST IdentifierReferenceNode
     withSelector: #analyzeNodeWith: addMethod: {:(SysmelCompiler AST IdentifierReferenceNode)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
         {:(AnyValue)binding :: SysmelCompiler AST Node  |
             if: binding isNil then: {
-                __BootstrapCompiler__ makeSemanticAnalysisError: ("Failed to binding for symbol {0}." format: (self value printString, )) at: self sourcePosition
+                analyzer makeSemanticAnalysisError: ("Failed to binding for symbol {0}." format: (self value printString, )) at: self sourcePosition
             } else: {
                 binding analyzeIdentifierReferenceNode: self with: analyzer
             }
@@ -486,13 +499,13 @@ SysmelCompiler AST IdentifierReferenceNode
     }.
 
 SysmelCompiler AST MessageSendNode
-    withSelector: #analyzeNodeWith: addMethod: {:(SysmelCompiler AST MessageSendNode)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Type |
+    withSelector: #analyzeNodeWith: addMethod: {:(SysmelCompiler AST MessageSendNode)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST MessageSendNode |
         {:(SysmelCompiler AST)analyzedSelector :: SysmelCompiler AST Node |
             if: self receiver isNil then: {
                 if: analyzedSelector isLiteralSymbolValue then: {
                     {:(AnyValue)binding :: SysmelCompiler AST Node |
                         if: binding isNil then: {
-                            __BootstrapCompiler__ makeSemanticAnalysisError: ("Failed to binding for selector {0}." format: (self analyzedSelector printString, )) at: self sourcePosition
+                            analyzer makeSemanticAnalysisError: ("Failed to binding for selector {0}." format: (self analyzedSelector printString, )) at: self sourcePosition
                         } else: {
                             binding analyzeMessageSendNode: (self shallowCopy
                                 selector: analyzedSelector;
@@ -500,7 +513,7 @@ SysmelCompiler AST MessageSendNode
                         }
                     } (analyzer environment lexicalScope lookupSymbolRecursively: (analyzedSelector evaluateNodeWith: analyzer))
                 } else: {
-                    __BootstrapCompiler__ makeSemanticAnalysisError: ("Message  {0}." format: (self analyzedSelector printString, )) at: self sourcePosition
+                    analyzer makeSemanticAnalysisError: ("Message  {0}." format: (self analyzedSelector printString, )) at: self sourcePosition
                 }
             } else: {
                 {:(SysmelCompiler AST)analyzedReceiver :: SysmelCompiler AST Node |
@@ -549,6 +562,15 @@ SysmelCompiler Semantic ASTAnalyzer __type__
     };
     withSelector: #forDefaultEnvironment addMethod: {:(SysmelCompiler Semantic ASTAnalyzer __type__)self :: self |
         self forEnvironment: SysmelCompiler Semantic EvaluationEnvironment default
+    }.
+
+Type
+    withSelector: #analyzeMessageSendNode:with: addMethod: {:(Type)self :(SysmelCompiler AST MessageSendNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
+        if: node selector isLiteralValueNode then: {
+            analyzer makeSemanticAnalysisError: "TODO: Implement message with literal selector." at: node sourcePosition
+        } else: {
+            analyzer makeSemanticAnalysisError: "Unsupported message sends without literal selectors." at: node sourcePosition
+        }
     }.
 
 __BootstrapCompiler__
