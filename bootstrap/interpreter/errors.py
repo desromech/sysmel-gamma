@@ -24,3 +24,9 @@ class NonBooleanEvaluableValue(InterpreterError):
 
 class MissingSlotsForInstancingType(InterpreterError):
     pass
+
+class CannotCoerceValueToType(InterpreterError):
+    pass
+
+class SumTypeNotMatched(InterpreterError):
+    pass

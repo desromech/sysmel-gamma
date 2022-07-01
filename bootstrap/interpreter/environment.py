@@ -4,7 +4,15 @@ from types import MethodType
 from numpy import source
 from typesystem import *
 
-class IdentifierLookupScope(BehaviorTypedObject):
+SemanticAnalysisTypeMapping = None
+
+def getSemanticAnalysisType(symbol):
+    return SemanticAnalysisTypeMapping.at(symbol)
+
+class IdentifierLookupScope(TypedValue):  
+    def getType(self):
+        return getSemanticAnalysisType(Symbol('IdentifierLookupScope'))
+
     def __init__(self, parentScope):
         super().__init__()
         self.parentScope = parentScope
@@ -25,6 +33,9 @@ class IdentifierLookupScope(BehaviorTypedObject):
         return LexicalScope(self)
 
 class LexicalScope(IdentifierLookupScope):
+    def getType(self):
+        return getSemanticAnalysisType(Symbol('LexicalScope'))
+
     def __init__(self, parentScope):
         super().__init__(parentScope)
         self.symbolTable = {}
@@ -35,7 +46,10 @@ class LexicalScope(IdentifierLookupScope):
     def lookupSymbol(self, symbol):
         return self.symbolTable.get(symbol, None)
 
-class NamespaceLevelEnvironment(LexicalScope):
+class NamespaceScope(LexicalScope):
+    def getType(self):
+        return getSemanticAnalysisType(Symbol('NamespaceScope'))
+
     def __init__(self, parentScope = None):
         super().__init__(parentScope)
 
@@ -50,7 +64,7 @@ class NamespaceLevelEnvironment(LexicalScope):
                 return boundSymbol.getSymbolBindingReferenceValue()
         return super().performWithArguments(machine, selector, arguments)
 
-class ScriptEvaluationEnvironment(LexicalScope):
+class ScriptEvaluationScope(LexicalScope):
     def __init__(self, parentScope, bootstrapCompiler):
         super().__init__(parentScope)
         self.bootstrapCompiler = bootstrapCompiler
@@ -68,7 +82,7 @@ class ScriptEvaluationEnvironment(LexicalScope):
 class BootstrapCompiler(BehaviorTypedObject):
     def __init__(self):
         super().__init__()
-        self.topLevelEnvironment = NamespaceLevelEnvironment()
+        self.topLevelEnvironment = NamespaceScope()
         self.topLevelEnvironment.setSymbolBinding('__BootstrapCompiler__', self)
         self.topLevelEnvironment.setSymbolBinding('__TypeBuilder__', TypeBuilder())
         self.basicTypeEnvironment = {}
@@ -80,8 +94,8 @@ class BootstrapCompiler(BehaviorTypedObject):
         self.emptySourcePosition = None
         self.enterTopLevelNamespace()
 
-    def makeScriptEvaluationEnvironment(self):
-        return ScriptEvaluationEnvironment(self.topLevelEnvironment, self)
+    def makeScriptEvaluationScope(self):
+        return ScriptEvaluationScope(self.topLevelEnvironment, self)
 
     @classmethod
     def initializeBehaviorType(cls, type):
@@ -155,7 +169,7 @@ class BootstrapCompiler(BehaviorTypedObject):
     def enterNamespaceNamed(self, namespaceName):
         childNamespace = self.activeNamespace.lookupSymbol(namespaceName)
         if childNamespace is None:
-            childNamespace = NamespaceLevelEnvironment(self.activeNamespace)
+            childNamespace = NamespaceScope(self.activeNamespace)
             self.activeNamespace.setSymbolBinding(namespaceName, childNamespace)
         self.activeNamespace = childNamespace
 
@@ -207,11 +221,13 @@ class BootstrapCompiler(BehaviorTypedObject):
 
     def setParseTreeASTMaping(self, parseTreeASTMapping):
         self.parseTreeASTMapping = parseTreeASTMapping
-        print(parseTreeASTMapping)
+        ##print(parseTreeASTMapping)
 
     def setSemanticAnalysisMapping(self, semanticAnalysisMapping):
+        global SemanticAnalysisTypeMapping
         self.semanticAnalysisMapping = semanticAnalysisMapping
-        print(semanticAnalysisMapping)
+        SemanticAnalysisTypeMapping = semanticAnalysisMapping
+        ##print(semanticAnalysisMapping)
 
     def enableTypeSystem(self):
         self.isTypeSystemEnabled = True

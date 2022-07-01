@@ -130,6 +130,12 @@ __BootstrapCompiler__
                 };
                 withSelector: #isNotNil addMethod: {:(sumType)self :: Boolean |
                     self __typeSelector__ ~= 0
+                };
+                withSelector: #_ addMethod: {:(sumType)self :: optionalType |
+                    self get: optionalType
+                };
+                withSelector: #value addMethod: {:(sumType)self :: optionalType |
+                    self get: optionalType
                 }.
             sumType
         }(__TypeBuilder__ newSumTypeWith: (Undefined, optionalType))
@@ -307,7 +313,7 @@ __BootstrapCompiler__
     });
 
     addBindingNamed: #MessageSendNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
-        receiver: SysmelCompiler AST Node.
+        receiver: SysmelCompiler AST Node optional.
         selector: SysmelCompiler AST Node.
         arguments: SysmelCompiler AST Node arraySlice.
         boundMessage: AnyValue optional.
@@ -384,6 +390,8 @@ __BootstrapCompiler__
     addBindingNamed: #LexicalScope with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler Semantic IdentifierLookupScope publicSlots: #{
         expression: SysmelCompiler AST Node.
     });
+    addBindingNamed: #NamespaceScope with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler Semantic LexicalScope publicSlots: #{});
+    addBindingNamed: #ScriptEvaluationScope with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler Semantic LexicalScope publicSlots: #{});
     addBindingNamed: #EvaluationEnvironment with: (__TypeBuilder__ newGCClassWithPublicSlots: #{
         lexicalScope: SysmelCompiler Semantic LexicalScope
     });
@@ -393,6 +401,8 @@ __BootstrapCompiler__
     setSemanticAnalysisMapping: #{
         IdentifierLookupScope: SysmelCompiler Semantic IdentifierLookupScope.
         LexicalScope: SysmelCompiler Semantic LexicalScope.
+        NamespaceScope: SysmelCompiler Semantic NamespaceScope.
+        ScriptEvaluationScope: SysmelCompiler Semantic ScriptEvaluationScope.
         EvaluationEnvironment: SysmelCompiler Semantic EvaluationEnvironment.
         ASTAnalyzer: SysmelCompiler Semantic ASTAnalyzer.
     }.
@@ -404,6 +414,9 @@ SysmelCompiler AST Node
         } else: {
             self
         }
+    };
+    withSelector: #analyzeAndEvaluateNodeWith: addMethod: {:(SysmelCompiler AST Node)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: AnyValue |
+        (self analyzeNodeIfNeededWith: analyzer) evaluateNodeWith: analyzer environment
     };
     withSelector: #analyzeNodeWith: addMethod: {:(SysmelCompiler AST Node)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
         __BootstrapCompiler__ subclassResponsibility
@@ -495,7 +508,7 @@ SysmelCompiler AST MessageSendNode
                         receiver: analyzedReceiver;
                         selector: analyzedSelector;
                         yourself) with: analyzer
-                }(self receiver analyzeNodeIfNeededWith: analyzer)
+                }(self receiver _ analyzeNodeIfNeededWith: analyzer)
             }.
         }(self selector analyzeNodeIfNeededWith: analyzer)
     };
@@ -523,7 +536,9 @@ SysmelCompiler AST MessageSendNode
 
 SysmelCompiler Semantic EvaluationEnvironment __type__
     withSelector: #default addMethod: {:(SysmelCompiler Semantic EvaluationEnvironment __type__)self :: self |
-        __BootstrapCompiler__ getTopLevelEnvironment
+        self basicNewWithNamedSlots: #{
+            lexicalScope: __BootstrapCompiler__ getTopLevelEnvironment
+        }
     }.
 
 SysmelCompiler Semantic ASTAnalyzer __type__
@@ -560,7 +575,12 @@ __BootstrapCompiler__
     print: Int32 basicNew;
     print: (Int32 basicNew: -42);
     print: SysmelCompiler Semantic ASTAnalyzer __type__;
+
     print: (`'1 analyzeNodeIfNeededWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
+    print: (`'1 analyzeAndEvaluateNodeWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
+
+    print: (`'(1 + 1) analyzeNodeIfNeededWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
+
     print: nil isNil;
     print: nil isNotNil.
 

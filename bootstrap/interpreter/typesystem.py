@@ -90,6 +90,14 @@ class ValueInterface:
         return 'a ' + str(self.__class__)
 
 class TypeInterface:
+    def canBeCoercedToType(self, targetType):
+        return self is targetType
+
+    def coerceValue(self, value):
+        if value.getType() is self:
+            return value
+        raise CannotCoerceValueToType('Cannot coerce (%s:%s) into type "%s"' % (repr(value.getType()), repr(value), repr(self)))
+
     def runWithIn(self, machine, selector, arguments, receiver):
         raise NotImplementedError()
 
@@ -475,6 +483,12 @@ class TypeSchema:
     def isTrivialTypeSchema(self):
         return False
 
+    def canCoerceValueOfType(self, valueType):
+        return False
+
+    def coerceValueOfTypeIntoType(self, value, valueType, targetType):
+        raise CannotCoerceValueToType('Cannot coerce value "(%s: %s)" into type "%s".' % (repr(valueType), repr(value), repr(targetType)))
+
 class TrivialTypedValue(TypedValue):
     def __init__(self, type):
         self.type = type
@@ -525,6 +539,9 @@ class PrimitiveNumberTypeValue(TypedValue):
     def __init__(self, type, value):
         self.type = type
         self.value = value
+
+    def shallowCopy(self):
+        return self
 
     def getType(self):
         return self.type
@@ -622,6 +639,7 @@ class SumTypeSchema(TypeSchema):
 
     def buildPrimitiveMethodDictionary(self):
         self.methodDict[Symbol('__typeSelector__')] = TypeSchemaPrimitiveMethod(self.getTypeSelector)
+        self.methodDict[Symbol('get:')] = TypeSchemaPrimitiveMethod(self.getWithType)
         self.metaTypeMethodDict[Symbol('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew)
         self.metaTypeMethodDict[Symbol('basicNew:')] = TypeSchemaPrimitiveMethod(self.basicNewWithValue)
         return super().buildPrimitiveMethodDictionary()
@@ -629,12 +647,19 @@ class SumTypeSchema(TypeSchema):
     def getTypeSelector(self, sumValue):
         return sumValue.typeSelector
 
+    def getWithType(self, sumValue, requiredType):
+        requiredTypeIndex = self.elementTypes.index(requiredType)
+        if sumValue.typeSelector != requiredTypeIndex:
+            raise SumTypeNotMatched('Sum type value is not of the expected type (%s).' & repr(requiredType))
+        return sumValue.wrappedValue
+
     def basicNew(self, sumType):
         return SumTypeValue(sumType, Integer(0), self.elementTypes[0].basicNew())
 
     def basicNewWithValue(self, sumType, value):
-        wrappedValueType = value.getType()
-        return SumTypeValue(sumType, self.elementTypes.index(wrappedValueType), value)
+        if value.getType() is sumType:
+            return value.shallowCopy()
+        return self.coerceValueOfTypeIntoType(value, value.getType(), sumType)
 
     def basicNewWithTypeTheoryBoolean(self, sumType, value):
         if value:
@@ -644,6 +669,19 @@ class SumTypeSchema(TypeSchema):
 
     def isTypeTheoryBoolean(self):
         return len(self.elementTypes) == 2 and self.elementTypes[0].hasTrivialTypeSchema() and self.elementTypes[1].hasTrivialTypeSchema()
+
+    def canCoerceValueOfType(self, valueType):
+        for elementType in self.elementTypes:
+            if valueType.canBeCoercedToType(elementType):
+                return True
+        return super().canCoerceValueOfType(valueType)
+
+    def coerceValueOfTypeIntoType(self, value, valueType, targetType):
+        for i in range(len(self.elementTypes)):
+            elementType = self.elementTypes[i]
+            if valueType.canBeCoercedToType(elementType):
+                return SumTypeValue(targetType, Integer(i), value)
+        return self.basicNewWithValue(targetType, value)
 
 class ProductTypeValue(TypedValue):
     def __init__(self, type, elements):
@@ -739,7 +777,9 @@ class RecordTypeSchema(ProductTypeSchema):
     def basicNewWithNamedSlots(self, recordType, namedSlots):
         linearSlots = [None,] * len(self.allSlots)
         for assoc in namedSlots:
-            linearSlots[self.slotNameDictionary[assoc.getKey()]] = assoc.getValue()
+            slotIndex = self.slotNameDictionary[assoc.getKey()]
+            expectedSlotType = self.elementTypes[slotIndex]
+            linearSlots[slotIndex] = expectedSlotType.coerceValue(assoc.getValue())
 
         for i in range(len(linearSlots)):
             if linearSlots[i] is None:
@@ -812,6 +852,26 @@ class BehaviorType(TypedValue, TypeInterface):
         self.schema = schema
         self.type = None
 
+    def canBeCoercedToType(self, targetType):
+        return self.isSubtypeOf(targetType)
+
+    def coerceValue(self, value):
+        valueType = value.getType()
+        if valueType.isSubtypeOf(self):
+            return value
+
+        if self.schema.canCoerceValueOfType(valueType):
+            return self.schema.coerceValueOfTypeIntoType(value, valueType, self)
+
+        return super().coerceValue(value)
+
+    def isSubtypeOf(self, expectedSuperType):
+        if self is expectedSuperType:
+            return True;
+        if self.supertype is not None:
+            return self.supertype.isSubtypeOf(expectedSuperType)
+        return False
+        
     def onGlobalBindingWithSymbolAdded(self, symbol):
         if self.name is None:
             self.name = symbol

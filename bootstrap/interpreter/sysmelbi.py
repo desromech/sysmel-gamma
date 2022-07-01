@@ -36,7 +36,7 @@ def sysmelbiMain():
     evaluationMachine.makeActive()
     try:
         for scriptToEvaluate in scriptsToEvaluate:
-            scriptEnvironment = bootstrapCompiler.makeScriptEvaluationEnvironment()
+            scriptEnvironment = bootstrapCompiler.makeScriptEvaluationScope()
 
             if scriptToEvaluate == '-':
                 scriptFilename = 'stdin'

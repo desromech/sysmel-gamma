@@ -379,6 +379,9 @@ class PTParenthesis(PTNode):
         self.expression = expression
         self.sourcePosition = sourcePositionFromList(tokens + [expression])
 
+    def convertIntoGenericASTWith(self, bootstrapCompiler):
+        return self.expression.convertIntoGenericASTWith(bootstrapCompiler)
+
     def isParenthesis(self):
         return True
 
