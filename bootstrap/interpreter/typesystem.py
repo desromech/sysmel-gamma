@@ -88,6 +88,9 @@ class ValueInterface:
     def defaultPrintString(self):
         return 'a ' + str(self.__class__)
 
+    def canonicalizeForAnyValue(self):
+        return self
+
 class TypeInterface:
     def canBeCoercedToType(self, targetType):
         return self is targetType
@@ -851,10 +854,16 @@ class BehaviorType(TypedValue, TypeInterface):
         self.schema = schema
         self.type = None
 
+        self.typeFlags = []
+        self.hasAnyValueFlag = False
+
     def canBeCoercedToType(self, targetType):
         return self.isSubtypeOf(targetType)
 
     def coerceValue(self, value):
+        if self.hasAnyValueFlag:
+            return value.canonicalizeForAnyValue()
+
         valueType = value.getType()
         if valueType.isSubtypeOf(self):
             return value
@@ -921,6 +930,11 @@ class BehaviorType(TypedValue, TypeInterface):
     def withSelectorAddMethod(self, selector, method):
         self.methodDict[selector] = method
 
+    def addTypeFlag(self, flagName):
+        self.typeFlags.append(flagName)
+        if flagName == 'anyValue':
+            self.hasAnyValueFlag = True
+
     def addMethodsWithSelectors(self, methodsWithSelector):
         for method, selector in methodsWithSelector:
             self.addMethodWithSelector(method, Symbol(selector))
@@ -963,6 +977,7 @@ class BehaviorType(TypedValue, TypeInterface):
         cls = self.__class__
         self.addPrimitiveMethodsWithSelectors([
             (cls.withSelectorAddMethod, 'withSelector:addMethod:'),
+            (cls.addTypeFlag, 'addTypeFlag:'),
         ])
 
     def asArrayType(self):

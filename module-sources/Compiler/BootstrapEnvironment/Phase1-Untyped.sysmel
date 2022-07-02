@@ -25,7 +25,11 @@ __BootstrapCompiler__
     addBasicTypeNamed: #String with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
     addBasicTypeNamed: #Symbol with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
     addBasicTypeNamed: #Integer with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
-    addBasicTypeNamed: #Float with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{}).
+    addBasicTypeNamed: #Float with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
+    
+    addBasicTypeNamed: #CompilationError with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{}).
+
+AnyValue addTypeFlag: #anyValue.
 
 ## Integer arithmetics primitive methods
 Integer
@@ -499,7 +503,7 @@ SysmelCompiler AST IdentifierReferenceNode
     }.
 
 SysmelCompiler AST MessageSendNode
-    withSelector: #analyzeNodeWith: addMethod: {:(SysmelCompiler AST MessageSendNode)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST MessageSendNode |
+    withSelector: #analyzeNodeWith: addMethod: {:(SysmelCompiler AST MessageSendNode)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
         {:(SysmelCompiler AST)analyzedSelector :: SysmelCompiler AST Node |
             if: self receiver isNil then: {
                 if: analyzedSelector isLiteralSymbolValue then: {
@@ -564,12 +568,23 @@ SysmelCompiler Semantic ASTAnalyzer __type__
         self forEnvironment: SysmelCompiler Semantic EvaluationEnvironment default
     }.
 
+SysmelCompiler Semantic ASTAnalyzer
+    withSelector: #makeSemanticAnalysisError:at: addMethod: {:(SysmelCompiler Semantic ASTAnalyzer)self :(String)errorMessage :(SysmelCompiler AST SourcePosition)sourcePosition :: SysmelCompiler AST SemanticErrorNode |
+        SysmelCompiler AST SemanticErrorNode basicNewWithNamedSlots: #{
+            analyzedType: CompilationError.
+            sourcePosition: sourcePosition.
+            message: errorMessage.
+        }.
+    }.
+
 Type
     withSelector: #analyzeMessageSendNode:with: addMethod: {:(Type)self :(SysmelCompiler AST MessageSendNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
         if: node selector isLiteralValueNode then: {
-            analyzer makeSemanticAnalysisError: "TODO: Implement message with literal selector." at: node sourcePosition
+            {:(AnyValue)selector :: SysmelCompiler AST Node |
+                analyzer makeSemanticAnalysisError: "TODO: Implement message with literal selector." at: node sourcePosition
+            }(node selector evaluateLiteralValue)
         } else: {
-            analyzer makeSemanticAnalysisError: "Unsupported message sends without literal selectors." at: node sourcePosition
+            analyzer makeSemanticAnalysisError: "TODO: Unsupported message sends without literal selectors." at: node sourcePosition
         }
     }.
 
