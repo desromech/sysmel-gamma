@@ -7,44 +7,6 @@ BasicTypeEnvironment = None
 
 PrimitiveMethodTable = {}
 
-class PrimitiveMethod:
-    def __init__(self, method):
-        self.method = method
-
-    def getType(self):
-        return getBasicTypeNamed(Symbol('PrimitiveMethod'))
-
-    def runWithIn(self, machine, selector, arguments, receiver):
-        return self.method(receiver, *arguments)
-
-def primitiveNamed(primitiveName):
-    def decorator(primitiveImplementation):
-        primitiveMethod = PrimitiveMethod(primitiveImplementation)
-        PrimitiveMethodTable[primitiveName] = primitiveMethod
-        return primitiveMethod
-    return decorator
-
-def setActiveBasicTypeEnvironment(basicTypeEnvironment):
-    global BasicTypeEnvironment
-    BasicTypeEnvironment = basicTypeEnvironment
-
-def getBasicTypeNamed(symbol):
-    return BasicTypeEnvironment[symbol]
-
-def getBooleanValue(value):
-    return getBasicTypeNamed('Boolean').basicNewWithTypeTheoryBoolean(value)
-
-class SymbolBinding:
-    def getSymbolBindingReferenceValue(self):
-        raise NotImplementedError()
-
-class SymbolImmutableValueBinding(SymbolBinding):
-    def __init__(self, value):
-        self.value = value
-
-    def getSymbolBindingReferenceValue(self):
-        return self.value
-
 class ValueInterface:
     def performWithArguments(self, machine, selector, arguments):
         raise NotImplementedError()
@@ -91,6 +53,54 @@ class ValueInterface:
     def canonicalizeForAnyValue(self):
         return self
 
+class TypedValue(ValueInterface):
+    def getType(self):
+        raise NotImplementedError('getType() in %s' % repr(self.__class__))
+
+    def performWithArguments(self, machine, selector, arguments):
+        return self.getType().runWithIn(machine, selector, arguments, self)
+
+    def answersTo(self, selector):
+        return self.getType().lookupLocalSelector(selector) is not None
+
+class PrimitiveMethod(TypedValue):
+    def __init__(self, method):
+        self.method = method
+
+    def getType(self):
+        return getBasicTypeNamed(Symbol('PrimitiveMethod'))
+
+    def runWithIn(self, machine, selector, arguments, receiver):
+        return self.method(receiver, *arguments)
+
+def primitiveNamed(primitiveName):
+    def decorator(primitiveImplementation):
+        primitiveMethod = PrimitiveMethod(primitiveImplementation)
+        PrimitiveMethodTable[primitiveName] = primitiveMethod
+        return primitiveMethod
+    return decorator
+
+def setActiveBasicTypeEnvironment(basicTypeEnvironment):
+    global BasicTypeEnvironment
+    BasicTypeEnvironment = basicTypeEnvironment
+
+def getBasicTypeNamed(symbol):
+    return BasicTypeEnvironment[symbol]
+
+def getBooleanValue(value):
+    return getBasicTypeNamed('Boolean').basicNewWithTypeTheoryBoolean(value)
+
+class SymbolBinding:
+    def getSymbolBindingReferenceValue(self):
+        raise NotImplementedError()
+
+class SymbolImmutableValueBinding(SymbolBinding):
+    def __init__(self, value):
+        self.value = value
+
+    def getSymbolBindingReferenceValue(self):
+        return self.value
+
 class TypeInterface:
     def canBeCoercedToType(self, targetType):
         return self is targetType
@@ -103,15 +113,13 @@ class TypeInterface:
     def runWithIn(self, machine, selector, arguments, receiver):
         raise NotImplementedError()
 
-class TypedValue(ValueInterface):
-    def getType(self):
-        raise NotImplementedError()
+    @primitiveNamed('type.lookupSelector')
+    def primitiveLookupSelector(self, selector):
+        return self.lookupSelector(selector)
 
-    def performWithArguments(self, machine, selector, arguments):
-        return self.getType().runWithIn(machine, selector, arguments, self)
-
-    def answersTo(self, selector):
-        return self.getType().lookupSelector(selector) is not None
+    @primitiveNamed('type.lookupLocalSelector')
+    def primitiveLookupLocalSelector(self, selector):
+        return self.lookupLocalSelector(selector)
 
 class Integer(int, TypedValue):
     def getType(self):
@@ -301,17 +309,14 @@ class Dictionary(list, TypedValue):
         result += '}'
         return result
 
-class TypeSchemaPrimitiveMethod:
-    def __init__(self, method):
-        self.method = method
-
+class TypeSchemaPrimitiveMethod(PrimitiveMethod):
     def getType(self):
         return getBasicTypeNamed(Symbol('TypeSchemaPrimitiveMethod'))
 
     def runWithIn(self, machine, selector, arguments, receiver):
         return self.method(receiver, *arguments)
 
-class RecordTypeAccessorPrimitiveMethod:
+class RecordTypeAccessorPrimitiveMethod(PrimitiveMethod):
     def __init__(self, selector, slotName, slotIndex, slotType):
         self.selector = selector
         self.slotName = slotName
@@ -325,10 +330,16 @@ class RecordTypeAccessorPrimitiveMethod:
         return self.method(receiver, *arguments)
 
 class RecordTypeGetterPrimitiveMethod(RecordTypeAccessorPrimitiveMethod):
+    def getType(self):
+        return getBasicTypeNamed(Symbol('RecordTypeGetterPrimitiveMethod'))
+
     def runWithIn(self, machine, selector, arguments, receiver):
         return receiver.getSlotWithIndexAndName(self.slotIndex, self.slotName)
 
 class RecordTypeSetterPrimitiveMethod(RecordTypeAccessorPrimitiveMethod):
+    def getType(self):
+        return getBasicTypeNamed(Symbol('RecordTypeSetterPrimitiveMethod'))
+
     def runWithIn(self, machine, selector, arguments, receiver):
         return receiver.setSlotWithIndexAndName(self.slotIndex, self.slotName, arguments[0])
 
@@ -338,6 +349,9 @@ class BlockClosure(TypedValue):
         self.environment = environment
         self.name = None
         self.primitiveName = primitiveName
+
+    def getType(self):
+        return getBasicTypeNamed(Symbol('BlockClosure'))
 
     def performWithArguments(self, machine, selector, arguments):
         if selector == '()':
@@ -890,7 +904,7 @@ class BehaviorType(TypedValue, TypeInterface):
     def directTraits(self):
         return self.traits
 
-    def lookupSelector(self, selector):
+    def lookupLocalSelector(self, selector):
         found = self.methodDict.get(selector, None)
         if found is not None:
             return found
@@ -901,25 +915,25 @@ class BehaviorType(TypedValue, TypeInterface):
             return found
         return None
 
-    def lookupSelectorRecursively(self, selector):
+    def lookupSelector(self, selector):
         ## Check in the local method dictionary.
-        found = self.lookupSelector(selector)
+        found = self.lookupLocalSelector(selector)
         if found is not None:
             return found
 
         ## Find in a direct trait.
         for trait in self.directTraits():
-            found = trait.lookupSelector(found)
+            found = trait.lookupLocalSelector(found)
             if found is not None:
                 return found
 
         ##  Find in the supertype.
         if self.supertype is not None:
-            return self.supertype.lookupSelectorRecursively(selector)
+            return self.supertype.lookupSelector(selector)
         return None
 
     def runWithIn(self, machine, selector, arguments, receiver):
-        method = self.lookupSelectorRecursively(selector)
+        method = self.lookupSelector(selector)
         if method is None:
             raise DoesNotUnderstand('%s does not understand message %s' % (str(receiver), repr(selector)))
         return method.runWithIn(machine, selector, arguments, receiver)
@@ -1031,7 +1045,7 @@ class MetaType(BehaviorType):
         super().__init__(name, supertype, traits, schema, methodDict)
         self.thisType = thisType
 
-    def lookupSelector(self, selector):
+    def lookupLocalSelector(self, selector):
         found = self.methodDict.get(selector, None)
         if found is not None:
             return found

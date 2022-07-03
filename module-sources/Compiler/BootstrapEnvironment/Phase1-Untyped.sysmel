@@ -22,6 +22,15 @@ __BootstrapCompiler__
     addBasicTypeNamed: #SimpleType with: (__TypeBuilder__ newGCClassWithSuperclass: Type slots: #{});
     addBasicTypeNamed: #MetaType with: (__TypeBuilder__ newGCClassWithSuperclass: Type slots: #{});
 
+    addBasicTypeNamed: #Method with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
+    addBasicTypeNamed: #BlockClosure with: (__TypeBuilder__ newGCClassWithSuperclass: Method slots: #{});
+    addBasicTypeNamed: #AbstractPrimitiveMethod with: (__TypeBuilder__ newGCClassWithSuperclass: Method slots: #{});
+    addBasicTypeNamed: #PrimitiveMethod with: (__TypeBuilder__ newGCClassWithSuperclass: AbstractPrimitiveMethod slots: #{});
+    addBasicTypeNamed: #TypeSchemaPrimitiveMethod with: (__TypeBuilder__ newGCClassWithSuperclass: AbstractPrimitiveMethod slots: #{});
+    addBasicTypeNamed: #RecordTypeAccessorPrimitiveMethod with: (__TypeBuilder__ newGCClassWithSuperclass: AbstractPrimitiveMethod slots: #{});
+    addBasicTypeNamed: #RecordTypeGetterPrimitiveMethod with: (__TypeBuilder__ newGCClassWithSuperclass: RecordTypeAccessorPrimitiveMethod slots: #{});
+    addBasicTypeNamed: #RecordTypeSetterPrimitiveMethod with: (__TypeBuilder__ newGCClassWithSuperclass: RecordTypeAccessorPrimitiveMethod slots: #{});
+
     addBasicTypeNamed: #String with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
     addBasicTypeNamed: #Symbol with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
     addBasicTypeNamed: #Integer with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
@@ -578,10 +587,17 @@ SysmelCompiler Semantic ASTAnalyzer
     }.
 
 Type
+    withSelector: #lookupSelector: addMethod: {:(Type)self :(AnyValue)selector :: AnyValue |
+        <primitive: #"type.lookupSelector">
+        __BootstrapCompiler__ primitiveFailed
+    };
     withSelector: #analyzeMessageSendNode:with: addMethod: {:(Type)self :(SysmelCompiler AST MessageSendNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
         if: node selector isLiteralValueNode then: {
             {:(AnyValue)selector :: SysmelCompiler AST Node |
-                analyzer makeSemanticAnalysisError: "TODO: Implement message with literal selector." at: node sourcePosition
+                {:(AnyValue)method :: SysmelCompiler AST Node |
+                    __BootstrapCompiler__ print: "Lookup selector "; print: selector; print: " "; print: method.
+                    analyzer makeSemanticAnalysisError: "TODO: Implement message with literal selector." at: node sourcePosition
+                } (self lookupSelector: selector)
             }(node selector evaluateLiteralValue)
         } else: {
             analyzer makeSemanticAnalysisError: "TODO: Unsupported message sends without literal selectors." at: node sourcePosition
