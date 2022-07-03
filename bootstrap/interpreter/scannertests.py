@@ -99,6 +99,9 @@ class TestScanner(unittest.TestCase):
         self.assertEqual(self.scanString('#=>').value, '#=>')
 
     def test_operator(self):
+        self.assertEqual(self.scanString('*').type, 'STAR')
+        self.assertEqual(self.scanString('*').value, '*')
+
         self.assertEqual(self.scanString('<').type, 'LESS_THAN')
         self.assertEqual(self.scanString('<').value, '<')
 

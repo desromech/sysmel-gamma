@@ -17,6 +17,7 @@ tokens = (
     'BAR',
     'LESS_THAN',
     'GREATER_THAN',
+    'STAR',
 
     'COLON_COLON',
     'ASSIGNMENT',
@@ -110,6 +111,10 @@ def t_LESS_THAN(t):
 
 def t_GREATER_THAN(t):
     r'>'
+    return t
+
+def t_STAR(t):
+    r'\*'
     return t
 
 def t_OPERATOR(t):

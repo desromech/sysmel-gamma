@@ -547,6 +547,15 @@ class PTBlockArgument(PTNode):
     def isBlockArgument(self):
         return True
 
+class PTBlockGenericArgument(PTNode):
+    def __init__(self, type, identifier):
+        PTNode.__init__(self)
+        self.type = type
+        self.identifier = identifier.asSymbolEvaluatedExpression()
+
+    def isBlockArgument(self):
+        return True
+
 class PTQuote(PTNode):
     def __init__(self, expression, tokens):
         PTNode.__init__(self)

@@ -166,6 +166,10 @@ def p_blockArguments_rest(p):
     'blockArguments : blockArguments blockArgument'
     p[0] = p[1] + [p[2]]
 
+def p_blockArguments_genericRest(p):
+    'blockArguments : blockArguments blockGenericArgument'
+    p[0] = p[1] + [p[2]]
+
 def p_optionalBlockArgumentType_empty(p):
     'optionalBlockArgumentType : '
     p[0] = None
@@ -173,6 +177,10 @@ def p_optionalBlockArgumentType_empty(p):
 def p_optionalBlockArgumentType_nonEmpty(p):
     'optionalBlockArgumentType : LEFT_PARENT expression RIGHT_PARENT'
     p[0] = p[2]
+
+def p_blockGenericArgument(p):
+    'blockGenericArgument : COLON STAR optionalBlockArgumentType expandableIdentifier'
+    p[0] = PTBlockGenericArgument(p[2], p[3])
 
 def p_blockArgument(p):
     'blockArgument : COLON optionalBlockArgumentType expandableIdentifier'
@@ -440,12 +448,14 @@ def p_makeByteArray(p):
 def p_anyOperator(p):
     '''anyOperator : OPERATOR
                    | BAR
+                   | STAR
                    | LESS_THAN
                    | GREATER_THAN'''
     p[0] = PTLiteralSymbol(tokenAt(p, 1))
 
 def p_anyPrefixOperator(p):
-    'anyPrefixOperator : OPERATOR'
+    '''anyPrefixOperator : OPERATOR
+                         | STAR'''
     p[0] = PTLiteralSymbol(tokenAt(p, 1))
 
 def p_anyKeyword(p):
