@@ -22,6 +22,8 @@ __BootstrapCompiler__
     addBasicTypeNamed: #SimpleType with: (__TypeBuilder__ newGCClassWithSuperclass: Type slots: #{});
     addBasicTypeNamed: #MetaType with: (__TypeBuilder__ newGCClassWithSuperclass: Type slots: #{});
 
+    addBasicTypeNamed: #FunctionType with: (__TypeBuilder__ newGCClassWithSuperclass: SimpleType slots: #{});
+
     addBasicTypeNamed: #Method with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
     addBasicTypeNamed: #BlockClosure with: (__TypeBuilder__ newGCClassWithSuperclass: Method slots: #{});
     addBasicTypeNamed: #AbstractPrimitiveMethod with: (__TypeBuilder__ newGCClassWithSuperclass: Method slots: #{});
@@ -182,6 +184,14 @@ __BootstrapCompiler__
                 };
                 withSelector: #isNotEmpty addMethod: {:(arraySliceType)self :: Boolean |
                     self size ~= 0
+                };
+                withSelector: #collect: addMethod: {:*(Type)ResultType :(elementType => ResultType)block :: ArraySlice(ResultType) |
+                    <primitive: #"arraySlice.collect">
+                    __BootstrapCompiler__ primitiveFailed
+                };
+                withSelector: #collect:withIndex: addMethod: {:*(Type)ResultType :((elementType -- Integer) => ResultType)block :: ArraySlice(ResultType) |
+                    <primitive: #"arraySlice.collectWithIndex">
+                    __BootstrapCompiler__ primitiveFailed
                 }.
             arraySliceType
         } (__TypeBuilder__ newRecordTypeWith: #{
@@ -245,6 +255,12 @@ MetaType
     withSelector: #optional addMethod: {:(Type)self :: Type |
         Optional(self)
     };
+    withSelector: #array addMethod: {:(Type)self :: Type |
+        Array(self, 0)
+    };
+    withSelector: #array: addMethod: {:(Type)self :(Integer)bounds :: Type |
+        Array(self, bounds)
+    };
     withSelector: #arraySlice addMethod: {:(Type)self :: Type |
         ArraySlice(self)
     };
@@ -253,6 +269,14 @@ MetaType
     }.
 
 ## Basic methods.
+AnyValue
+    withSelector: #isNil addMethod: {:(Undefined)self :: Boolean |
+        false
+    };
+    withSelector: #isNotNil addMethod: {:(Undefined)self :: Boolean |
+        true
+    }.
+
 Undefined
     withSelector: #isNil addMethod: {:(Undefined)self :: Boolean |
         true
@@ -471,8 +495,7 @@ SysmelCompiler AST LiteralValueNode
     };
     withSelector: #evaluateLiteralValue addMethod: {:(SysmelCompiler AST LiteralValueNode)self :: AnyValue |
         self value
-    }.    
-    .
+    }.
 
 SysmelCompiler AST SequenceNode
     withSelector: #analyzeNodeWith: addMethod: {:(SysmelCompiler AST SequenceNode)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
@@ -595,13 +618,22 @@ Type
         if: node selector isLiteralValueNode then: {
             {:(AnyValue)selector :: SysmelCompiler AST Node |
                 {:(AnyValue)method :: SysmelCompiler AST Node |
-                    __BootstrapCompiler__ print: "Lookup selector "; print: selector; print: " "; print: method.
-                    analyzer makeSemanticAnalysisError: "TODO: Implement message with literal selector." at: node sourcePosition
+                    if: method isNil then: {
+                        analyzer makeSemanticAnalysisError: "TODO: analyze message with message not found." at: node sourcePosition
+                    } else: {
+                        method analyzeMessageSendNode: node with: analyzer
+                    }
                 } (self lookupSelector: selector)
             }(node selector evaluateLiteralValue)
         } else: {
             analyzer makeSemanticAnalysisError: "TODO: Unsupported message sends without literal selectors." at: node sourcePosition
         }
+    }.
+
+FunctionType
+    withSelector: #analyzeMessageSendNode:with: addMethod: {:(FunctionType)self :(SysmelCompiler AST MessageSendNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
+        __BootstrapCompiler__ print: "Analysis in method "; print: self.
+        analyzer makeSemanticAnalysisError: "TODO: analyze message with method found." at: node sourcePosition
     }.
 
 __BootstrapCompiler__
@@ -620,6 +652,8 @@ __BootstrapCompiler__
 
     print: "Some number: " -- 1 asString;
     print: ("Some number {0} " format: (1 asString,));
+
+    print: ((Integer array: 3) basicNewWithSlots: (1, 2, 3)) asArraySlice;
 
     print: SysmelCompiler AST SourcePosition basicNew;
     print: (SysmelCompiler AST Node basicNewWithNamedSlots: #{

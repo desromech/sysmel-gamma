@@ -1,3 +1,4 @@
+from os import environ
 from queue import Empty
 
 from errors import *
@@ -13,6 +14,9 @@ class ValueInterface:
 
     def getSymbolBindingReferenceValue(self):
         return self
+
+    def setConstructionTemplateAndArguments(self, template, arguments):
+        pass
 
     def onGlobalBindingWithSymbolAdded(self, symbol):
         pass
@@ -349,9 +353,12 @@ class BlockClosure(TypedValue):
         self.environment = environment
         self.name = None
         self.primitiveName = primitiveName
+        self.functionType = None
 
     def getType(self):
-        return getBasicTypeNamed(Symbol('BlockClosure'))
+        if self.functionType is None:
+            self.functionType = self.node.constructFunctionTypeWithEnvironment(self.environment)
+        return self.functionType
 
     def performWithArguments(self, machine, selector, arguments):
         if selector == '()':
@@ -388,7 +395,7 @@ class BlockClosure(TypedValue):
     def defaultPrintString(self) -> str:
         if self.name is not None:
             return self.name
-        return super().defaultPrintString()
+        return 'BlockClosure(' + str(self.getType()) + ')'
 
 class AbstractMemoizedBlockClosure(BlockClosure):
     def __init__(self, node, environment):
@@ -449,6 +456,7 @@ class TemplatedBlockClosure(AbstractMemoizedBlockClosure):
             valueName += repr(arg)
             i += 1
         valueName += ')'
+        result.setConstructionTemplateAndArguments(self, arguments)
         result.onGlobalBindingWithSymbolAdded(Symbol(valueName))
 
 class TypeSchema:
@@ -816,11 +824,28 @@ class RecordTypeSchema(ProductTypeSchema):
             self.elementTypes[1].basicNewWithValue(len(elements))
         ])
 
+class ArrayTypeValue(ProductTypeValue):
+    pass
+
 class ArrayTypeSchema(TypeSchema):
     def __init__(self, elementType, bounds):
         super().__init__()
         self.elementType = elementType
         self.bounds = bounds
+
+    def buildPrimitiveMethodDictionary(self):
+        self.metaTypeMethodDict[Symbol('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew)
+        self.metaTypeMethodDict[Symbol('basicNewWithSlots:')] = TypeSchemaPrimitiveMethod(self.basicNewWithSlots)
+        return super().buildPrimitiveMethodDictionary()
+
+    def basicNew(self, valueType):
+        return ArrayTypeValue(valueType, list(map(lambda x: self.elementType.basicNew(), [None] * self.bounds)))
+
+    def basicNewWithSlots(self, valueType, slots):
+        if len(slots) != self.bounds:
+            raise InterpreterError('Array construction element count mismatch.')
+        
+        return ArrayTypeValue(valueType, list(map(lambda x: x.shallowCopy(), slots)))
 
 class PointerTypeValue(TypedValue):
     def __init__(self, type, value, baseIndex = 0):
@@ -871,6 +896,9 @@ class BehaviorType(TypedValue, TypeInterface):
         self.typeFlags = []
         self.hasAnyValueFlag = False
 
+        self.constructionTemplate = None
+        self.constructionTemplateArguments = None
+
     def canBeCoercedToType(self, targetType):
         return self.isSubtypeOf(targetType)
 
@@ -897,6 +925,10 @@ class BehaviorType(TypedValue, TypeInterface):
     def onGlobalBindingWithSymbolAdded(self, symbol):
         if self.name is None:
             self.name = symbol
+
+    def setConstructionTemplateAndArguments(self, template, arguments):
+        self.constructionTemplate = template
+        self.constructionTemplateArguments = arguments
 
     def performWithArguments(self, machine, selector, arguments):
         return super().performWithArguments(machine, selector, arguments)
@@ -1075,6 +1107,76 @@ class MetaType(BehaviorType):
 
 class SimpleType(BehaviorType):
     pass
+
+class AbstractFunctionTypeArgument:
+    def __init__(self, name, typeExpression):
+        self.name = name
+        self.typeExpression = typeExpression
+        
+    def isForAllArgumentExpression(self):
+        raise SubclassResponsibility()
+
+class FunctionTypeForallArgumentExpression(AbstractFunctionTypeArgument):
+    def isForAllArgumentExpression(self):
+        return True
+
+    def __repr__(self):
+        if self.typeExpression is None:
+            return ':*' + self.name
+        else:
+            return ':*(' + self.typeExpression.formatAST() + ')' + self.name
+
+class FunctionTypeArgumentExpression(AbstractFunctionTypeArgument):
+    def isForAllArgumentExpression(self):
+        return False
+
+    def __repr__(self):
+        if self.typeExpression is None:
+            return ':' + self.name
+        else:
+            return ':(' + self.typeExpression.formatAST() + ')' + self.name
+
+class FunctionTypeResult:
+    def __init__(self, expression):
+        self.expression = expression
+
+    def __repr__(self):
+        return self.expression.formatAST()
+
+class FunctionType(SimpleType):
+    def __init__(self, environment, arguments, resultType):
+        self.environment = environment
+        self.arguments = arguments
+        self.resultType = resultType
+        self.canonicalArguments = None
+        self.canonicalResultType = None
+        self.computeFunctionTypeClassification()
+        super().__init__(supertype = getBasicTypeNamed('FunctionType'))
+
+    def computeFunctionTypeClassification(self):
+        ## Check the presence of a for all argument.
+        self.hasForAllArgument = False
+        for argument in self.arguments:
+            if argument.isForAllArgumentExpression:
+                self.hasForAllArgument = True
+                break
+
+        ## TODO: Check on whether this is a dependent function type, or not.
+
+    def getName(self):
+        if self.name is None:
+            self.name = '{'
+            argumentIndex = 0
+            for argument in self.arguments:
+                if argumentIndex > 0:
+                    self.name += ' '
+                self.name += repr(argument)
+                argumentIndex += 1
+            self.name += ' :: ('
+            self.name += repr(self.resultType)
+            self.name += ')} __type__'
+
+        return self.name
 
 class TypeBuilder(BehaviorTypedObject):
     def __init__(self):

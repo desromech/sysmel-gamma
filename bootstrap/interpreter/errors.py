@@ -1,11 +1,21 @@
 class InterpreterError(Exception):
     pass
 
-class InterpreterParseError(InterpreterError):
+class InterpreterErrorWithSourcePosition(InterpreterError):
+    def __init__(self, sourcePosition, errorMessage):
+        self.sourcePosition = sourcePosition
+        super().__init__('%s: %s' % (str(sourcePosition), errorMessage))
+
+class InterpreterParseError(InterpreterErrorWithSourcePosition):
     pass
 
-class InterpreterEvaluationError(InterpreterError):
+class InterpreterEvaluationError(InterpreterErrorWithSourcePosition):
     pass
+
+class InterpreterEvaluationCatchedError(InterpreterErrorWithSourcePosition):
+    def __init__(self, sourcePosition, catchedError, strackTrace):
+        self.catchedError = catchedError
+        super().__init__(sourcePosition, 'error catched during evaluation:\n%s.\n%s' % (str(catchedError), strackTrace))
 
 class DoesNotUnderstand(InterpreterError):
     pass
