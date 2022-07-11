@@ -97,12 +97,12 @@ class SourceCollectionPosition(SourcePosition):
         endLine, endColumn = self.sourceCollection.getLineAndColumnForPosition(self.stop)
         return bootstrapCompiler.makeASTNodeWithSlots('SourceStringPosition',
             sourceCollection = bootstrapCompiler.convertASTSourceCollection(self.sourceCollection),
-            startPosition = typesystem.Integer(self.start),
-            endPosition = typesystem.Integer(self.stop),
-            startLine = typesystem.Integer(startLine),
-            startColumn = typesystem.Integer(startColumn),
-            endLine = typesystem.Integer(endLine),
-            endColumn = typesystem.Integer(endColumn)
+            startPosition = bootstrapCompiler.convertSize(self.start),
+            endPosition = bootstrapCompiler.convertSize(self.stop),
+            startLine = bootstrapCompiler.convertSize(startLine),
+            startColumn = bootstrapCompiler.convertSize(startColumn),
+            endLine = bootstrapCompiler.convertSize(endLine),
+            endColumn = bootstrapCompiler.convertSize(endColumn)
         )
 
     def __str__(self):

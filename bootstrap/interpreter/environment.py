@@ -91,6 +91,7 @@ class BootstrapCompiler(BehaviorTypedObject):
         self.sourcePositionMemoizationTable = {}
         self.sourceCollectionMemoizationTable = {}
         self.emptySourcePosition = None
+        self.sizeType = None
         self.enterTopLevelNamespace()
 
     def makeScriptEvaluationScope(self):
@@ -146,6 +147,11 @@ class BootstrapCompiler(BehaviorTypedObject):
         convertedSourceCollection = sourceCollection.convertIntoTargetSourceCollectionWith(self)
         self.sourceCollectionMemoizationTable[sourceCollection] = convertedSourceCollection
         return convertedSourceCollection
+
+    def convertSize(self, size):
+        if self.sizeType is None:
+            self.sizeType = getBasicTypeNamed('Size')
+        return self.sizeType.basicNewWithValue(size)
 
     def makeASTNodeArraySlice(self, elements):
         arraySliceType = self.parseTreeASTMapping.at('NodeArraySlice')

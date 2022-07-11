@@ -57,6 +57,12 @@ class ValueInterface:
     def canonicalizeForAnyValue(self):
         return self
 
+    def asInteger(self):
+        raise NotImplementedError('asInteger() in %s' % repr(self.__class__))
+
+    def shallowCopyValue(self):
+        return self.shalowCopy()
+
 class TypedValue(ValueInterface):
     def getType(self):
         raise NotImplementedError('getType() in %s' % repr(self.__class__))
@@ -66,6 +72,12 @@ class TypedValue(ValueInterface):
 
     def answersTo(self, selector):
         return self.getType().lookupLocalSelector(selector) is not None
+
+    def shallowCopyValue(self):
+        if self.getType().schema.hasPointerOrReferenceValueCopySemantics():
+            return self
+
+        return self.shallowCopy()
 
 class PrimitiveMethod(TypedValue):
     def __init__(self, method):
@@ -81,7 +93,7 @@ def primitiveNamed(primitiveName):
     def decorator(primitiveImplementation):
         primitiveMethod = PrimitiveMethod(primitiveImplementation)
         PrimitiveMethodTable[primitiveName] = primitiveMethod
-        return primitiveMethod
+        return primitiveImplementation
     return decorator
 
 def setActiveBasicTypeEnvironment(basicTypeEnvironment):
@@ -185,6 +197,9 @@ class Integer(int, TypedValue):
 
     def shallowCopy(self):
         return self
+
+    def asInteger(self):
+        return self
         
 class Character(int, TypedValue):
     def getType(self):
@@ -192,6 +207,10 @@ class Character(int, TypedValue):
 
     def shallowCopy(self):
         return self
+
+    @primitiveNamed('character.conversion.toInteger')
+    def asInteger(self):
+        return Integer(self)
 
 class Float(float, TypedValue):
     def getType(self):
@@ -205,6 +224,10 @@ class Float(float, TypedValue):
 
     def shallowCopy(self):
         return self
+
+    @primitiveNamed('float.conversion.toInteger')
+    def asInteger(self):
+        return Integer(self)
 
 class String(str, TypedValue):
     def getType(self):
@@ -243,6 +266,10 @@ class String(str, TypedValue):
     def shallowCopy(self):
         return String(self)
 
+    @primitiveNamed('string.conversion.toInteger')
+    def asInteger(self):
+        return Integer(self)
+
 class Symbol(str, TypedValue):
     def getType(self):
         return getBasicTypeNamed(Symbol('Symbol'))
@@ -253,12 +280,16 @@ class Symbol(str, TypedValue):
     def shallowCopy(self):
         return Symbol(self)
 
+    @primitiveNamed('symbol.conversion.toInteger')
+    def asInteger(self):
+        return Integer(self)
+
 class Array(list, TypedValue):
     def getType(self):
         return getBasicTypeNamed(Symbol('AnyArrayList'))
 
     def shallowCopy(self):
-        return Array(map(lambda el: el.shallowCopy(), self))
+        return Array(map(lambda el: el.shallowCopyValue(), self))
 
 class Association(TypedValue):
     def __init__(self, key, value):
@@ -370,7 +401,7 @@ class BlockClosure(TypedValue):
         return super().performWithArguments(machine, selector, arguments)
 
     def runWithIn(self, machine, selector, arguments, receiver):
-        return self.evaluateWithArguments(machine, [receiver] + arguments)
+        return self.evaluateWithArguments(machine, tuple([receiver] + list(arguments)))
 
     def evaluateWithArguments(self, machine, arguments):
         if self.primitiveName is not None and self.primitiveName in PrimitiveMethodTable:
@@ -396,6 +427,9 @@ class BlockClosure(TypedValue):
         if self.name is not None:
             return self.name
         return 'BlockClosure(' + str(self.getType()) + ')'
+
+    def __call__(self, *args):
+        return self.evaluateWithArguments(EvaluationMachine.getActive(), tuple(args))
 
 class AbstractMemoizedBlockClosure(BlockClosure):
     def __init__(self, node, environment):
@@ -513,6 +547,12 @@ class TypeSchema:
     def coerceValueOfTypeIntoType(self, value, valueType, targetType):
         raise CannotCoerceValueToType('Cannot coerce value "(%s: %s)" into type "%s".' % (repr(valueType), repr(value), repr(targetType)))
 
+    def hasDirectCoercionToPointerOf(self, baseType):
+        return False
+
+    def hasPointerOrReferenceValueCopySemantics(self):
+        return False
+
 class TrivialTypedValue(TypedValue):
     def __init__(self, type):
         self.type = type
@@ -573,6 +613,24 @@ class PrimitiveNumberTypeValue(TypedValue):
     def defaultPrintString(self):
         return '%s(%s)' % (str(self.type), str(self.value))
 
+class PrimitiveIntegerTypeValue(PrimitiveNumberTypeValue):
+    @primitiveNamed('primitiveInteger.conversion.toString')
+    def toString(self):
+        return String(str(self.value))
+
+    @primitiveNamed('primitiveInteger.conversion.toInteger')
+    def asInteger(self):
+        return Integer(self.value)
+
+class PrimitiveFloatTypeValue(PrimitiveNumberTypeValue):
+    @primitiveNamed('primitiveFloat.conversion.toString')
+    def toString(self):
+        return String(str(self.value))
+
+    @primitiveNamed('primitiveFloat.conversion.toInteger')
+    def asInteger(self):
+        return Integer(self.value)
+
 class PrimitiveTypeSchema(TypeSchema):
     def __init__(self, size, alignment):
         super().__init__()
@@ -592,7 +650,10 @@ class PrimitiveNumberTypeSchema(PrimitiveTypeSchema):
         return self.basicNewWithValue(valueType, 0)
 
     def basicNewWithValue(self, valueType, initialValue):
-        return PrimitiveNumberTypeValue(valueType, self.normalizeValueToValidRange(initialValue))
+        return self.primitiveNumberTypeValueClass()(valueType, self.normalizeValueToValidRange(initialValue))
+
+    def primitiveNumberTypeValueClass(self):
+        raise SubclassResponsibility()
 
     def normalizeValueToValidRange(self, value):
         return value
@@ -605,6 +666,9 @@ class PrimitiveIntegerTypeSchema(PrimitiveNumberTypeSchema):
 
     def normalizeValueToValidRange(self, value):
         return int(value) & self.memoryBitMask
+
+    def primitiveNumberTypeValueClass(self):
+        return PrimitiveIntegerTypeValue
 
 class PrimitiveUnsignedIntegerTypeSchema(PrimitiveIntegerTypeSchema):
     pass
@@ -633,6 +697,9 @@ class PrimitiveFloatTypeSchema(PrimitiveNumberTypeSchema):
     def normalizeValueToValidRange(self, value):
         return float(value)
 
+    def primitiveNumberTypeValueClass(self):
+        return PrimitiveFloatTypeValue
+
 class SumTypeValue(TypedValue):
     def __init__(self, type, typeSelector, wrappedValue):
         self.type = type
@@ -648,7 +715,7 @@ class SumTypeValue(TypedValue):
         return self.type
     
     def shallowCopy(self):
-        return SumTypeValue(self.type, self.typeSelector, self.wrappedValue.shallowCopy())
+        return SumTypeValue(self.type, self.typeSelector, self.wrappedValue.shallowCopyValue())
 
     def defaultPrintString(self) -> str:
         return '%s(%d: %s)' % (repr(self.type), self.typeSelector, repr(self.wrappedValue))
@@ -713,7 +780,7 @@ class ProductTypeValue(TypedValue):
         self.elements = elements
 
     def shallowCopy(self):
-        return ProductTypeValue(self.type, list(map(lambda el: el.shallowCopy(), self.elements)))
+        return ProductTypeValue(self.type, list(map(lambda el: el.shallowCopyValue(), self.elements)))
 
     def getType(self):
         return self.type
@@ -721,9 +788,14 @@ class ProductTypeValue(TypedValue):
     def getSlotWithIndexAndName(self, slotIndex, slotName):
         return self.elements[slotIndex]
 
+    def getSlotNamed(self, slotName):
+        return self.elements[self.type.schema.getIndexOfSlotNamed(slotName)]
+
     def setSlotWithIndexAndName(self, slotIndex, slotName, value):
-        self.elements[slotIndex] = value
-        return value
+        expectedType = self.type.schema.elementTypes[slotIndex]
+        coercedValue = expectedType.coerceValue(value)
+        self.elements[slotIndex] = coercedValue
+        return coercedValue
 
     def defaultPrintString(self) -> str:
         result = str(self.type) + '('
@@ -785,6 +857,9 @@ class RecordTypeSchema(ProductTypeSchema):
             self.slotNameDictionary[slotName] = slotIndex
             slotIndex += 1
 
+    def getIndexOfSlotNamed(self, slotName):
+        return self.slotNameDictionary[slotName]
+
     def buildPrimitiveMethodDictionary(self):
         self.metaTypeMethodDict[Symbol('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew)
         self.metaTypeMethodDict[Symbol('basicNewWithSlots:')] = TypeSchemaPrimitiveMethod(self.basicNewWithSequentialSlots)
@@ -825,27 +900,34 @@ class RecordTypeSchema(ProductTypeSchema):
         ])
 
 class ArrayTypeValue(ProductTypeValue):
-    pass
+    def __getitem__(self, index):
+        return self.elements[index.asInteger()]
 
 class ArrayTypeSchema(TypeSchema):
     def __init__(self, elementType, bounds):
         super().__init__()
         self.elementType = elementType
-        self.bounds = bounds
+        self.bounds = bounds.asInteger()
 
     def buildPrimitiveMethodDictionary(self):
         self.metaTypeMethodDict[Symbol('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew)
-        self.metaTypeMethodDict[Symbol('basicNewWithSlots:')] = TypeSchemaPrimitiveMethod(self.basicNewWithSlots)
+        self.metaTypeMethodDict[Symbol('basicNewWithSlots:')] = TypeSchemaPrimitiveMethod(self.basicNewWithSequentialSlots)
         return super().buildPrimitiveMethodDictionary()
 
     def basicNew(self, valueType):
         return ArrayTypeValue(valueType, list(map(lambda x: self.elementType.basicNew(), [None] * self.bounds)))
 
-    def basicNewWithSlots(self, valueType, slots):
+    def basicNewWithSequentialSlots(self, valueType, slots):
         if len(slots) != self.bounds:
             raise InterpreterError('Array construction element count mismatch.')
         
-        return ArrayTypeValue(valueType, list(map(lambda x: x.shallowCopy(), slots)))
+        return ArrayTypeValue(valueType, list(map(lambda x: x.shallowCopyValue(), slots)))
+
+    def hasDirectCoercionToPointerOf(self, baseType):
+        return self.elementType == baseType
+
+    def makeDirectPointerOfValueTo(self, value, valueType, targetType):
+        return PointerTypeValue(targetType, value, 0)
 
 class PointerTypeValue(TypedValue):
     def __init__(self, type, value, baseIndex = 0):
@@ -862,10 +944,28 @@ class PointerTypeValue(TypedValue):
     def defaultPrintString(self):
         return '%s(%s:%d)' % (str(self.type), str(self.value), self.baseIndex)
 
+    def __getitem__(self, index):
+        return self.value[Integer(index.asInteger() + self.baseIndex)]
+
 class PointerTypeSchema(TypeSchema):
     def __init__(self, elementType):
         super().__init__()
         self.elementType = elementType
+
+    def hasPointerOrReferenceValueCopySemantics(self):
+        return True
+
+    def canCoerceValueOfType(self, valueType):
+        if valueType.schema.hasDirectCoercionToPointerOf(self.elementType):
+            return True
+
+        return super().canCoerceValueOfType(valueType)
+
+    def coerceValueOfTypeIntoType(self, value, valueType, targetType):
+        if valueType.schema.hasDirectCoercionToPointerOf(self.elementType):
+            return valueType.schema.makeDirectPointerOfValueTo(value, valueType, targetType)
+
+        return super().coerceValueOfTypeIntoType(value, valueType, targetType)
 
     def isDefaultConstructible(self):
         return True
@@ -882,7 +982,8 @@ class PointerTypeSchema(TypeSchema):
         return PointerTypeValue(valueType, initialValue)
 
 class GCClassTypeSchema(RecordTypeSchema):
-    pass
+    def hasPointerOrReferenceValueCopySemantics(self):
+        return True
 
 class BehaviorType(TypedValue, TypeInterface):
     def __init__(self, name = None, supertype = None, traits = [], schema = EmptyTypeSchema(), methodDict = {}):
@@ -1112,7 +1213,17 @@ class AbstractFunctionTypeArgument:
     def __init__(self, name, typeExpression):
         self.name = name
         self.typeExpression = typeExpression
-        
+
+    def evaluateCanonicalFormInEnvironment(self, environment):
+        if self.typeExpression is None:
+            argumentType = getBasicTypeNamed('AnyValue')
+        else:
+            argumentType = self.typeExpression.evaluateWithEnvironment(EvaluationMachine.getActive(), environment)
+
+        if self.name is not None:
+            environment.setSymbolBinding(self.name, argumentType)
+        return argumentType
+
     def isForAllArgumentExpression(self):
         raise SubclassResponsibility()
 
@@ -1140,18 +1251,25 @@ class FunctionTypeResult:
     def __init__(self, expression):
         self.expression = expression
 
+    def evaluateCanonicalFormInEnvironment(self, environment):
+        if self.expression is None:
+            return getBasicTypeNamed('AnyValue')
+        else:
+            return self.expression.evaluateWithEnvironment(EvaluationMachine.getActive(), environment)
+
     def __repr__(self):
         return self.expression.formatAST()
 
-class FunctionType(SimpleType):
+class Function(SimpleType):
     def __init__(self, environment, arguments, resultType):
         self.environment = environment
         self.arguments = arguments
         self.resultType = resultType
-        self.canonicalArguments = None
+        self.canonicalArgumentTypes = None
         self.canonicalResultType = None
+        self.canonicalArgumentsArraySlice = None
         self.computeFunctionTypeClassification()
-        super().__init__(supertype = getBasicTypeNamed('FunctionType'))
+        super().__init__(supertype = getBasicTypeNamed('Function'))
 
     def computeFunctionTypeClassification(self):
         ## Check the presence of a for all argument.
@@ -1175,8 +1293,35 @@ class FunctionType(SimpleType):
             self.name += ' :: ('
             self.name += repr(self.resultType)
             self.name += ')} __type__'
-
         return self.name
+
+    def ensureCanonicalTypeIsEvaluated(self):
+        if self.canonicalArgumentTypes is not None:
+            return
+
+        self.canonicalArgumentTypes = []
+        canonicalEvaluationEnvironment = self.environment.makeChildLexicalScope()
+        for argument in self.arguments:
+            argumentType = argument.evaluateCanonicalFormInEnvironment(canonicalEvaluationEnvironment)
+            if not argument.isForAllArgumentExpression():
+                self.canonicalArgumentTypes.append(argumentType)
+
+        self.canonicalResultType = self.resultType.evaluateCanonicalFormInEnvironment(canonicalEvaluationEnvironment)
+
+    def getCanonicalArgumentTypes(self):
+        self.ensureCanonicalTypeIsEvaluated()
+        return self.canonicalArgumentTypes
+
+    @primitiveNamed('functionType.getCanonicalResultType')
+    def getCanonicalResultType(self):
+        self.ensureCanonicalTypeIsEvaluated()
+        return self.canonicalResultType
+
+    @primitiveNamed('functionType.getCanonicalArgumentTypes')
+    def primitiveGetCanonicalArgumentTypes(self):
+        if self.canonicalArgumentsArraySlice is None:
+            self.canonicalArgumentsArraySlice = getBasicTypeNamed('ArraySlice')(getBasicTypeNamed('Type')).basicNewWithSequentialSlots(self.getCanonicalArgumentTypes())
+        return self.canonicalArgumentsArraySlice
 
 class TypeBuilder(BehaviorTypedObject):
     def __init__(self):
@@ -1255,3 +1400,38 @@ class TypeBuilder(BehaviorTypedObject):
 
     def newFloatTypeWithSizeAndAlignment(self, size, alignment):
         return SimpleType(schema = PrimitiveFloatTypeSchema(size, alignment))
+
+class ArraySlicePrimitives:
+    @primitiveNamed('arraySlice.collect')
+    def collect(arraySlice, aBlock):
+        elements = arraySlice.getSlotNamed('elements')
+        size = arraySlice.getSlotNamed('size')
+
+        resultElementType = aBlock.getType().getCanonicalResultType()
+        resultArrayType = getBasicTypeNamed(Symbol('Array'))(resultElementType, size)
+
+        collectedElements = resultArrayType.basicNewWithSequentialSlots(list(map(lambda index: aBlock(elements[Integer(index)]), range(size.asInteger()))))
+        return collectedElements.performWithArguments(EvaluationMachine.getActive(), Symbol('asArraySlice'), ())
+
+    @primitiveNamed('arraySlice.collectWithIndex')
+    def collect(arraySlice, aBlock):
+        elements = arraySlice.getSlotNamed('elements')
+        size = arraySlice.getSlotNamed('size')
+
+        resultElementType = aBlock.getType().getCanonicalResultType()
+        indexType = aBlock.getType().getCanonicalArgumentTypes()[1]
+        resultArrayType = getBasicTypeNamed(Symbol('Array'))(resultElementType, size)
+
+        collectedElements = resultArrayType.basicNewWithSequentialSlots(list(map(lambda index: aBlock(elements[Integer(index)], indexType.basicNewWithValue(index)), range(size.asInteger()))))
+        return collectedElements.performWithArguments(EvaluationMachine.getActive(), Symbol('asArraySlice'), ())
+
+
+def extractArraySliceElements(arraySlice):
+    elements = arraySlice.getSlotNamed('elements')
+    size = arraySlice.getSlotNamed('size')
+    return list(map(lambda index: elements[Integer(index)], range(size.asInteger())))
+
+class ObjectPrimitives:
+    @primitiveNamed('object.runWithIn')
+    def primitiveRunWithIn(self, selector, arguments, receiver):
+        return self.runWithIn(EvaluationMachine.getActive(), selector, extractArraySliceElements(arguments), receiver)

@@ -22,11 +22,11 @@ __BootstrapCompiler__
     addBasicTypeNamed: #SimpleType with: (__TypeBuilder__ newGCClassWithSuperclass: Type slots: #{});
     addBasicTypeNamed: #MetaType with: (__TypeBuilder__ newGCClassWithSuperclass: Type slots: #{});
 
-    addBasicTypeNamed: #FunctionType with: (__TypeBuilder__ newGCClassWithSuperclass: SimpleType slots: #{});
+    addBasicTypeNamed: #Function with: (__TypeBuilder__ newGCClassWithSuperclass: SimpleType slots: #{});
 
-    addBasicTypeNamed: #Method with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
-    addBasicTypeNamed: #BlockClosure with: (__TypeBuilder__ newGCClassWithSuperclass: Method slots: #{});
-    addBasicTypeNamed: #AbstractPrimitiveMethod with: (__TypeBuilder__ newGCClassWithSuperclass: Method slots: #{});
+    addBasicTypeNamed: #FunctionImplementation with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
+    addBasicTypeNamed: #BlockClosure with: (__TypeBuilder__ newGCClassWithSuperclass: FunctionImplementation slots: #{});
+    addBasicTypeNamed: #AbstractPrimitiveMethod with: (__TypeBuilder__ newGCClassWithSuperclass: FunctionImplementation slots: #{});
     addBasicTypeNamed: #PrimitiveMethod with: (__TypeBuilder__ newGCClassWithSuperclass: AbstractPrimitiveMethod slots: #{});
     addBasicTypeNamed: #TypeSchemaPrimitiveMethod with: (__TypeBuilder__ newGCClassWithSuperclass: AbstractPrimitiveMethod slots: #{});
     addBasicTypeNamed: #RecordTypeAccessorPrimitiveMethod with: (__TypeBuilder__ newGCClassWithSuperclass: AbstractPrimitiveMethod slots: #{});
@@ -100,7 +100,6 @@ Integer
         __BootstrapCompiler__ primitiveFailed
     }.
 
-
 __BootstrapCompiler__
     enterTopLevelNamespace;
 
@@ -134,10 +133,129 @@ __BootstrapCompiler__
 
     addBasicTypeNamed: #UIntPointer with: (if: __BootstrapCompiler__ getPointerSize = 4 then: UInt32 else: UInt64);
     addBasicTypeNamed: #IntPointer with: (if: __BootstrapCompiler__ getPointerSize = 4 then: Int32 else: Int64);
-    addBasicTypeNamed: #Size with: UIntPointer;
+    addBasicTypeNamed: #Size with: UIntPointer.
 
+## Integer conversion primitives
+Integer
+    withSelector: #u8 addMethod: {:(Integer)self :: UInt8 |
+        <primitive: #"integer.conversion.toUInt8">
+        UInt8 basicNew: self
+    };
+    withSelector: #s8 addMethod: {:(Integer)self :: Int8 |
+        <primitive: #"integer.conversion.toInt8">
+        Int8 basicNew: self
+    };
+    withSelector: #u16 addMethod: {:(Integer)self :: UInt16 |
+        <primitive: #"integer.conversion.toUInt16">
+        UInt16 basicNew: self
+    };
+    withSelector: #s16 addMethod: {:(Integer)self :: Int16 |
+        <primitive: #"integer.conversion.toInt16">
+        Int16 basicNew: self
+    };
+    withSelector: #u32 addMethod: {:(Integer)self :: UInt32 |
+        <primitive: #"integer.conversion.toUInt32">
+        UInt32 basicNew: self
+    };
+    withSelector: #s32 addMethod: {:(Integer)self :: Int32 |
+        <primitive: #"integer.conversion.toInt32">
+        Int32 basicNew: self
+    };
+    withSelector: #u64 addMethod: {:(Integer)self :: UInt64 |
+        <primitive: #"integer.conversion.toUInt64">
+        UInt64 basicNew: self
+    };
+    withSelector: #s64 addMethod: {:(Integer)self :: Int64 |
+        <primitive: #"integer.conversion.toInt64">
+        Int64 basicNew: self
+    };
+
+    withSelector: #sz addMethod: {:(Integer)self :: Size |
+        <primitive: #"integer.conversion.toSize">
+        Size basicNew: self
+    };
+    withSelector: #uptr addMethod: {:(Integer)self :: UIntPointer |
+        <primitive: #"integer.conversion.toUIntPointer">
+        UIntPointer basicNew: self
+    };
+    withSelector: #uptr addMethod: {:(Integer)self :: IntPointer |
+        <primitive: #"integer.conversion.toIntPointer">
+        IntPointer basicNew: self
+    }.
+
+{:addPrimitivesBlock |
+    addPrimitivesBlock(UInt8).
+    addPrimitivesBlock(Int8).
+    addPrimitivesBlock(UInt16).
+    addPrimitivesBlock(Int16).
+    addPrimitivesBlock(UInt32).
+    addPrimitivesBlock(Int32).
+    addPrimitivesBlock(UInt64).
+    addPrimitivesBlock(Int64).
+}({:(Type)primitiveIntegerType |
+    primitiveIntegerType
+        withSelector: #+ addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: primitiveIntegerType |
+            <primitive: #"integer.arithmetic.add">
+            __BootstrapCompiler__ primitiveFailed
+        };
+        withSelector: #- addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: primitiveIntegerType |
+            <primitive: #"integer.arithmetic.sub">
+            __BootstrapCompiler__ primitiveFailed
+        };
+        withSelector: #"*" addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: primitiveIntegerType |
+            <primitive: #"integer.arithmetic.mul">
+            __BootstrapCompiler__ primitiveFailed
+        };
+        withSelector: #// addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: primitiveIntegerType |
+            <primitive: #"integer.arithmetic.div">
+            __BootstrapCompiler__ primitiveFailed
+        };
+        withSelector: #% addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: primitiveIntegerType |
+            <primitive: #"integer.arithmetic.rem">
+            __BootstrapCompiler__ primitiveFailed
+        };
+
+        withSelector: #= addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: Boolean8 |
+            <primitive: #"integer.comparison.equals">
+            __BootstrapCompiler__ primitiveFailed
+        };
+        withSelector: #~= addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: Boolean8 |
+            <primitive: #"integer.comparison.notEquals">
+            __BootstrapCompiler__ primitiveFailed
+        };
+        
+        withSelector: #< addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: Boolean8 |
+            <primitive: #"integer.comparison.lessThan">
+            __BootstrapCompiler__ primitiveFailed
+        };
+        withSelector: #<= addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: Boolean8 |
+            <primitive: #"integer.comparison.lessOrEqual">
+            __BootstrapCompiler__ primitiveFailed
+        };
+        withSelector: #> addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: Boolean8 |
+            <primitive: #"integer.comparison.greaterThan">
+            __BootstrapCompiler__ primitiveFailed
+        };
+        withSelector: #>= addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: Boolean8 |
+            <primitive: #"integer.comparison.greaterOrEqual">
+            __BootstrapCompiler__ primitiveFailed
+        };
+
+        withSelector: #asString addMethod: {:(Integer)self :: String |
+            <primitive: #"primitiveInteger.conversion.toString">
+            __BootstrapCompiler__ primitiveFailed
+        };
+        withSelector: #printString addMethod: {:(Integer)self :: String |
+            <primitive: #"primitiveInteger.conversion.toString">
+            __BootstrapCompiler__ primitiveFailed
+        }.
+}).
+
+__BootstrapCompiler__
+    enterTopLevelNamespace;
+    
     ## The polymorphic types
-    addBindingNamed: #Optional with: {:(Type)optionalType :: Type |
+    addBasicTypeNamed: #Optional with: {:(Type)optionalType :: Type |
         {:(Type)sumType :: Type |
             sumType
                 withSelector: #isNil addMethod: {:(sumType)self :: Boolean |
@@ -156,7 +274,7 @@ __BootstrapCompiler__
         }(__TypeBuilder__ newSumTypeWith: (Undefined, optionalType))
     } templated;
 
-    addBindingNamed: #Array with: {:(Type)elementType :(Integer)bounds :: Type |
+    addBasicTypeNamed: #Array with: {:(Type)elementType :(Size)bounds :: Type |
         {:(Type)arrayType :: Type |
             arrayType
                 withSelector: #asArraySlice addMethod: {:(arrayType)self :: ArraySlice(elementType) |
@@ -165,18 +283,18 @@ __BootstrapCompiler__
                         size: bounds
                     }
                 };
-                withSelector: #size addMethod: {:(arrayType)self :: Integer |
+                withSelector: #size addMethod: {:(arrayType)self :: Size |
                     bounds
                 }.
             arrayType
         } (__TypeBuilder__ newArrayTypeFor: elementType withBounds: bounds)
     } templated;
 
-    addBindingNamed: #Pointer with: {:(Type)elementType :: Type |
+    addBasicTypeNamed: #Pointer with: {:(Type)elementType :: Type |
         __TypeBuilder__ newPointerTypeFor: elementType
     } templated;
 
-    addBindingNamed: #ArraySlice with: {:(Type)elementType :: Type |
+    addBasicTypeNamed: #ArraySlice with: {:(Type)elementType :: Type |
         {:(Type)arraySliceType :: Type |
             arraySliceType
                 withSelector: #isEmpty addMethod: {:(arraySliceType)self :: Boolean |
@@ -189,7 +307,7 @@ __BootstrapCompiler__
                     <primitive: #"arraySlice.collect">
                     __BootstrapCompiler__ primitiveFailed
                 };
-                withSelector: #collect:withIndex: addMethod: {:*(Type)ResultType :((elementType -- Integer) => ResultType)block :: ArraySlice(ResultType) |
+                withSelector: #collectWithIndex: addMethod: {:*(Type)ResultType :((elementType -- Size) => ResultType)block :: ArraySlice(ResultType) |
                     <primitive: #"arraySlice.collectWithIndex">
                     __BootstrapCompiler__ primitiveFailed
                 }.
@@ -201,7 +319,7 @@ __BootstrapCompiler__
     } templated;
     addBasicTypeNamed: #AnyArraySlice with: ArraySlice(AnyValue);
 
-    addBindingNamed: #Association with: {:(Type)key :(Type)value :: Type |
+    addBasicTypeNamed: #Association with: {:(Type)key :(Type)value :: Type |
         __TypeBuilder__ newRecordTypeWith: #{
             key: key.
             value: value.
@@ -209,7 +327,7 @@ __BootstrapCompiler__
     } templated;
     addBasicTypeNamed: #AnyAssociation with: Association(AnyValue, AnyValue);
 
-    addBindingNamed: #ArrayDictionary with: {:(Type)keyType :(Type)valueType :: Type |
+    addBasicTypeNamed: #ArrayDictionary with: {:(Type)keyType :(Type)valueType :: Type |
         __TypeBuilder__ newRecordTypeWith: #{
             associationList: ArraySlice(Association(keyType, valueType)).
             hashTable: ArraySlice(UInt32).
@@ -217,7 +335,7 @@ __BootstrapCompiler__
     } templated;
     addBasicTypeNamed: #AnyArrayDictionary with: ArrayDictionary(AnyValue, AnyValue);
 
-    addBindingNamed: #ArrayList with: {:(Type)elementType :: Type |
+    addBasicTypeNamed: #ArrayList with: {:(Type)elementType :: Type |
         __TypeBuilder__ newGCClassWithSlots: #{
             size: Size.
             storage: ArraySlice(elementType)
@@ -249,7 +367,7 @@ MetaType
     withSelector: #"[]" addMethod: {:(Type)self :: Type |
         Array(self, 0)
     };
-    withSelector: #"[]" addMethod: {:(Type)self :(Integer)bounds :: Type |
+    withSelector: #"[]" addMethod: {:(Type)self :(Size)bounds :: Type |
         Array(self, bounds)
     };
     withSelector: #optional addMethod: {:(Type)self :: Type |
@@ -258,7 +376,7 @@ MetaType
     withSelector: #array addMethod: {:(Type)self :: Type |
         Array(self, 0)
     };
-    withSelector: #array: addMethod: {:(Type)self :(Integer)bounds :: Type |
+    withSelector: #array: addMethod: {:(Type)self :(Size)bounds :: Type |
         Array(self, bounds)
     };
     withSelector: #arraySlice addMethod: {:(Type)self :: Type |
@@ -298,12 +416,12 @@ __BootstrapCompiler__
     });
     addBindingNamed: #SourceStringPosition with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST SourcePosition publicSlots: #{
         sourceCollection: SysmelCompiler AST SourceCollection.
-        startPosition: Integer.
-        endPosition: Integer.
-        startLine: Integer.
-        startColumn: Integer.
-        endLine: Integer.
-        endColumn: Integer.
+        startPosition: Size.
+        endPosition: Size.
+        startLine: Size.
+        startColumn: Size.
+        endLine: Size.
+        endColumn: Size.
     });
     addBindingNamed: #EmptySourcePosition with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST SourcePosition publicSlots: #{});
 
@@ -353,7 +471,7 @@ __BootstrapCompiler__
         receiver: SysmelCompiler AST Node optional.
         selector: SysmelCompiler AST Node.
         arguments: SysmelCompiler AST Node arraySlice.
-        boundMessage: AnyValue optional.
+        boundMethod: AnyValue optional.
     });
     addBindingNamed: #MessageChainNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
         receiver: SysmelCompiler AST Node.
@@ -552,8 +670,8 @@ SysmelCompiler AST MessageSendNode
                     analyzer makeSemanticAnalysisError: ("Message  {0}." format: (self analyzedSelector printString, )) at: self sourcePosition
                 }
             } else: {
-                {:(SysmelCompiler AST)analyzedReceiver :: SysmelCompiler AST Node |
-                    analyzedReceiver analyzedType analyzeMessageSendNode: (self shallowCopy
+                {:(SysmelCompiler AST Node)analyzedReceiver :: SysmelCompiler AST Node |
+                    analyzedReceiver analyzedType _ analyzeMessageSendNode: (self shallowCopy
                         receiver: analyzedReceiver;
                         selector: analyzedSelector;
                         yourself) with: analyzer
@@ -563,18 +681,18 @@ SysmelCompiler AST MessageSendNode
     };
     withSelector: #evaluateNodeWith: addMethod: {:(SysmelCompiler AST MessageSendNode)self :(SysmelCompiler Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         if: self receiver isNil then: {
-            self boundMessage run: (self selector evaluateNodeWith: evaluationEnvironment) with: (self arguments collect: {:(SysmelCompiler AST Node)arg :: AnyValue |
+            self boundMethod run: (self selector evaluateNodeWith: evaluationEnvironment) with: (self arguments collect: {:(SysmelCompiler AST Node)arg :: AnyValue |
                     arg evaluateNodeWith: evaluationEnvironment
                 }) in: nil
         } else: {
             {:(AnyValue)receiver :(AnyValue)selector :(AnyValue arraySlice)arguments :: AnyValue |
-                if: self boundMessage isNil then: {
+                if: self boundMethod isNil then: {
                     receiver perform: selector withArguments: argumnets
                 } else: {
-                    self boundMessage run: selector with: arguments in: receiver
+                    self boundMethod _ run: selector with: arguments in: receiver
                 }
             }(
-                self receiver evaluateNodeWith: evaluationEnvironment,
+                self receiver _ evaluateNodeWith: evaluationEnvironment,
                 self selector evaluateNodeWith: evaluationEnvironment,
                 self arguments collect: {:(SysmelCompiler AST Node)arg :: AnyValue |
                     arg evaluateNodeWith: evaluationEnvironment
@@ -630,10 +748,29 @@ Type
         }
     }.
 
-FunctionType
-    withSelector: #analyzeMessageSendNode:with: addMethod: {:(FunctionType)self :(SysmelCompiler AST MessageSendNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
-        __BootstrapCompiler__ print: "Analysis in method "; print: self.
-        analyzer makeSemanticAnalysisError: "TODO: analyze message with method found." at: node sourcePosition
+Function __type__
+    withSelector: #canonicalArgumentTypes addMethod: {:(Function)self :: Type arraySlice |
+        <primitive: #"functionType.getCanonicalArgumentTypes">
+        __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #canonicalResultType addMethod: {:(Function)self :: Type |
+        <primitive: #"functionType.getCanonicalResultType">
+        __BootstrapCompiler__ primitiveFailed
+    }.
+
+Function
+    withSelector: #analyzeMessageSendNode:with: addMethod: {:(Function)self :(SysmelCompiler AST MessageSendNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
+        node shallowCopy
+            arguments: (node arguments collectWithIndex: {:(SysmelCompiler AST Node)node :(Size)argumentIndex :: SysmelCompiler AST Node |
+                node analyzeNodeIfNeededWith: analyzer
+            });
+            analyzedType: self __type__ canonicalResultType;
+            boundMethod: self;
+            yourself.
+    };
+    withSelector: #run:with:in: addMethod: {:(Function)self :(AnyValue)selector :(AnyValue arraySlice)arguments :(AnyValue)receiver :: AnyValue |
+        <primitive: #"object.runWithIn">
+        __BootstrapCompiler__ primitiveFailed
     }.
 
 __BootstrapCompiler__
@@ -653,7 +790,13 @@ __BootstrapCompiler__
     print: "Some number: " -- 1 asString;
     print: ("Some number {0} " format: (1 asString,));
 
-    print: ((Integer array: 3) basicNewWithSlots: (1, 2, 3)) asArraySlice;
+    print: ((Integer array: 3sz) basicNewWithSlots: (1, 2, 3)) asArraySlice;
+    print: (((Integer array: 3sz) basicNewWithSlots: (1, 2, 3)) asArraySlice collect: {:(Integer)x :: Size |
+        x sz
+    });
+    print: (((Integer array: 3sz) basicNewWithSlots: (1, 2, 3)) asArraySlice collectWithIndex: {:(Integer)x :(Size)index :: Size |
+        index
+    });
 
     print: SysmelCompiler AST SourcePosition basicNew;
     print: (SysmelCompiler AST Node basicNewWithNamedSlots: #{
@@ -667,6 +810,7 @@ __BootstrapCompiler__
     print: (`'1 analyzeAndEvaluateNodeWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
 
     print: (`'(1 + 1) analyzeNodeIfNeededWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
+    print: (`'(1 + 1) analyzeAndEvaluateNodeWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
 
     print: nil isNil;
     print: nil isNotNil.
