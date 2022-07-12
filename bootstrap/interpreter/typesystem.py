@@ -87,18 +87,22 @@ class TypedValue(ValueInterface):
         return self.shallowCopy()
 
 class PrimitiveMethod(TypedValue):
-    def __init__(self, method):
+    def __init__(self, method, functionTypeSpec):
         self.method = method
+        self.functionTypeSpec = functionTypeSpec
+        self.functionType = None
 
     def getType(self):
-        return getBasicTypeNamed(Symbol('PrimitiveMethod'))
+        if self.functionType is None:
+            self.functionType = Function.constructFromTypeSpec(self.functionTypeSpec)
+        return self.functionType
 
     def runWithIn(self, machine, selector, arguments, receiver):
         return coerceNoneToNil(self.method(receiver, *arguments))
 
-def primitiveNamed(primitiveName):
+def primitiveNamed(primitiveName, functionTypeSpec = None):
     def decorator(primitiveImplementation):
-        primitiveMethod = PrimitiveMethod(primitiveImplementation)
+        primitiveMethod = PrimitiveMethod(primitiveImplementation, functionTypeSpec)
         PrimitiveMethodTable[primitiveName] = primitiveMethod
         return primitiveImplementation
     return decorator
@@ -432,29 +436,21 @@ class TypeSchemaPrimitiveMethod(PrimitiveMethod):
         return self.method(receiver, *arguments)
 
 class RecordTypeAccessorPrimitiveMethod(PrimitiveMethod):
-    def __init__(self, selector, slotName, slotIndex, slotType):
+    def __init__(self, selector, slotName, slotIndex, slotType, functionTypeSpec):
+        super().__init__(None, functionTypeSpec)
         self.selector = selector
         self.slotName = slotName
         self.slotIndex = slotIndex
         self.slotType = slotType
 
-    def getType(self):
-        return getBasicTypeNamed(Symbol('RecordTypeAccessorPrimitiveMethod'))
-
     def runWithIn(self, machine, selector, arguments, receiver):
         return self.method(receiver, *arguments)
 
 class RecordTypeGetterPrimitiveMethod(RecordTypeAccessorPrimitiveMethod):
-    def getType(self):
-        return getBasicTypeNamed(Symbol('RecordTypeGetterPrimitiveMethod'))
-
     def runWithIn(self, machine, selector, arguments, receiver):
         return receiver.getSlotWithIndexAndName(self.slotIndex, self.slotName)
 
 class RecordTypeSetterPrimitiveMethod(RecordTypeAccessorPrimitiveMethod):
-    def getType(self):
-        return getBasicTypeNamed(Symbol('RecordTypeSetterPrimitiveMethod'))
-
     def runWithIn(self, machine, selector, arguments, receiver):
         return receiver.setSlotWithIndexAndName(self.slotIndex, self.slotName, arguments[0])
 
@@ -584,9 +580,9 @@ class TypeSchema:
         return False
 
     def buildPrimitiveMethodDictionary(self):
-        self.methodDict[Symbol('shallowCopy')] = TypeSchemaPrimitiveMethod(self.shallowCopy)
-        self.methodDict[Symbol('yourself')] = TypeSchemaPrimitiveMethod(self.yourself)
-        self.methodDict[Symbol('__type__')] = TypeSchemaPrimitiveMethod(self.getTypeFromValue)
+        self.methodDict[Symbol('shallowCopy')] = TypeSchemaPrimitiveMethod(self.shallowCopy, '(SelfType => SelfType)')
+        self.methodDict[Symbol('yourself')] = TypeSchemaPrimitiveMethod(self.yourself, '(SelfType => SelfType)')
+        self.methodDict[Symbol('__type__')] = TypeSchemaPrimitiveMethod(self.getTypeFromValue, '(SelfType => SelfType __type__)')
 
     def lookupPrimitiveWithSelector(self, selector):
         if selector in self.methodDict:
@@ -665,7 +661,7 @@ class EmptyTypeSchema(TypeSchema):
         return True
 
     def buildPrimitiveMethodDictionary(self):
-        self.metaTypeMethodDict[Symbol('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew)
+        self.metaTypeMethodDict[Symbol('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew, '{:(SelfType)self :: self}')
         return super().buildPrimitiveMethodDictionary()
 
     def basicNew(self, valueType):
@@ -771,8 +767,8 @@ class PrimitiveNumberTypeSchema(PrimitiveTypeSchema):
         return True
 
     def buildPrimitiveMethodDictionary(self):
-        self.metaTypeMethodDict[Symbol('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew)
-        self.metaTypeMethodDict[Symbol('basicNew:')] = TypeSchemaPrimitiveMethod(self.basicNewWithValue)
+        self.metaTypeMethodDict[Symbol('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew, '{:(SelfType)self :: self}')
+        self.metaTypeMethodDict[Symbol('basicNew:')] = TypeSchemaPrimitiveMethod(self.basicNewWithValue, '{:(SelfType)self :(AnyValue)value :: self}')
         return super().buildPrimitiveMethodDictionary()
 
     def basicNew(self, valueType):
@@ -861,10 +857,10 @@ class SumTypeSchema(TypeSchema):
         return self.elementTypes[0].isDefaultConstructible()
 
     def buildPrimitiveMethodDictionary(self):
-        self.methodDict[Symbol('__typeSelector__')] = TypeSchemaPrimitiveMethod(self.getTypeSelector)
-        self.methodDict[Symbol('get:')] = TypeSchemaPrimitiveMethod(self.getWithType)
-        self.metaTypeMethodDict[Symbol('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew)
-        self.metaTypeMethodDict[Symbol('basicNew:')] = TypeSchemaPrimitiveMethod(self.basicNewWithValue)
+        self.methodDict[Symbol('__typeSelector__')] = TypeSchemaPrimitiveMethod(self.getTypeSelector, '(SelfType) => SelfType __type__')
+        self.methodDict[Symbol('get:')] = TypeSchemaPrimitiveMethod(self.getWithType, '{:(SelfType)self :(Type)expectedType :: expectedType}')
+        self.metaTypeMethodDict[Symbol('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew, '{:(SelfType)self :: self}')
+        self.metaTypeMethodDict[Symbol('basicNew:')] = TypeSchemaPrimitiveMethod(self.basicNewWithValue, '{:(SelfType)self :(AnyValue)initialValue :: self}')
         return super().buildPrimitiveMethodDictionary()
 
     def getTypeSelector(self, sumValue):
@@ -948,8 +944,8 @@ class ProductTypeSchema(TypeSchema):
         self.isDefaultConstructibleCache = None
 
     def buildPrimitiveMethodDictionary(self):
-        self.metaTypeMethodDict[Symbol('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew)
-        self.metaTypeMethodDict[Symbol('basicNewWithSlots:')] = TypeSchemaPrimitiveMethod(self.basicNewWithSequentialSlots)
+        self.metaTypeMethodDict[Symbol('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew, '{:(SelfType)self :: self}')
+        self.metaTypeMethodDict[Symbol('basicNewWithSlots:')] = TypeSchemaPrimitiveMethod(self.basicNewWithSequentialSlots, '{:(SelfType)self :(AnyValue)sequentialSlots :: self}')
         return super().buildPrimitiveMethodDictionary()
 
     def basicNew(self, productType):
@@ -993,16 +989,17 @@ class RecordTypeSchema(ProductTypeSchema):
         return self.slotNameDictionary[slotName]
 
     def buildPrimitiveMethodDictionary(self):
-        self.metaTypeMethodDict[Symbol('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew)
-        self.metaTypeMethodDict[Symbol('basicNewWithSlots:')] = TypeSchemaPrimitiveMethod(self.basicNewWithSequentialSlots)
-        self.metaTypeMethodDict[Symbol('basicNewWithNamedSlots:')] = TypeSchemaPrimitiveMethod(self.basicNewWithNamedSlots)
+        self.metaTypeMethodDict[Symbol('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew, '{:(SelfType)self :: self}')
+        self.metaTypeMethodDict[Symbol('basicNewWithSlots:')] = TypeSchemaPrimitiveMethod(self.basicNewWithSequentialSlots, '{:(SelfType)self :(AnyValue)slots :: self}')
+        self.metaTypeMethodDict[Symbol('basicNewWithNamedSlots:')] = TypeSchemaPrimitiveMethod(self.basicNewWithNamedSlots, '{:(SelfType)self :(AnyValue)slots :: self}')
         for slotIndex in range(len(self.slots)):
             slotAssociation = self.slots[slotIndex]
             slotName = slotAssociation.key
             getterName = Symbol(slotName)
             setterName = Symbol(slotName + ':')
-            self.methodDict[getterName] = RecordTypeGetterPrimitiveMethod(getterName, getterName, self.startSlotIndex + slotIndex, slotAssociation.value)
-            self.methodDict[setterName] = RecordTypeSetterPrimitiveMethod(setterName, getterName, self.startSlotIndex + slotIndex, slotAssociation.value)
+            slotType = self.allSlots[slotIndex]
+            self.methodDict[getterName] = RecordTypeGetterPrimitiveMethod(getterName, getterName, self.startSlotIndex + slotIndex, slotAssociation.value, (('SelfType'), slotType))
+            self.methodDict[setterName] = RecordTypeSetterPrimitiveMethod(setterName, getterName, self.startSlotIndex + slotIndex, slotAssociation.value, (('SelfType', slotType), slotType))
         return super().buildPrimitiveMethodDictionary()
 
     def basicNewWithNamedSlots(self, recordType, namedSlots):
@@ -1037,14 +1034,14 @@ class ArrayTypeValue(ProductTypeValue):
 
 class ArrayTypeSchema(TypeSchema):
     def __init__(self, elementType, bounds):
-        super().__init__()
         self.elementType = elementType
         self.bounds = bounds.asInteger()
+        super().__init__()
 
     def buildPrimitiveMethodDictionary(self):
-        self.metaTypeMethodDict[Symbol('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew)
-        self.metaTypeMethodDict[Symbol('basicNewWithSlots:')] = TypeSchemaPrimitiveMethod(self.basicNewWithSequentialSlots)
-        self.methodDict[Symbol('basicAt:')] = TypeSchemaPrimitiveMethod(self.basicAt)
+        self.metaTypeMethodDict[Symbol('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew, '{:(SelfType)self :: self}')
+        self.metaTypeMethodDict[Symbol('basicNewWithSlots:')] = TypeSchemaPrimitiveMethod(self.basicNewWithSequentialSlots, '{:(SelfType)self :(AnyValue)slots :: self}')
+        self.methodDict[Symbol('basicAt:')] = TypeSchemaPrimitiveMethod(self.basicAt, (('SelfType', 'Size'), self.elementType))
         return super().buildPrimitiveMethodDictionary()
 
     def basicNew(self, valueType):
@@ -1085,8 +1082,8 @@ class PointerTypeValue(TypedValue):
 
 class PointerTypeSchema(TypeSchema):
     def __init__(self, elementType):
-        super().__init__()
         self.elementType = elementType
+        super().__init__()
 
     def hasPointerOrReferenceValueCopySemantics(self):
         return True
@@ -1107,9 +1104,9 @@ class PointerTypeSchema(TypeSchema):
         return True
 
     def buildPrimitiveMethodDictionary(self):
-        self.metaTypeMethodDict[Symbol('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew)
-        self.metaTypeMethodDict[Symbol('basicNew:')] = TypeSchemaPrimitiveMethod(self.basicNewWithValue)
-        self.methodDict[Symbol('basicAt:')] = TypeSchemaPrimitiveMethod(self.basicAt)
+        self.metaTypeMethodDict[Symbol('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew, '{:(SelfType)self :: self}')
+        self.metaTypeMethodDict[Symbol('basicNew:')] = TypeSchemaPrimitiveMethod(self.basicNewWithValue, '{:(SelfType)self :(AnyValue)value :: self}')
+        self.methodDict[Symbol('basicAt:')] = TypeSchemaPrimitiveMethod(self.basicAt, (('SelfType', 'Size'), self.elementType))
         return super().buildPrimitiveMethodDictionary()
 
     def basicAt(self, value, index):
@@ -1227,8 +1224,8 @@ class BehaviorType(TypedValue, TypeInterface):
             self.addMethodWithSelector(method, Symbol(selector))
 
     def addPrimitiveMethodsWithSelectors(self, methodsWithSelector):
-        for method, selector in methodsWithSelector:
-            self.addMethodWithSelector(PrimitiveMethod(method), Symbol(selector))
+        for method, selector, functionTypeSpec in methodsWithSelector:
+            self.addMethodWithSelector(PrimitiveMethod(method, functionTypeSpec), Symbol(selector))
 
     def getName(self):
         if self.name is not None:
@@ -1263,8 +1260,8 @@ class BehaviorType(TypedValue, TypeInterface):
     def addMetaTypeRootMethods(self):
         cls = self.__class__
         self.addPrimitiveMethodsWithSelectors([
-            (cls.withSelectorAddMethod, 'withSelector:addMethod:'),
-            (cls.addTypeFlag, 'addTypeFlag:'),
+            (cls.withSelectorAddMethod, 'withSelector:addMethod:', '(AnyValue -- AnyValue) => AnyValue'),
+            (cls.addTypeFlag, 'addTypeFlag:', 'AnyValue => AnyValue'),
         ])
 
     def asArrayType(self):
@@ -1471,24 +1468,24 @@ class TypeBuilder(BehaviorTypedObject):
     def initializeBehaviorType(cls, type):
         BehaviorTypedObject.initializeBehaviorType(type)
         type.addPrimitiveMethodsWithSelectors([
-            (cls.newAbsurdType, 'newAbsurdType'),
-            (cls.newTrivialType, 'newTrivialType'),
-            (cls.newProductType, 'newProductTypeWith:'),
-            (cls.newSumTypeWith, 'newSumTypeWith:'),
-            (cls.newRecordTypeWith, 'newRecordTypeWith:'),
-            (cls.newArrayTypeForWithBounds, 'newArrayTypeFor:withBounds:'),
-            (cls.newPointerTypeFor, 'newPointerTypeFor:'),
+            (cls.newAbsurdType, 'newAbsurdType', '(SelfType) => Type'),
+            (cls.newTrivialType, 'newTrivialType', '(SelfType) => Type'),
+            (cls.newProductType, 'newProductTypeWith:', '(SelfType -- AnyValue) => Type'),
+            (cls.newSumTypeWith, 'newSumTypeWith:', '(SelfType -- AnyValue) => Type'),
+            (cls.newRecordTypeWith, 'newRecordTypeWith:', '(SelfType -- AnyValue) => Type'),
+            (cls.newArrayTypeForWithBounds, 'newArrayTypeFor:withBounds:', '(SelfType -- AnyValue -- Integer) => Type'),
+            (cls.newPointerTypeFor, 'newPointerTypeFor:', '(SelfType -- AnyValue -- Integer) => Type'),
 
-            (cls.newBooleanTypeWithSizeAndAlignment, 'newBooleanTypeWithSize:alignment:'),
-            (cls.newUnsignedIntegerTypeWithSizeAndAlignment, 'newUnsignedIntegerTypeWithSize:alignment:'),
-            (cls.newSignedIntegerTypeWithSizeAndAlignment, 'newSignedIntegerTypeWithSize:alignment:'),
-            (cls.newCharacterTypeWithSizeAndAlignment, 'newCharacterTypeWithSize:alignment:'),
-            (cls.newFloatTypeWithSizeAndAlignment, 'newFloatTypeWithSize:alignment:'),
+            (cls.newBooleanTypeWithSizeAndAlignment, 'newBooleanTypeWithSize:alignment:', '(SelfType -- Integer -- Integer) => Type'),
+            (cls.newUnsignedIntegerTypeWithSizeAndAlignment, 'newUnsignedIntegerTypeWithSize:alignment:', '(SelfType -- Integer -- Integer) => Type'),
+            (cls.newSignedIntegerTypeWithSizeAndAlignment, 'newSignedIntegerTypeWithSize:alignment:', '(SelfType -- Integer -- Integer) => Type'),
+            (cls.newCharacterTypeWithSizeAndAlignment, 'newCharacterTypeWithSize:alignment:', '(SelfType -- Integer -- Integer) => Type'),
+            (cls.newFloatTypeWithSizeAndAlignment, 'newFloatTypeWithSize:alignment:', '(SelfType -- Integer -- Integer) => Type'),
 
-            (cls.newGCClassWithSlots, 'newGCClassWithSlots:'),
-            (cls.newGCClassWithSuperclassSlots, 'newGCClassWithSuperclass:slots:'),
-            (cls.newGCClassWithPublicSlots, 'newGCClassWithPublicSlots:'),
-            (cls.newGCClassWithSuperclassPublicSlots, 'newGCClassWithSuperclass:publicSlots:')
+            (cls.newGCClassWithSlots, 'newGCClassWithSlots:', '(SelfType -- AnyValue) => Type'),
+            (cls.newGCClassWithSuperclassSlots, 'newGCClassWithSuperclass:slots:', '(SelfType -- Type -- AnyValue) => Type'),
+            (cls.newGCClassWithPublicSlots, 'newGCClassWithPublicSlots:', '(SelfType -- AnyValue) => Type'),
+            (cls.newGCClassWithSuperclassPublicSlots, 'newGCClassWithSuperclass:publicSlots:', '(SelfType -- Type -- AnyValue) => Type')
         ])
 
     def newAbsurdType(self):

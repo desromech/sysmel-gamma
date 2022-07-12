@@ -107,30 +107,30 @@ class BootstrapCompiler(BehaviorTypedObject):
     def initializeBehaviorType(cls, type):
         BehaviorTypedObject.initializeBehaviorType(type)
         type.addPrimitiveMethodsWithSelectors([
-            (cls.addBasicTypeNamedWith, 'addBasicTypeNamed:with:'),
-            (cls.addBindingNamedWith, 'addBindingNamed:with:'),
-            (cls.addKeywordBindingNamedWith, 'addKeywordBindingNamed:with:'),
+            (cls.addBasicTypeNamedWith, 'addBasicTypeNamed:with:', '(SelfType -- AnyValue -- AnyValue) => Void'),
+            (cls.addBindingNamedWith, 'addBindingNamed:with:', '(SelfType -- AnyValue -- AnyValue) => Void'),
+            (cls.addKeywordBindingNamedWith, 'addKeywordBindingNamed:with:', '(SelfType -- AnyValue -- AnyValue) => Void'),
 
-            (cls.setParseTreeASTMaping, 'setParseTreeASTMaping:'),
-            (cls.setSemanticAnalysisMapping, 'setSemanticAnalysisMapping:'),
+            (cls.setParseTreeASTMaping, 'setParseTreeASTMaping:', '(SelfType -- AnyValue) => Void'),
+            (cls.setSemanticAnalysisMapping, 'setSemanticAnalysisMapping:', '(SelfType -- AnyValue) => Void'),
 
-            (cls.enableTypeSystem, 'enableTypeSystem'),
-            (cls.enterTopLevelNamespace, 'enterTopLevelNamespace'),
-            (cls.enterNamespaceNamed, 'enterNamespaceNamed:'),
+            (cls.enableTypeSystem, 'enableTypeSystem', '(SelfType) => Void'),
+            (cls.enterTopLevelNamespace, 'enterTopLevelNamespace', '(SelfType) => Void'),
+            (cls.enterNamespaceNamed, 'enterNamespaceNamed:', '(SelfType -- AnyValue) => Void'),
 
-            (cls.primitiveFailed, 'primitiveFailed'),
-            (cls.subclassResponsibility, 'subclassResponsibility'),
+            (cls.primitiveFailed, 'primitiveFailed', '(SelfType) => Void'),
+            (cls.subclassResponsibility, 'subclassResponsibility', '(SelfType) => Void'),
 
-            (cls.getTopLevelEnvironment, 'getTopLevelEnvironment'),
+            (cls.getTopLevelEnvironment, 'getTopLevelEnvironment', '(SelfType) => Void'),
 
-            (cls.parseErrorAt, 'parseError:at:'),
-            (cls.semanticAnalysisErrorAt, 'semanticAnalysisError:at:'),
+            (cls.parseErrorAt, 'parseError:at:', '(SelfType -- String -- AnyValue) => Void'),
+            (cls.semanticAnalysisErrorAt, 'semanticAnalysisError:at:', '(SelfType -- String -- AnyValue) => Void'),
 
             ## Target platform
-            (cls.getPointerSize, 'getPointerSize'),
+            (cls.getPointerSize, 'getPointerSize', '(SelfType) => Integer'),
 
             ## Utility
-            (cls.print, 'print:')
+            (cls.print, 'print:', '(SelfType -- AnyValue) => Void')
         ])
 
     def getEmptySourcePosition(self):
