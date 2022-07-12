@@ -77,6 +77,9 @@ class ValueInterface:
     def installedInMetaTypeOf(self, type):
         pass
 
+    def asArraySlice(self):
+        return self.performWithArguments(EvaluationMachine.getActive(), Symbol('asArraySlice'), ())
+
 class TypedValue(ValueInterface):
     def getType(self):
         raise NotImplementedError('getType() in %s' % repr(self.__class__))
@@ -142,6 +145,9 @@ def getBooleanValue(value):
 
 def getBoolean8Value(value):
     return getBasicTypeNamed('Boolean8').basicNewWithValue(int(value))
+
+def getSizeValue(value):
+    return getBasicTypeNamed('Size').basicNewWithValue(int(value))
 
 def coerceNoneToNil(value):
     if value is None and 'Undefined' in BasicTypeEnvironment:
@@ -379,12 +385,21 @@ class Symbol(str, TypedValue):
     def asInteger(self):
         return Integer(self)
 
-class Array(list, TypedValue):
+class Array(tuple, TypedValue):
+    def getElementType(self):
+        if not hasattr(self, 'elementType'):
+            self.elementType = getBasicTypeNamed(Symbol('AnyValue'))
+        return self.elementType
+
     def getType(self):
-        return getBasicTypeNamed(Symbol('AnyArrayList'))
+        if not hasattr(self, 'type'):
+            self.type = getBasicTypeNamed(Symbol('Array'))(self.getElementType(), getSizeValue(len(self)))
+        return self.type
 
     def shallowCopy(self):
-        return Array(map(lambda el: el.shallowCopyValue(), self))
+        copy = Array(map(lambda el: el.shallowCopyValue(), self))
+        copy.elementType = self.getElementType()
+        return copy
 
 class Association(TypedValue):
     def __init__(self, key, value):
@@ -439,11 +454,10 @@ class Dictionary(list, TypedValue):
         result += '}'
         return result
 
-TupleTypeMemoizationTable = {}
 def getTupleTypeWithElements(tupleElements):
-    if tupleElements not in TupleTypeMemoizationTable:
-        TupleTypeMemoizationTable[tupleElements] = getBasicTypeNamed(Symbol('Tuple'))(Array(tupleElements))
-    return tupleElements
+    elementsArray = Array(tupleElements)
+    elementsArray.elementType = getBasicTypeNamed(Symbol('Type'))
+    return getBasicTypeNamed(Symbol('Tuple'))(elementsArray)
 
 class Tuple(tuple, TypedValue):
     def getType(self):
@@ -965,6 +979,9 @@ class ProductTypeValue(TypedValue):
             result += repr(element)
         result += ')'
         return result
+
+    def __iter__(self):
+        return iter(self.elements)
 
 class ProductTypeSchema(TypeSchema):
     def __init__(self, elementTypes):
@@ -1542,7 +1559,13 @@ class TypeBuilder(BehaviorTypedObject):
             (cls.newGCClassWithSlots, 'newGCClassWithSlots:', '(SelfType -- AnyValue) => Type'),
             (cls.newGCClassWithSuperclassSlots, 'newGCClassWithSuperclass:slots:', '(SelfType -- Type -- AnyValue) => Type'),
             (cls.newGCClassWithPublicSlots, 'newGCClassWithPublicSlots:', '(SelfType -- AnyValue) => Type'),
-            (cls.newGCClassWithSuperclassPublicSlots, 'newGCClassWithSuperclass:publicSlots:', '(SelfType -- Type -- AnyValue) => Type')
+            (cls.newGCClassWithSuperclassPublicSlots, 'newGCClassWithSuperclass:publicSlots:', '(SelfType -- Type -- AnyValue) => Type'),
+
+            (cls.newPairTypeWith, 'newPairType:with:', '(SelfType -- Type -- Type) => Type'),
+            (cls.extendTupleTypeWith, 'extendTupleType:with:', '(SelfType -- Type -- Type) => Type'),
+            (cls.newSimpleFunctionTypeWithResultType, 'newSimpleFunctionTypeWithResultType:', '(SelfType -- Type -- Type) => Type'),
+            (cls.newSimpleFunctionTypeWithArgumentAndResultType, 'newSimpleFunctionTypeWithArgument:resultType:', '(SelfType -- Type -- Type) => Type'),
+            (cls.newSimpleFunctionTypeWithArgumentsAndResultType, 'newSimpleFunctionTypeWithArguments:resultType:', '(SelfType -- Type -- Type) => Type')
         ])
 
     def newAbsurdType(self):
@@ -1552,12 +1575,14 @@ class TypeBuilder(BehaviorTypedObject):
         return SimpleType(schema = EmptyTypeSchema())
 
     def newProductType(self, elementTypes):
-        if len(elementTypes) == 0:
+        elementTypeList = list(elementTypes)
+        if len(elementTypeList) == 0:
             return self.newTrivialType()
-        return SimpleType(schema = ProductTypeSchema(elementTypes))
+        return SimpleType(schema = ProductTypeSchema(elementTypeList))
 
     def newSumTypeWith(self, elementTypes):
-        return SimpleType(schema = SumTypeSchema(elementTypes))
+        elementTypeList = list(elementTypes)
+        return SimpleType(schema = SumTypeSchema(elementTypeList))
 
     def newRecordTypeWith(self, slots):
         return SimpleType(schema = RecordTypeSchema(slots))
@@ -1595,6 +1620,25 @@ class TypeBuilder(BehaviorTypedObject):
     def newFloatTypeWithSizeAndAlignment(self, size, alignment):
         return SimpleType(schema = PrimitiveFloatTypeSchema(size, alignment))
 
+    def newPairTypeWith(self, first, second):
+        print('newPairTypeWith', first, second)
+        return getTupleTypeWithElements((first, second))
+
+    def extendTupleTypeWith(self, tupleType, next):
+        print('extendTupleTypeWith')
+        return getTupleTypeWithElements(tuple(list(tupleType.schema.elementTypes) + [next]))
+
+    def newSimpleFunctionTypeWithResultType(self, resultType):
+        return self.newSimpleFunctionTypeWithArgumentAndResultType((), resultType)
+
+    def newSimpleFunctionTypeWithArgumentAndResultType(self, argumentType, resultType):
+        return self.newSimpleFunctionTypeWithArgumentAndResultType((argumentType,), resultType)
+
+    def newSimpleFunctionTypeWithArgumentsAndResultType(self, argumentsTypes, resultType):
+        print('argumentsTypes ', argumentsTypes)
+        print(resultType)
+        return None
+
 class ArraySlicePrimitives:
     @primitiveNamed('arraySlice.collect')
     def collect(arraySlice, aBlock):
@@ -1605,7 +1649,7 @@ class ArraySlicePrimitives:
         resultArrayType = getBasicTypeNamed(Symbol('Array'))(resultElementType, size)
 
         collectedElements = resultArrayType.basicNewWithSequentialSlots(list(map(lambda index: aBlock(elements[Integer(index)]), range(size.asInteger()))))
-        return collectedElements.performWithArguments(EvaluationMachine.getActive(), Symbol('asArraySlice'), ())
+        return collectedElements.asArraySlice()
 
     @primitiveNamed('arraySlice.collectWithIndex')
     def collectWithIndex(arraySlice, aBlock):
@@ -1617,7 +1661,7 @@ class ArraySlicePrimitives:
         resultArrayType = getBasicTypeNamed(Symbol('Array'))(resultElementType, size)
 
         collectedElements = resultArrayType.basicNewWithSequentialSlots(list(map(lambda index: aBlock(elements[Integer(index)], indexType.basicNewWithValue(index)), range(size.asInteger()))))
-        return collectedElements.performWithArguments(EvaluationMachine.getActive(), Symbol('asArraySlice'), ())
+        return collectedElements.asArraySlice()
 
     @primitiveNamed('arraySlice.do')
     def do(arraySlice, aBlock):

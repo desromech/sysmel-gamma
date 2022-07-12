@@ -23,6 +23,7 @@ __BootstrapCompiler__
     addBasicTypeNamed: #SimpleType with: (__TypeBuilder__ newGCClassWithSuperclass: Type slots: #{});
     addBasicTypeNamed: #MetaType with: (__TypeBuilder__ newGCClassWithSuperclass: Type slots: #{});
 
+    addBasicTypeNamed: #Tuple with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
     addBasicTypeNamed: #Function with: (__TypeBuilder__ newGCClassWithSuperclass: SimpleType slots: #{});
     addBasicTypeNamed: #FunctionImplementation with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
     addBasicTypeNamed: #BlockClosure with: (__TypeBuilder__ newGCClassWithSuperclass: FunctionImplementation slots: #{});
@@ -377,6 +378,32 @@ __BootstrapCompiler__
     } templated;
     addBasicTypeNamed: #AnyArrayList with: ArrayList(AnyValue);
 
+    #*addBasicTypeNamed: #Tuple with: {:(Type arraySlice)elementTypes :: Type |
+        {:(Type)tupleType :: Type |
+            tupleType __type__
+                withSelector: #-- addMethod: {:(Type)self :(Type) nextType :: Type |
+                    __TypeBuilder__ extendTupleType: self with: nextType
+                };
+                withSelector: #=> addMethod: {:(Type)self :(Type) resultType :: Type |
+                    __TypeBuilder__ newSimpleFunctionTypeWithArguments: self resultType: resultType
+                }.
+            tupleType
+        }(__TypeBuilder__ newProductTypeWith: elementTypes)
+    } templated;*#
+
+    addBasicTypeNamed: #Tuple with: {:*(Size)N :(Type array: N)elementTypes :: Type |
+        {:(Type)tupleType :: Type |
+            tupleType __type__
+                withSelector: #-- addMethod: {:(Type)self :(Type) nextType :: Type |
+                    __TypeBuilder__ extendTupleType: self with: nextType
+                };
+                withSelector: #=> addMethod: {:(Type)self :(Type) resultType :: Type |
+                    __TypeBuilder__ newSimpleFunctionTypeWithArguments: self resultType: resultType
+                }.
+            tupleType
+        }(__TypeBuilder__ newProductTypeWith: elementTypes)
+    } templated;
+
     addBasicTypeNamed: #ValueBox with: {:(Type)elementType :: Type |
         {:(Type)valueBoxType :: Type |
             valueBoxType __type__
@@ -422,6 +449,20 @@ Symbol
     withSelector: #printString addMethod: {:(Integer)self :: String |
         <primitive: #"symbol.conversion.printString">
         __BootstrapCompiler__ primitiveFailed
+    }.
+
+## Basic type system methods.
+Type
+    withSelector: #-- addMethod: {:(Type)self :(Type)second :: Type |
+        __TypeBuilder__ newPairType: self with: second
+    };
+    withSelector: #=> addMethod: {:(Type)self :(Type) resultType :: Type |
+        __TypeBuilder__ newSimpleFunctionTypeWithArgument: self resultType: resultType
+    }.
+
+Void __type__
+    withSelector: #=> addMethod: {:(Type)self :(Type) resultType :: Type |
+        __TypeBuilder__ newSimpleFunctionTypeWithResultType: resultType
     }.
 
 ## Basic type system methods.

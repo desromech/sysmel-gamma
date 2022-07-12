@@ -537,10 +537,12 @@ class PTBlockClosure(PTNode):
         self.sourcePosition = sourcePositionFromList(arguments + [resultType, body] + tokens)
         self.primitiveName = None
         self.hasForAllArgument = False
+        self.expectedArgumentCount = 0
         for argument in self.arguments:
             if argument.isForallBlockArgument():
                 self.hasForAllArgument = True
-                break
+            else:
+                self.expectedArgumentCount += 1
 
         for pragma in self.pragmas:
             if pragma.isPrimitivePragma():
@@ -556,15 +558,21 @@ class PTBlockClosure(PTNode):
         return BlockClosure(self, environment, primitiveName = self.primitiveName)
 
     def evaluateClosureWithEnvironmentAndArguments(self, machine, closureEnvironment, arguments):
-        if len(self.arguments) != len(arguments):
+        if self.expectedArgumentCount != len(arguments):
             self.raiseEvaluationError('Mismatching number of arguments for evaluating closure. Expected %d and received %d arguments.' % (len(self.arguments), len(arguments)))
         
         evaluationEnvironment = closureEnvironment.makeChildLexicalScope()
+        sourceArgumentIndex = 0
         for i in range(len(self.arguments)):
             argumentDeclaration = self.arguments[i]
-            argumentValue = arguments[i]
-            argumentName = argumentDeclaration.identifier.evaluateWithEnvironment(machine, closureEnvironment)
-            evaluationEnvironment.setSymbolValueBinding(argumentName, argumentValue)
+            if argumentDeclaration.isForallBlockArgument():
+                ## TODO: Add a placeholder for the generic argument.
+                pass
+            else:
+                argumentValue = arguments[sourceArgumentIndex]
+                argumentName = argumentDeclaration.identifier.evaluateWithEnvironment(machine, closureEnvironment)
+                evaluationEnvironment.setSymbolValueBinding(argumentName, argumentValue)
+                sourceArgumentIndex += 1
 
         ## Coerce the result value into the result type
         result = self.body.evaluateWithEnvironment(machine, evaluationEnvironment)
