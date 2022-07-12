@@ -106,6 +106,9 @@ def getBasicTypeNamed(symbol):
 def getBooleanValue(value):
     return getBasicTypeNamed('Boolean').basicNewWithTypeTheoryBoolean(value)
 
+def getBoolean8Value(value):
+    return getBasicTypeNamed('Boolean8').basicNewWithValue(int(value))
+
 class SymbolBinding:
     def getSymbolBindingReferenceValue(self):
         raise NotImplementedError()
@@ -613,7 +616,19 @@ class PrimitiveNumberTypeValue(TypedValue):
     def defaultPrintString(self):
         return '%s(%s)' % (str(self.type), str(self.value))
 
+class PrimitiveBooleanTypeValue(PrimitiveNumberTypeValue):
+    def asBooleanValue(self):
+        return self.value != 0
+
 class PrimitiveIntegerTypeValue(PrimitiveNumberTypeValue):
+    @primitiveNamed('primitiveInteger.arithmetic.sub')
+    def primitiveSubtract(self, other):
+        return self.type.basicNewWithValue(self.value - other.value)
+
+    @primitiveNamed('primitiveInteger.comparison.equals')
+    def primitiveEquals(self, other):
+        return getBoolean8Value(self.value == other.value)
+
     @primitiveNamed('primitiveInteger.conversion.toString')
     def toString(self):
         return String(str(self.value))
@@ -689,6 +704,9 @@ class PrimitiveBooleanTypeSchema(PrimitiveIntegerTypeSchema):
             return 0
         else:
             return 1
+
+    def primitiveNumberTypeValueClass(self):
+        return PrimitiveBooleanTypeValue
 
 class PrimitiveCharacterTypeSchema(PrimitiveIntegerTypeSchema):
     pass
@@ -912,6 +930,7 @@ class ArrayTypeSchema(TypeSchema):
     def buildPrimitiveMethodDictionary(self):
         self.metaTypeMethodDict[Symbol('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew)
         self.metaTypeMethodDict[Symbol('basicNewWithSlots:')] = TypeSchemaPrimitiveMethod(self.basicNewWithSequentialSlots)
+        self.methodDict[Symbol('basicAt:')] = TypeSchemaPrimitiveMethod(self.basicAt)
         return super().buildPrimitiveMethodDictionary()
 
     def basicNew(self, valueType):
@@ -928,6 +947,9 @@ class ArrayTypeSchema(TypeSchema):
 
     def makeDirectPointerOfValueTo(self, value, valueType, targetType):
         return PointerTypeValue(targetType, value, 0)
+
+    def basicAt(self, value, index):
+        return value[index.asInteger()]
 
 class PointerTypeValue(TypedValue):
     def __init__(self, type, value, baseIndex = 0):
@@ -973,7 +995,11 @@ class PointerTypeSchema(TypeSchema):
     def buildPrimitiveMethodDictionary(self):
         self.metaTypeMethodDict[Symbol('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew)
         self.metaTypeMethodDict[Symbol('basicNew:')] = TypeSchemaPrimitiveMethod(self.basicNewWithValue)
+        self.methodDict[Symbol('basicAt:')] = TypeSchemaPrimitiveMethod(self.basicAt)
         return super().buildPrimitiveMethodDictionary()
+
+    def basicAt(self, value, index):
+        return value[index.asInteger()]
 
     def basicNew(self, valueType):
         return PointerTypeValue(valueType, 0)
@@ -1414,7 +1440,7 @@ class ArraySlicePrimitives:
         return collectedElements.performWithArguments(EvaluationMachine.getActive(), Symbol('asArraySlice'), ())
 
     @primitiveNamed('arraySlice.collectWithIndex')
-    def collect(arraySlice, aBlock):
+    def collectWithIndex(arraySlice, aBlock):
         elements = arraySlice.getSlotNamed('elements')
         size = arraySlice.getSlotNamed('size')
 
@@ -1425,6 +1451,15 @@ class ArraySlicePrimitives:
         collectedElements = resultArrayType.basicNewWithSequentialSlots(list(map(lambda index: aBlock(elements[Integer(index)], indexType.basicNewWithValue(index)), range(size.asInteger()))))
         return collectedElements.performWithArguments(EvaluationMachine.getActive(), Symbol('asArraySlice'), ())
 
+    @primitiveNamed('arraySlice.do')
+    def do(arraySlice, aBlock):
+        elements = arraySlice.getSlotNamed('elements')
+        size = arraySlice.getSlotNamed('size')
+
+        result = getBasicTypeNamed(Symbol('Void')).basicNew()
+        for i in range(size.asInteger()):
+            result = aBlock(elements[Integer(i)])
+        return result
 
 def extractArraySliceElements(arraySlice):
     elements = arraySlice.getSlotNamed('elements')

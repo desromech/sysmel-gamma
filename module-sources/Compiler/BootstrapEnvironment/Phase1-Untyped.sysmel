@@ -13,6 +13,7 @@ __BootstrapCompiler__
     addBasicTypeNamed: #True with: __TypeBuilder__ newTrivialType;
     addBasicTypeNamed: #Boolean with: (__TypeBuilder__ newSumTypeWith: (False, True));
     addBasicTypeNamed: #Undefined with: __TypeBuilder__ newTrivialType;
+    addBasicTypeNamed: #Void with: __TypeBuilder__ newTrivialType;
 
     ## Base type system
     addBasicTypeNamed: #AnyValue with: (__TypeBuilder__ newGCClassWithSlots: #{});
@@ -107,6 +108,7 @@ __BootstrapCompiler__
     addKeywordBindingNamed: #false with: False basicNew;
     addKeywordBindingNamed: #true with: True basicNew;
     addKeywordBindingNamed: #nil with: Undefined basicNew;
+    addKeywordBindingNamed: #void with: Void basicNew;
 
     ## The primitive types
     addBasicTypeNamed: #Boolean8 with: (__TypeBuilder__ newBooleanTypeWithSize: 1 alignment: 1);
@@ -195,49 +197,49 @@ Integer
 }({:(Type)primitiveIntegerType |
     primitiveIntegerType
         withSelector: #+ addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: primitiveIntegerType |
-            <primitive: #"integer.arithmetic.add">
+            <primitive: #"primitiveInteger.arithmetic.add">
             __BootstrapCompiler__ primitiveFailed
         };
         withSelector: #- addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: primitiveIntegerType |
-            <primitive: #"integer.arithmetic.sub">
+            <primitive: #"primitiveInteger.arithmetic.sub">
             __BootstrapCompiler__ primitiveFailed
         };
         withSelector: #"*" addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: primitiveIntegerType |
-            <primitive: #"integer.arithmetic.mul">
+            <primitive: #"primitiveInteger.arithmetic.mul">
             __BootstrapCompiler__ primitiveFailed
         };
         withSelector: #// addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: primitiveIntegerType |
-            <primitive: #"integer.arithmetic.div">
+            <primitive: #"primitiveInteger.arithmetic.div">
             __BootstrapCompiler__ primitiveFailed
         };
         withSelector: #% addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: primitiveIntegerType |
-            <primitive: #"integer.arithmetic.rem">
+            <primitive: #"primitiveInteger.arithmetic.rem">
             __BootstrapCompiler__ primitiveFailed
         };
 
         withSelector: #= addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: Boolean8 |
-            <primitive: #"integer.comparison.equals">
+            <primitive: #"primitiveInteger.comparison.equals">
             __BootstrapCompiler__ primitiveFailed
         };
         withSelector: #~= addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: Boolean8 |
-            <primitive: #"integer.comparison.notEquals">
+            <primitive: #"primitiveInteger.comparison.notEquals">
             __BootstrapCompiler__ primitiveFailed
         };
         
         withSelector: #< addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: Boolean8 |
-            <primitive: #"integer.comparison.lessThan">
+            <primitive: #"primitiveInteger.comparison.lessThan">
             __BootstrapCompiler__ primitiveFailed
         };
         withSelector: #<= addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: Boolean8 |
-            <primitive: #"integer.comparison.lessOrEqual">
+            <primitive: #"primitiveInteger.comparison.lessOrEqual">
             __BootstrapCompiler__ primitiveFailed
         };
         withSelector: #> addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: Boolean8 |
-            <primitive: #"integer.comparison.greaterThan">
+            <primitive: #"primitiveInteger.comparison.greaterThan">
             __BootstrapCompiler__ primitiveFailed
         };
         withSelector: #>= addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: Boolean8 |
-            <primitive: #"integer.comparison.greaterOrEqual">
+            <primitive: #"primitiveInteger.comparison.greaterOrEqual">
             __BootstrapCompiler__ primitiveFailed
         };
 
@@ -297,11 +299,20 @@ __BootstrapCompiler__
     addBasicTypeNamed: #ArraySlice with: {:(Type)elementType :: Type |
         {:(Type)arraySliceType :: Type |
             arraySliceType
-                withSelector: #isEmpty addMethod: {:(arraySliceType)self :: Boolean |
-                    self size = 0
+                withSelector: #isEmpty addMethod: {:(arraySliceType)self :: Boolean8 |
+                    self size = 0sz
                 };
-                withSelector: #isNotEmpty addMethod: {:(arraySliceType)self :: Boolean |
-                    self size ~= 0
+                withSelector: #isNotEmpty addMethod: {:(arraySliceType)self :: Boolean8 |
+                    self size ~= 0sz
+                };
+                withSelector: #basicAt: addMethod: {:(arraySliceType)self :(Size)index :: elementType |
+                    self elements basicAt: index
+                };
+                withSelector: #first addMethod: {:(arraySliceType)self :: elementType |
+                    self basicAt: 0sz
+                };
+                withSelector: #last addMethod: {:(arraySliceType)self :: elementType |
+                    self basicAt: self size - 1sz
                 };
                 withSelector: #collect: addMethod: {:*(Type)ResultType :(elementType => ResultType)block :: ArraySlice(ResultType) |
                     <primitive: #"arraySlice.collect">
@@ -309,6 +320,10 @@ __BootstrapCompiler__
                 };
                 withSelector: #collectWithIndex: addMethod: {:*(Type)ResultType :((elementType -- Size) => ResultType)block :: ArraySlice(ResultType) |
                     <primitive: #"arraySlice.collectWithIndex">
+                    __BootstrapCompiler__ primitiveFailed
+                };
+                withSelector: #do: addMethod: {:*(Type)ResultType :((elementType) => ResultType)block :: ResultType |
+                    <primitive: #"arraySlice.do">
                     __BootstrapCompiler__ primitiveFailed
                 }.
             arraySliceType
@@ -584,6 +599,9 @@ SysmelCompiler AST Node
     };
     withSelector: #evaluateLiteralValue addMethod: {:(SysmelCompiler AST Node)self :: AnyValue |
         __BootstrapCompiler__ error: "Not a literal value node."
+    };
+    withSelector: #analyzeAndEvaluateNodeWithScriptEvaluationScope: addMethod: {:(SysmelCompiler AST Node)self :(SysmelCompiler Semantic ScriptEvaluationScope)scope :: AnyValue |
+        self analyzeAndEvaluateNodeWith: (SysmelCompiler Semantic ASTAnalyzer forScriptEvaluationScope: scope)
     }.
 
 SysmelCompiler AST SourceStringCollection
@@ -615,13 +633,39 @@ SysmelCompiler AST LiteralValueNode
         self value
     }.
 
+SysmelCompiler AST CleanUpScopeNode
+    withSelector: #analyzeNodeWith: addMethod: {:(SysmelCompiler AST CleanUpScopeNode)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
+        {:(SysmelCompiler AST Node)analyzedBody :: SysmelCompiler AST Node  |
+            self shallowCopy
+                body: analyzedBody;
+                analyzedType: analyzedBody analyzedType _;
+                yourself
+        } (self body analyzeNodeIfNeededWith: analyzer)
+    };
+    withSelector: #evaluateNodeWith: addMethod: {:(Type)self :(SysmelCompiler Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+        self body evaluateNodeWith: evaluationEnvironment
+    }.
+
+SysmelCompiler AST LexicalScopeNode
+    withSelector: #analyzeNodeWith: addMethod: {:(SysmelCompiler AST LexicalScopeNode)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
+        {:(SysmelCompiler AST Node)analyzedBody :: SysmelCompiler AST Node  |
+            self shallowCopy
+                body: analyzedBody;
+                analyzedType: analyzedBody analyzedType _;
+                yourself
+        } (self body analyzeNodeIfNeededWith: analyzer)
+    };
+    withSelector: #evaluateNodeWith: addMethod: {:(Type)self :(SysmelCompiler Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+        self body evaluateNodeWith: evaluationEnvironment
+    }.
+
 SysmelCompiler AST SequenceNode
     withSelector: #analyzeNodeWith: addMethod: {:(SysmelCompiler AST SequenceNode)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
         {:(SysmelCompiler AST Node arraySlice)analyzedPragmas :(SysmelCompiler AST Node arraySlice)analyzedExpressions :: SysmelCompiler AST Node  |
             self shallowCopy
                 pragmas: analyzedPragmas;
                 expressions: analyzedExpressions;
-                analyzedType: (if: analyzedExpressions isEmpty then: Void else: analyzedExpressions last);
+                analyzedType: (if: analyzedExpressions isEmpty then: Void else: analyzedExpressions last analyzedType _);
                 yourself
         }(
             self pragmas collect: {:(SysmelCompiler AST Node)node :: SysmelCompiler AST Node |
@@ -706,6 +750,11 @@ SysmelCompiler Semantic EvaluationEnvironment __type__
         self basicNewWithNamedSlots: #{
             lexicalScope: __BootstrapCompiler__ getTopLevelEnvironment
         }
+    };
+    withSelector: #forScriptEvaluationScope: addMethod: {:(SysmelCompiler Semantic EvaluationEnvironment __type__)self :(SysmelCompiler Semantic ScriptEvaluationScope)scope :: self |
+        self basicNewWithNamedSlots: #{
+            lexicalScope: scope
+        }
     }.
 
 SysmelCompiler Semantic ASTAnalyzer __type__
@@ -713,6 +762,9 @@ SysmelCompiler Semantic ASTAnalyzer __type__
         self basicNewWithNamedSlots: #{
             environment: environment
         }
+    };
+    withSelector: #forScriptEvaluationScope: addMethod: {:(SysmelCompiler Semantic ASTAnalyzer __type__)self :(SysmelCompiler Semantic ScriptEvaluationScope)scope :: self |
+        self forEnvironment: (SysmelCompiler Semantic EvaluationEnvironment forScriptEvaluationScope: scope)
     };
     withSelector: #forDefaultEnvironment addMethod: {:(SysmelCompiler Semantic ASTAnalyzer __type__)self :: self |
         self forEnvironment: SysmelCompiler Semantic EvaluationEnvironment default
@@ -773,6 +825,7 @@ Function
         __BootstrapCompiler__ primitiveFailed
     }.
 
+if: (Boolean basicNew: false) then: {
 __BootstrapCompiler__
     print: false;
     print: true;
@@ -812,6 +865,12 @@ __BootstrapCompiler__
     print: (`'(1 + 1) analyzeNodeIfNeededWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
     print: (`'(1 + 1) analyzeAndEvaluateNodeWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
 
+    print: (`'{} analyzeNodeIfNeededWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
+    print: (`'{} analyzeAndEvaluateNodeWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
+
+    print: (`'{1 . 1 + 1} analyzeNodeIfNeededWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
+    print: (`'{1 . 1 + 1} analyzeAndEvaluateNodeWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
+
     print: nil isNil;
     print: nil isNotNil.
 
@@ -820,6 +879,7 @@ if: (Boolean basicNew: true) then: {
 } else: {
     __BootstrapCompiler__ print: "else branch"
 }.
+} else: {}.
 
 ## At the end of this phase we can enable the actual type system.
 __BootstrapCompiler__

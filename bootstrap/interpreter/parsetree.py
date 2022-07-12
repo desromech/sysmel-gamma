@@ -513,7 +513,7 @@ class PTLexicalBlock(PTNode):
         return self.body.evaluateWithEnvironment(machine, innerEnvironment)
 
     def convertIntoGenericASTWith(self, bootstrapCompiler):
-        sourcePosition = bootstrapCompiler.convertASTSourcePosition(self.sourcePosition),
+        sourcePosition = bootstrapCompiler.convertASTSourcePosition(self.sourcePosition)
         return bootstrapCompiler.makeASTNodeWithSlots('CleanUpScopeNode',
             sourcePosition = sourcePosition,
             body = bootstrapCompiler.makeASTNodeWithSlots('LexicalScopeNode',

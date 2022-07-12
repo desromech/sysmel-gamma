@@ -1,3 +1,4 @@
+from lib2to3.pytree import convert
 from parser import parseString
 from types import MethodType
 
@@ -68,15 +69,22 @@ class ScriptEvaluationScope(LexicalScope):
         super().__init__(parentScope)
         self.bootstrapCompiler = bootstrapCompiler
 
+    def getType(self):
+        return getSemanticAnalysisType(Symbol('ScriptEvaluationScope'))
+
     def evaluateScriptFile(self, evaluationMachine, scriptFile, scriptFilename, scriptDirectory):
         self.setSymbolBinding(Symbol('__CurrentScriptFilename__'), String(scriptFilename))
         self.setSymbolBinding(Symbol('__CurrentScriptDirectory__'), String(scriptDirectory))
         scriptSource = scriptFile.read()
         parseTree = parseString(scriptSource, scriptFilename)
         if self.bootstrapCompiler.isTypeSystemEnabled:
-            print(parseTree.convertIntoGenericASTWith(self.bootstrapCompiler))
+            convertedASTNode = parseTree.convertIntoGenericASTWith(self.bootstrapCompiler)
+            resultValue = convertedASTNode.performWithArguments(evaluationMachine, Symbol('analyzeAndEvaluateNodeWithScriptEvaluationScope:'), [self])
         else:
-            return parseTree.evaluateWithEnvironment(evaluationMachine, self)
+            resultValue = parseTree.evaluateWithEnvironment(evaluationMachine, self)
+
+        print(scriptFilename, resultValue)
+        return resultValue
 
 class BootstrapCompiler(BehaviorTypedObject):
     def __init__(self):
