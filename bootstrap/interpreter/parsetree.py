@@ -481,7 +481,7 @@ class PTApplyBlock(PTNode):
 class PTIdentifierReference(PTNode):
     def __init__(self, identifier):
         PTNode.__init__(self)
-        self.value = identifier.value
+        self.value = Symbol(identifier.value)
         self.sourcePosition = sourcePositionFromToken(identifier)
 
     def isIdentifierReference(self):

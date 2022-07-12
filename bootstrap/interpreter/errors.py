@@ -9,6 +9,9 @@ class InterpreterErrorWithSourcePosition(InterpreterError):
 class InterpreterParseError(InterpreterErrorWithSourcePosition):
     pass
 
+class InterpreterSemanticAnalysisError(InterpreterErrorWithSourcePosition):
+    pass
+
 class InterpreterEvaluationError(InterpreterErrorWithSourcePosition):
     pass
 

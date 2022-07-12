@@ -123,6 +123,9 @@ class BootstrapCompiler(BehaviorTypedObject):
 
             (cls.getTopLevelEnvironment, 'getTopLevelEnvironment'),
 
+            (cls.parseErrorAt, 'parseError:at:'),
+            (cls.semanticAnalysisErrorAt, 'semanticAnalysisError:at:'),
+
             ## Target platform
             (cls.getPointerSize, 'getPointerSize'),
 
@@ -255,3 +258,9 @@ class BootstrapCompiler(BehaviorTypedObject):
 
     def getPointerSize(self):
         return Integer(8)
+
+    def parseErrorAt(self, errorMessage, sourcePosition):
+        raise InterpreterParseError(sourcePosition, errorMessage)
+
+    def semanticAnalysisErrorAt(self, errorMessage, sourcePosition):
+        raise InterpreterSemanticAnalysisError(sourcePosition, errorMessage)

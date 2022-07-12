@@ -42,8 +42,24 @@ __BootstrapCompiler__
 
 AnyValue addTypeFlag: #anyValue.
 
+
+## Object primitives.
+Object
+    withSelector: #== addMethod: {:(Object)self :(AnyValue)other :: Integer |
+        <primitive: #"object.comparison.identityEquals">
+        __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #~~ addMethod: {:(Object)self :(AnyValue)other :: Integer |
+        <primitive: #"object.comparison.identityNotEquals">
+        __BootstrapCompiler__ primitiveFailed
+    }.
+
 ## Integer arithmetics primitive methods
 Integer
+    withSelector: #negated addMethod: {:(Integer)self :: Integer |
+        <primitive: #"integer.arithmetic.neg">
+        __BootstrapCompiler__ primitiveFailed
+    };
     withSelector: #+ addMethod: {:(Integer)self :(Integer)other :: Integer |
         <primitive: #"integer.arithmetic.add">
         __BootstrapCompiler__ primitiveFailed
@@ -195,6 +211,10 @@ Integer
     addPrimitivesBlock(Int64).
 }({:(Type)primitiveIntegerType |
     primitiveIntegerType
+        withSelector: #negated addMethod: {:(primitiveIntegerType)self :: primitiveIntegerType |
+            <primitive: #"primitiveInteger.arithmetic.neg">
+            __BootstrapCompiler__ primitiveFailed
+        };
         withSelector: #+ addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: primitiveIntegerType |
             <primitive: #"primitiveInteger.arithmetic.add">
             __BootstrapCompiler__ primitiveFailed
@@ -216,28 +236,28 @@ Integer
             __BootstrapCompiler__ primitiveFailed
         };
 
-        withSelector: #= addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: Boolean8 |
+        withSelector: #= addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: Boolean |
             <primitive: #"primitiveInteger.comparison.equals">
             __BootstrapCompiler__ primitiveFailed
         };
-        withSelector: #~= addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: Boolean8 |
+        withSelector: #~= addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: Boolean |
             <primitive: #"primitiveInteger.comparison.notEquals">
             __BootstrapCompiler__ primitiveFailed
         };
         
-        withSelector: #< addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: Boolean8 |
+        withSelector: #< addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: Boolean |
             <primitive: #"primitiveInteger.comparison.lessThan">
             __BootstrapCompiler__ primitiveFailed
         };
-        withSelector: #<= addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: Boolean8 |
+        withSelector: #<= addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: Boolean |
             <primitive: #"primitiveInteger.comparison.lessOrEqual">
             __BootstrapCompiler__ primitiveFailed
         };
-        withSelector: #> addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: Boolean8 |
+        withSelector: #> addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: Boolean |
             <primitive: #"primitiveInteger.comparison.greaterThan">
             __BootstrapCompiler__ primitiveFailed
         };
-        withSelector: #>= addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: Boolean8 |
+        withSelector: #>= addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: Boolean |
             <primitive: #"primitiveInteger.comparison.greaterOrEqual">
             __BootstrapCompiler__ primitiveFailed
         };
@@ -298,10 +318,10 @@ __BootstrapCompiler__
     addBasicTypeNamed: #ArraySlice with: {:(Type)elementType :: Type |
         {:(Type)arraySliceType :: Type |
             arraySliceType
-                withSelector: #isEmpty addMethod: {:(arraySliceType)self :: Boolean8 |
+                withSelector: #isEmpty addMethod: {:(arraySliceType)self :: Boolean |
                     self size = 0sz
                 };
-                withSelector: #isNotEmpty addMethod: {:(arraySliceType)self :: Boolean8 |
+                withSelector: #isNotEmpty addMethod: {:(arraySliceType)self :: Boolean |
                     self size ~= 0sz
                 };
                 withSelector: #basicAt: addMethod: {:(arraySliceType)self :(Size)index :: elementType |
@@ -355,7 +375,22 @@ __BootstrapCompiler__
             storage: ArraySlice(elementType)
         }
     } templated;
-    addBasicTypeNamed: #AnyArrayList with: ArrayList(AnyValue).
+    addBasicTypeNamed: #AnyArrayList with: ArrayList(AnyValue);
+
+    addBasicTypeNamed: #ValueBox with: {:(Type)elementType :: Type |
+        {:(Type)valueBoxType :: Type |
+            valueBoxType __type__
+                withSelector: #with: addMethod: {:(valueBoxType __type__)self :(elementType)value :: self |
+                    self basicNewWithNamedSlots: {
+                        _: value
+                    }
+                }.
+            valueBoxType
+        }(__TypeBuilder__ newGCClassWithSlots: #{
+            _: elementType
+        })
+    } templated;
+    addBasicTypeNamed: #AnyValueBox with: ArrayList(AnyValue).
 
 ## String primitive methods
 String
@@ -410,6 +445,9 @@ MetaType
         ArraySlice(self)
     };
     withSelector: #arrayList addMethod: {:(Type)self :: Type |
+        ArrayList(self)
+    };
+    withSelector: #valueBox addMethod: {:(Type)self :: Type |
         ArrayList(self)
     }.
 
@@ -569,7 +607,7 @@ __BootstrapCompiler__
     enterNamespaceNamed: #SysmelCompiler;
     enterNamespaceNamed: #Semantic;
     addBindingNamed: #SymbolBinding with: (__TypeBuilder__ newGCClassWithPublicSlots: #{});
-    addBindingNamed: #SymbolImmutableValueBinding with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler Semantic SymbolBinding publicSlots: #{
+    addBindingNamed: #SymbolValueBinding with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler Semantic SymbolBinding publicSlots: #{
         name: AnyValue.
         value: AnyValue
     });
@@ -587,7 +625,7 @@ __BootstrapCompiler__
     });
     setSemanticAnalysisMapping: #{
         SymbolBinding: SysmelCompiler Semantic SymbolBinding.
-        SymbolImmutableValueBinding: SysmelCompiler Semantic SymbolImmutableValueBinding.
+        SymbolValueBinding: SysmelCompiler Semantic SymbolValueBinding.
         IdentifierLookupScope: SysmelCompiler Semantic IdentifierLookupScope.
         LexicalScope: SysmelCompiler Semantic LexicalScope.
         NamespaceScope: SysmelCompiler Semantic NamespaceScope.
@@ -764,6 +802,26 @@ SysmelCompiler AST MessageSendNode
         }
     }.
 
+SysmelCompiler AST ParseErrorNode
+    withSelector: #analyzeNodeWith: addMethod: {:(SysmelCompiler AST ParseErrorNode)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
+        self shallowCopy
+            analyzedType: CompilationError;
+            yourself
+    };
+    withSelector: #evaluateNodeWith: addMethod: {:(Type)self :(SysmelCompiler Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+        __BootstrapCompiler__ parseError: self message at: self sourcePosition
+    }.
+
+SysmelCompiler AST SemanticErrorNode
+    withSelector: #analyzeNodeWith: addMethod: {:(SysmelCompiler AST ParseErrorNode)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
+        self shallowCopy
+            analyzedType: CompilationError;
+            yourself
+    };
+    withSelector: #evaluateNodeWith: addMethod: {:(Type)self :(SysmelCompiler Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+        __BootstrapCompiler__ semanticAnalysisError: self message at: self sourcePosition
+    }.
+
 SysmelCompiler Semantic IdentifierLookupScope
     withSelector: #lookupSymbol: addMethod: {:(SysmelCompiler Semantic IdentifierLookupScope)self :(AnyValue)symbol :: SysmelCompiler Semantic SymbolBinding optional |
         <primitive: #"identifierLookupScope.lookupSymbol">
@@ -779,13 +837,9 @@ SysmelCompiler Semantic SymbolBinding
         __BootstrapCompiler__ subclassResponsibility
     }.
 
-SysmelCompiler Semantic SymbolImmutableValueBinding
-    withSelector: #analyzeIdentifierReferenceNode:with: addMethod: {:(SysmelCompiler Semantic SymbolImmutableValueBinding)self :(SysmelCompiler AST IdentifierReferenceNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
-        SysmelCompiler AST LiteralValueNode basicNewWithNamedSlots: #{
-            sourcePosition: node sourcePosition.
-            analyzedType: self value __type__.
-            value: self value
-        }
+SysmelCompiler Semantic SymbolValueBinding
+    withSelector: #analyzeIdentifierReferenceNode:with: addMethod: {:(SysmelCompiler Semantic SymbolValueBinding)self :(SysmelCompiler AST IdentifierReferenceNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
+        self value __type__ analyzeIdentifierReferenceNode: node with: analyzer valueBinding: self
     }.
 
 SysmelCompiler Semantic EvaluationEnvironment __type__
@@ -832,14 +886,24 @@ Type
             {:(AnyValue)selector :: SysmelCompiler AST Node |
                 {:(AnyValue)method :: SysmelCompiler AST Node |
                     if: method isNil then: {
-                        analyzer makeSemanticAnalysisError: "TODO: analyze message with message not found." at: node sourcePosition
+                        self analyzeUnboundMessageSendNode: node with: analyzer
                     } else: {
                         method analyzeMessageSendNode: node with: analyzer
                     }
                 } (self lookupSelector: selector)
             }(node selector evaluateLiteralValue)
         } else: {
-            analyzer makeSemanticAnalysisError: "TODO: Unsupported message sends without literal selectors." at: node sourcePosition
+            self analyzeUnboundMessageSendNode: node with: analyzer
+        }
+    };
+    withSelector: #analyzeUnboundMessageSendNode:with: addMethod: {:(Type)self :(SysmelCompiler AST MessageSendNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
+        analyzer makeSemanticAnalysisError: "Unsupported unbound message send." at: node sourcePosition
+    };
+    withSelector: #analyzeIdentifierReferenceNode:with:valueBinding: addMethod: {:(SysmelCompiler Semantic SymbolValueBinding)self :(SysmelCompiler AST IdentifierReferenceNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :(SysmelCompiler Semantic SymbolValueBinding)binding :: SysmelCompiler AST Node |
+        SysmelCompiler AST LiteralValueNode basicNewWithNamedSlots: #{
+            sourcePosition: node sourcePosition.
+            analyzedType: self.
+            value: binding value
         }
     }.
 
@@ -913,6 +977,8 @@ __BootstrapCompiler__
 
     print: (`'{1 . 1 + 1} analyzeNodeIfNeededWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
     print: (`'{1 . 1 + 1} analyzeAndEvaluateNodeWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
+
+    print: (`'(1 negated) analyzeNodeIfNeededWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
 
     print: nil isNil;
     print: nil isNotNil.

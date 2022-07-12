@@ -65,7 +65,7 @@ class ValueInterface:
         return self.shalowCopy()
 
     def asSymbolBindingWithName(self, name):
-        return SymbolImmutableValueBinding(name, self)
+        return SymbolValueBinding(name, self)
 
     def getSlotWithIndexAndName(self, slotIndex, slotName):
         raise SubclassResponsibility()
@@ -94,7 +94,7 @@ class PrimitiveMethod(TypedValue):
         return getBasicTypeNamed(Symbol('PrimitiveMethod'))
 
     def runWithIn(self, machine, selector, arguments, receiver):
-        return self.method(receiver, *arguments)
+        return coerceNoneToNil(self.method(receiver, *arguments))
 
 def primitiveNamed(primitiveName):
     def decorator(primitiveImplementation):
@@ -116,6 +116,11 @@ def getBooleanValue(value):
 def getBoolean8Value(value):
     return getBasicTypeNamed('Boolean8').basicNewWithValue(int(value))
 
+def coerceNoneToNil(value):
+    if value is None and 'Undefined' in BasicTypeEnvironment:
+        return getBasicTypeNamed('Undefined').basicNew()
+    return value
+
 class SymbolBinding(TypedValue):
     def getType(self):
         return getSemanticAnalysisType(Symbol('SymbolBinding'))
@@ -123,13 +128,13 @@ class SymbolBinding(TypedValue):
     def getSymbolBindingReferenceValue(self):
         raise NotImplementedError()
 
-class SymbolImmutableValueBinding(SymbolBinding):
+class SymbolValueBinding(SymbolBinding):
     def __init__(self, name, value):
         self.name = name
         self.value = value
 
     def getType(self):
-        return getSemanticAnalysisType(Symbol('SymbolImmutableValueBinding'))
+        return getSemanticAnalysisType(Symbol('SymbolValueBinding'))
 
     def getSymbolBindingReferenceValue(self):
         return self.value
@@ -170,6 +175,10 @@ class Integer(int, TypedValue):
 
     def defaultToString(self):
         return str(int(self))
+
+    @primitiveNamed('integer.arithmetic.neg')
+    def primitiveNeg(self):
+        return Integer(-self)
 
     @primitiveNamed('integer.arithmetic.add')
     def primitiveAdd(self, other):
@@ -690,13 +699,49 @@ class PrimitiveBooleanTypeValue(PrimitiveNumberTypeValue):
         return self.value != 0
 
 class PrimitiveIntegerTypeValue(PrimitiveNumberTypeValue):
+    @primitiveNamed('primitiveInteger.arithmetic.neg')
+    def primitiveNegated(self, other):
+        return self.type.basicNewWithValue(-self.value)
+
+    @primitiveNamed('primitiveInteger.arithmetic.add')
+    def primitiveAdd(self, other):
+        return self.type.basicNewWithValue(self.value + other.value)
+
     @primitiveNamed('primitiveInteger.arithmetic.sub')
     def primitiveSubtract(self, other):
         return self.type.basicNewWithValue(self.value - other.value)
 
+    @primitiveNamed('primitiveInteger.arithmetic.mul')
+    def primitiveMultiply(self, other):
+        return self.type.basicNewWithValue(self.value * other.value)
+
+    @primitiveNamed('primitiveInteger.arithmetic.div')
+    def primitiveDivide(self, other):
+        return self.type.basicNewWithValue(self.value // other.value)
+
     @primitiveNamed('primitiveInteger.comparison.equals')
     def primitiveEquals(self, other):
-        return getBoolean8Value(self.value == other.value)
+        return getBooleanValue(self.value == other.value)
+
+    @primitiveNamed('primitiveInteger.comparison.notEquals')
+    def primitiveNotEquals(self, other):
+        return getBooleanValue(self.value != other.value)
+
+    @primitiveNamed('primitiveInteger.comparison.lessThan')
+    def primitiveLessThan(self, other):
+        return getBooleanValue(self.value < other.value)
+
+    @primitiveNamed('primitiveInteger.comparison.lessOrEqual')
+    def primitiveLessOrEqual(self, other):
+        return getBooleanValue(self.value <= other.value)
+
+    @primitiveNamed('primitiveInteger.comparison.greaterThan')
+    def primitiveGreaterThan(self, other):
+        return getBooleanValue(self.value > other.value)
+
+    @primitiveNamed('primitiveInteger.comparison.greaterOrEqual')
+    def primitiveGreaterOrEqual(self, other):
+        return getBooleanValue(self.value >= other.value)
 
     @primitiveNamed('primitiveInteger.conversion.toString')
     def toString(self):

@@ -3,6 +3,12 @@ false.
 nil.
 void.
 
+1 negated.
+
+__BootstrapCompiler__
+    print: 1.
+
+##1 arcTan: 2.
 ##1 perform: #+ with: 2.
 
 #*
