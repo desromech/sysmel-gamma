@@ -1,4 +1,7 @@
 1 + 2.
+false.
+nil.
+void.
 
 ##1 perform: #+ with: 2.
 

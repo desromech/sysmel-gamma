@@ -24,7 +24,6 @@ __BootstrapCompiler__
     addBasicTypeNamed: #MetaType with: (__TypeBuilder__ newGCClassWithSuperclass: Type slots: #{});
 
     addBasicTypeNamed: #Function with: (__TypeBuilder__ newGCClassWithSuperclass: SimpleType slots: #{});
-
     addBasicTypeNamed: #FunctionImplementation with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
     addBasicTypeNamed: #BlockClosure with: (__TypeBuilder__ newGCClassWithSuperclass: FunctionImplementation slots: #{});
     addBasicTypeNamed: #AbstractPrimitiveMethod with: (__TypeBuilder__ newGCClassWithSuperclass: FunctionImplementation slots: #{});
@@ -374,8 +373,21 @@ String
     };
     withSelector: #asString addMethod: {:(String)self :: String |
         self
+    };
+    withSelector: #printString addMethod: {:(String)self :: String |
+        <primitive: #"string.conversion.printString">
+        self
     }.
 
+Symbol
+    withSelector: #asString addMethod: {:(Integer)self :: String |
+        <primitive: #"symbol.conversion.toString">
+        __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #printString addMethod: {:(Integer)self :: String |
+        <primitive: #"symbol.conversion.printString">
+        __BootstrapCompiler__ primitiveFailed
+    }.
 
 ## Basic type system methods.
 MetaType
@@ -556,6 +568,11 @@ __BootstrapCompiler__
     enterTopLevelNamespace;
     enterNamespaceNamed: #SysmelCompiler;
     enterNamespaceNamed: #Semantic;
+    addBindingNamed: #SymbolBinding with: (__TypeBuilder__ newGCClassWithPublicSlots: #{});
+    addBindingNamed: #SymbolImmutableValueBinding with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler Semantic SymbolBinding publicSlots: #{
+        name: AnyValue.
+        value: AnyValue
+    });
     addBindingNamed: #IdentifierLookupScope with: (__TypeBuilder__ newGCClassWithPublicSlots: #{});
     addBindingNamed: #LexicalScope with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler Semantic IdentifierLookupScope publicSlots: #{
         expression: SysmelCompiler AST Node.
@@ -569,6 +586,8 @@ __BootstrapCompiler__
         environment: SysmelCompiler Semantic EvaluationEnvironment
     });
     setSemanticAnalysisMapping: #{
+        SymbolBinding: SysmelCompiler Semantic SymbolBinding.
+        SymbolImmutableValueBinding: SysmelCompiler Semantic SymbolImmutableValueBinding.
         IdentifierLookupScope: SysmelCompiler Semantic IdentifierLookupScope.
         LexicalScope: SysmelCompiler Semantic LexicalScope.
         NamespaceScope: SysmelCompiler Semantic NamespaceScope.
@@ -684,11 +703,11 @@ SysmelCompiler AST SequenceNode
 
 SysmelCompiler AST IdentifierReferenceNode
     withSelector: #analyzeNodeWith: addMethod: {:(SysmelCompiler AST IdentifierReferenceNode)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
-        {:(AnyValue)binding :: SysmelCompiler AST Node  |
+        {:(AnyValue optional)binding :: SysmelCompiler AST Node  |
             if: binding isNil then: {
                 analyzer makeSemanticAnalysisError: ("Failed to binding for symbol {0}." format: (self value printString, )) at: self sourcePosition
             } else: {
-                binding analyzeIdentifierReferenceNode: self with: analyzer
+                binding _ analyzeIdentifierReferenceNode: self with: analyzer
             }
         }(analyzer environment lexicalScope lookupSymbolRecursively: self value)
     };
@@ -742,6 +761,30 @@ SysmelCompiler AST MessageSendNode
                     arg evaluateNodeWith: evaluationEnvironment
                 }
             )
+        }
+    }.
+
+SysmelCompiler Semantic IdentifierLookupScope
+    withSelector: #lookupSymbol: addMethod: {:(SysmelCompiler Semantic IdentifierLookupScope)self :(AnyValue)symbol :: SysmelCompiler Semantic SymbolBinding optional |
+        <primitive: #"identifierLookupScope.lookupSymbol">
+        __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #lookupSymbolRecursively: addMethod: {:(SysmelCompiler Semantic IdentifierLookupScope)self :(AnyValue)symbol :: SysmelCompiler Semantic SymbolBinding optional |
+        <primitive: #"identifierLookupScope.lookupSymbolRecursively">
+        __BootstrapCompiler__ primitiveFailed
+    }.
+
+SysmelCompiler Semantic SymbolBinding
+    withSelector: #analyzeIdentifierReferenceNode:with: addMethod: {:(SysmelCompiler Semantic SymbolBinding)self :(SysmelCompiler AST IdentifierReferenceNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
+        __BootstrapCompiler__ subclassResponsibility
+    }.
+
+SysmelCompiler Semantic SymbolImmutableValueBinding
+    withSelector: #analyzeIdentifierReferenceNode:with: addMethod: {:(SysmelCompiler Semantic SymbolImmutableValueBinding)self :(SysmelCompiler AST IdentifierReferenceNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
+        SysmelCompiler AST LiteralValueNode basicNewWithNamedSlots: #{
+            sourcePosition: node sourcePosition.
+            analyzedType: self value __type__.
+            value: self value
         }
     }.
 
@@ -825,7 +868,7 @@ Function
         __BootstrapCompiler__ primitiveFailed
     }.
 
-if: (Boolean basicNew: false) then: {
+if: (Boolean basicNew: true) then: {
 __BootstrapCompiler__
     print: false;
     print: true;
@@ -841,7 +884,7 @@ __BootstrapCompiler__
     print: 2 = 2;
 
     print: "Some number: " -- 1 asString;
-    print: ("Some number {0} " format: (1 asString,));
+    print: ("Some number: {0} " format: (1 asString,));
 
     print: ((Integer array: 3sz) basicNewWithSlots: (1, 2, 3)) asArraySlice;
     print: (((Integer array: 3sz) basicNewWithSlots: (1, 2, 3)) asArraySlice collect: {:(Integer)x :: Size |

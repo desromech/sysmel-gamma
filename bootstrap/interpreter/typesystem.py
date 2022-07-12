@@ -5,15 +5,16 @@ from errors import *
 from evalmachine import *
 
 BasicTypeEnvironment = None
+SemanticAnalysisTypeMapping = None
 
 PrimitiveMethodTable = {}
+
+def getSemanticAnalysisType(symbol):
+    return SemanticAnalysisTypeMapping.at(symbol)
 
 class ValueInterface:
     def performWithArguments(self, machine, selector, arguments):
         raise NotImplementedError()
-
-    def getSymbolBindingReferenceValue(self):
-        return self
 
     def setConstructionTemplateAndArguments(self, template, arguments):
         pass
@@ -63,6 +64,12 @@ class ValueInterface:
     def shallowCopyValue(self):
         return self.shalowCopy()
 
+    def asSymbolBindingWithName(self, name):
+        return SymbolImmutableValueBinding(name, self)
+
+    def getSlotWithIndexAndName(self, slotIndex, slotName):
+        raise SubclassResponsibility()
+
 class TypedValue(ValueInterface):
     def getType(self):
         raise NotImplementedError('getType() in %s' % repr(self.__class__))
@@ -109,16 +116,30 @@ def getBooleanValue(value):
 def getBoolean8Value(value):
     return getBasicTypeNamed('Boolean8').basicNewWithValue(int(value))
 
-class SymbolBinding:
+class SymbolBinding(TypedValue):
+    def getType(self):
+        return getSemanticAnalysisType(Symbol('SymbolBinding'))
+
     def getSymbolBindingReferenceValue(self):
         raise NotImplementedError()
 
 class SymbolImmutableValueBinding(SymbolBinding):
-    def __init__(self, value):
+    def __init__(self, name, value):
+        self.name = name
         self.value = value
+
+    def getType(self):
+        return getSemanticAnalysisType(Symbol('SymbolImmutableValueBinding'))
 
     def getSymbolBindingReferenceValue(self):
         return self.value
+
+    def getSlotWithIndexAndName(self, slotIndex, slotName):
+        if slotName == 'value':
+            return self.value
+        if slotName == 'name':
+            return self.name
+        return super().getSlotWithIndexAndName(slotIndex, slotName)
 
 class TypeInterface:
     def canBeCoercedToType(self, targetType):
@@ -239,6 +260,23 @@ class String(str, TypedValue):
     def defaultToString(self):
         return self
 
+    @primitiveNamed('string.conversion.printString')
+    def defaultPrintString(self):
+        result = '"'
+        for c in self:
+            if c == '"':
+                result += '\"'
+            elif c == '\n':
+                result += '\n'
+            elif c == '\r':
+                result += '\r'
+            elif c == '\t':
+                result += '\t'
+            else:
+                result += c
+        result += '"'
+        return String(result)
+
     @primitiveNamed('string.concat')
     def primitiveConcat(self, other):
         return String(self + other)
@@ -277,11 +315,29 @@ class Symbol(str, TypedValue):
     def getType(self):
         return getBasicTypeNamed(Symbol('Symbol'))
 
+    @primitiveNamed('symbol.conversion.toString')
     def defaultToString(self):
-        return self
+        return String(self)
 
     def shallowCopy(self):
         return Symbol(self)
+
+    @primitiveNamed('symbol.conversion.printString')
+    def defaultPrintString(self):
+        result = '#"'
+        for c in self:
+            if c == '"':
+                result += '\"'
+            elif c == '\n':
+                result += '\n'
+            elif c == '\r':
+                result += '\r'
+            elif c == '\t':
+                result += '\t'
+            else:
+                result += c
+        result += '"'
+        return String(result)
 
     @primitiveNamed('symbol.conversion.toInteger')
     def asInteger(self):
@@ -347,6 +403,18 @@ class Dictionary(list, TypedValue):
         result += '}'
         return result
 
+TupleTypeMemoizationTable = {}
+def getTupleTypeWithElements(tupleElements):
+    if tupleElements not in TupleTypeMemoizationTable:
+        TupleTypeMemoizationTable[tupleElements] = getBasicTypeNamed(Symbol('Tuple'))(Array(tupleElements))
+    return tupleElements
+
+class Tuple(tuple, TypedValue):
+    def getType(self):
+        if not hasattr(self, 'type'):
+            self.type = getTupleTypeWithElements(tuple(map(lambda x: x.getType(), self)))
+        return self.type
+
 class TypeSchemaPrimitiveMethod(PrimitiveMethod):
     def getType(self):
         return getBasicTypeNamed(Symbol('TypeSchemaPrimitiveMethod'))
@@ -408,7 +476,8 @@ class BlockClosure(TypedValue):
 
     def evaluateWithArguments(self, machine, arguments):
         if self.primitiveName is not None and self.primitiveName in PrimitiveMethodTable:
-            rawResult = PrimitiveMethodTable[self.primitiveName].runWithIn(machine, Symbol('()'), arguments[1:], arguments[0])
+            rawResult = self.node.evaluateClosureResultCoercionWithEnvironmentAndArguments(machine, self.environment, arguments,
+                PrimitiveMethodTable[self.primitiveName].runWithIn(machine, Symbol('()'), arguments[1:], arguments[0]))
         else:
             rawResult = self.node.evaluateClosureWithEnvironmentAndArguments(machine, self.environment, arguments)
         return self.applyResultTransform(machine, rawResult)
@@ -1247,7 +1316,7 @@ class AbstractFunctionTypeArgument:
             argumentType = self.typeExpression.evaluateWithEnvironment(EvaluationMachine.getActive(), environment)
 
         if self.name is not None:
-            environment.setSymbolBinding(self.name, argumentType)
+            environment.setSymbolValueBinding(self.name, argumentType)
         return argumentType
 
     def isForAllArgumentExpression(self):

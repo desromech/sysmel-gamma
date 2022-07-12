@@ -3,11 +3,7 @@ from parser import parseString
 from types import MethodType
 
 from typesystem import *
-
-SemanticAnalysisTypeMapping = None
-
-def getSemanticAnalysisType(symbol):
-    return SemanticAnalysisTypeMapping.at(symbol)
+import typesystem
 
 class IdentifierLookupScope(TypedValue):  
     def getType(self):
@@ -17,9 +13,11 @@ class IdentifierLookupScope(TypedValue):
         super().__init__()
         self.parentScope = parentScope
 
+    @primitiveNamed('identifierLookupScope.lookupSymbol')
     def lookupSymbol(self, symbol):
         return None
 
+    @primitiveNamed('identifierLookupScope.lookupSymbolRecursively')
     def lookupSymbolRecursively(self, symbol):
         result = self.lookupSymbol(symbol)
         if result is not None:
@@ -40,8 +38,8 @@ class LexicalScope(IdentifierLookupScope):
         super().__init__(parentScope)
         self.symbolTable = {}
 
-    def setSymbolBinding(self, symbol, value):
-        self.symbolTable[symbol] = value
+    def setSymbolValueBinding(self, symbol, value):
+        self.symbolTable[symbol] = value.asSymbolBindingWithName(symbol)
 
     def lookupSymbol(self, symbol):
         return self.symbolTable.get(symbol, None)
@@ -53,8 +51,8 @@ class NamespaceScope(LexicalScope):
     def __init__(self, parentScope = None):
         super().__init__(parentScope)
 
-    def setSymbolBinding(self, symbol, value):
-        super().setSymbolBinding(symbol, value)
+    def setSymbolValueBinding(self, symbol, value):
+        super().setSymbolValueBinding(symbol, value)
         value.onGlobalBindingWithSymbolAdded(symbol)
 
     def performWithArguments(self, machine, selector, arguments):
@@ -73,8 +71,8 @@ class ScriptEvaluationScope(LexicalScope):
         return getSemanticAnalysisType(Symbol('ScriptEvaluationScope'))
 
     def evaluateScriptFile(self, evaluationMachine, scriptFile, scriptFilename, scriptDirectory):
-        self.setSymbolBinding(Symbol('__CurrentScriptFilename__'), String(scriptFilename))
-        self.setSymbolBinding(Symbol('__CurrentScriptDirectory__'), String(scriptDirectory))
+        self.setSymbolValueBinding(Symbol('__CurrentScriptFilename__'), String(scriptFilename))
+        self.setSymbolValueBinding(Symbol('__CurrentScriptDirectory__'), String(scriptDirectory))
         scriptSource = scriptFile.read()
         parseTree = parseString(scriptSource, scriptFilename)
         if self.bootstrapCompiler.isTypeSystemEnabled:
@@ -90,8 +88,8 @@ class BootstrapCompiler(BehaviorTypedObject):
     def __init__(self):
         super().__init__()
         self.topLevelEnvironment = NamespaceScope()
-        self.topLevelEnvironment.setSymbolBinding('__BootstrapCompiler__', self)
-        self.topLevelEnvironment.setSymbolBinding('__TypeBuilder__', TypeBuilder())
+        self.topLevelEnvironment.setSymbolValueBinding('__BootstrapCompiler__', self)
+        self.topLevelEnvironment.setSymbolValueBinding('__TypeBuilder__', TypeBuilder())
         self.basicTypeEnvironment = {}
         self.isTypeSystemEnabled = False
         self.parseTreeASTMapping = None
@@ -183,11 +181,13 @@ class BootstrapCompiler(BehaviorTypedObject):
         childNamespace = self.activeNamespace.lookupSymbol(namespaceName)
         if childNamespace is None:
             childNamespace = NamespaceScope(self.activeNamespace)
-            self.activeNamespace.setSymbolBinding(namespaceName, childNamespace)
+            self.activeNamespace.setSymbolValueBinding(namespaceName, childNamespace)
+        else:
+            childNamespace = childNamespace.getSymbolBindingReferenceValue()
         self.activeNamespace = childNamespace
 
     def addBindingNamedWith(self, bindingName, bindingValue):
-        self.activeNamespace.setSymbolBinding(bindingName, bindingValue)
+        self.activeNamespace.setSymbolValueBinding(bindingName, bindingValue)
 
     def addKeywordBindingNamedWith(self, bindingName, bindingValue):
         self.addBindingNamedWith(bindingName, bindingValue)
@@ -200,7 +200,7 @@ class BootstrapCompiler(BehaviorTypedObject):
 
     def addBasicTypeWithName(self, basicType, basicTypeName):
         self.basicTypeEnvironment[basicTypeName] = basicType
-        self.activeNamespace.setSymbolBinding(basicTypeName, basicType)
+        self.activeNamespace.setSymbolValueBinding(basicTypeName, basicType)
         if basicTypeName == 'MetaType':
             basicType.addMetaTypeRootMethods()
 
@@ -237,9 +237,8 @@ class BootstrapCompiler(BehaviorTypedObject):
         ##print(parseTreeASTMapping)
 
     def setSemanticAnalysisMapping(self, semanticAnalysisMapping):
-        global SemanticAnalysisTypeMapping
         self.semanticAnalysisMapping = semanticAnalysisMapping
-        SemanticAnalysisTypeMapping = semanticAnalysisMapping
+        typesystem.SemanticAnalysisTypeMapping = semanticAnalysisMapping
         ##print(semanticAnalysisMapping)
 
     def enableTypeSystem(self):

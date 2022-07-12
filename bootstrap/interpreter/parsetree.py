@@ -105,6 +105,9 @@ class PTNode:
     def isBlockArgument(self):
         return False
 
+    def isForallBlockArgument(self):
+        return False
+
     def isQuote(self):
         return False
 
@@ -338,6 +341,7 @@ class PTKeywordMessage(PTNode):
             boundMessage = environment.lookupSymbolRecursively(selector)
             if boundMessage is None:
                 self.raiseEvaluationError('Failed to lookup message without receiver and selector %s.' % selector)
+            boundMessage = boundMessage.lookupgetSymbolBindingReferenceValue()
             arguments = list(map(lambda arg: arg.evaluateWithEnvironment(machine, environment), self.arguments))
             return boundMessage.runWithIn(machine, selector, arguments, environment)
 
@@ -417,7 +421,7 @@ class PTMakeTuple(PTNode):
         self.sourcePosition = sourcePositionFromList(elements + tokens)
 
     def doEvaluateWithEnvironment(self, machine, environment):
-        return tuple(map(lambda el: el.evaluateWithEnvironment(machine, environment), self.elements))
+        return Tuple(map(lambda el: el.evaluateWithEnvironment(machine, environment), self.elements))
 
     def isMakeTuple(self):
         return True
@@ -495,7 +499,7 @@ class PTIdentifierReference(PTNode):
     def convertIntoGenericASTWith(self, bootstrapCompiler):
         return bootstrapCompiler.makeASTNodeWithSlots('IdentifierReferenceNode',
             sourcePosition = bootstrapCompiler.convertASTSourcePosition(self.sourcePosition),
-            value = self.value
+            value = Symbol(self.value)
         )
 
     def formatAST(self):
@@ -534,6 +538,12 @@ class PTBlockClosure(PTNode):
         self.body = body
         self.sourcePosition = sourcePositionFromList(arguments + [resultType, body] + tokens)
         self.primitiveName = None
+        self.hasForAllArgument = False
+        for argument in self.arguments:
+            if argument.isForallBlockArgument():
+                self.hasForAllArgument = True
+                break
+
         for pragma in self.pragmas:
             if pragma.isPrimitivePragma():
                 self.primitiveName = pragma.getPrimitiveName()
@@ -556,10 +566,32 @@ class PTBlockClosure(PTNode):
             argumentDeclaration = self.arguments[i]
             argumentValue = arguments[i]
             argumentName = argumentDeclaration.identifier.evaluateWithEnvironment(machine, closureEnvironment)
-            evaluationEnvironment.setSymbolBinding(argumentName, argumentValue)
+            evaluationEnvironment.setSymbolValueBinding(argumentName, argumentValue)
 
         ## Coerce the result value into the result type
         result = self.body.evaluateWithEnvironment(machine, evaluationEnvironment)
+        if self.resultType is not None:
+            resultType = self.resultType.evaluateWithEnvironment(machine, evaluationEnvironment)
+            result = resultType.coerceValue(result)
+
+        return result
+
+    def evaluateClosureResultCoercionWithEnvironmentAndArguments(self, machine, closureEnvironment, arguments, result):
+        if len(self.arguments) != len(arguments):
+            self.raiseEvaluationError('Mismatching number of arguments for evaluating closure. Expected %d and received %d arguments.' % (len(self.arguments), len(arguments)))
+
+        ## FIXME: implement generic argument pattern matching.
+        if self.hasForAllArgument:
+            return result
+        
+        evaluationEnvironment = closureEnvironment.makeChildLexicalScope()
+        for i in range(len(self.arguments)):
+            argumentDeclaration = self.arguments[i]
+            argumentValue = arguments[i]
+            argumentName = argumentDeclaration.identifier.evaluateWithEnvironment(machine, closureEnvironment)
+            evaluationEnvironment.setSymbolValueBinding(argumentName, argumentValue)
+
+        ## Coerce the result value into the result type
         if self.resultType is not None:
             resultType = self.resultType.evaluateWithEnvironment(machine, evaluationEnvironment)
             result = resultType.coerceValue(result)
@@ -587,7 +619,7 @@ class PTBlockGenericArgument(PTNode):
     def asFunctionTypeArgument(self):
         return FunctionTypeForallArgumentExpression(self.identifier.evaluateAsLiteralSymbol(), self.type)
 
-    def isBlockArgument(self):
+    def isForallBlockArgument(self):
         return True
 
 class PTQuote(PTNode):
@@ -600,7 +632,7 @@ class PTQuote(PTNode):
         return True
 
     def doEvaluateWithEnvironment(self, machine, environment):
-        return self.expression.convertIntoGenericASTWith(environment.lookupSymbolRecursively(Symbol('__BootstrapCompiler__')))
+        return self.expression.convertIntoGenericASTWith(environment.lookupSymbolRecursively(Symbol('__BootstrapCompiler__')).getSymbolBindingReferenceValue())
 
 class PTQuasiQuote(PTNode):
     def __init__(self, expression, tokens):
