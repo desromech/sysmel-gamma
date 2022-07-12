@@ -1,5 +1,3 @@
-from ast import Expression
-from inspect import trace
 from source_collection import *
 from errors import *
 from typesystem import *

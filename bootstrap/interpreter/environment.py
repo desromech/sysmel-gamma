@@ -99,6 +99,7 @@ class BootstrapCompiler(BehaviorTypedObject):
         self.emptySourcePosition = None
         self.sizeType = None
         self.enterTopLevelNamespace()
+        typesystem.ActiveBootstrapCompiler = self
 
     def makeScriptEvaluationScope(self):
         return ScriptEvaluationScope(self.topLevelEnvironment, self)

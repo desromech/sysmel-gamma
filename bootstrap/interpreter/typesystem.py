@@ -4,6 +4,7 @@ from queue import Empty
 from errors import *
 from evalmachine import *
 
+ActiveBootstrapCompiler = None
 BasicTypeEnvironment = None
 SemanticAnalysisTypeMapping = None
 
@@ -70,6 +71,12 @@ class ValueInterface:
     def getSlotWithIndexAndName(self, slotIndex, slotName):
         raise SubclassResponsibility()
 
+    def installedInType(self, type):
+        pass
+
+    def installedInMetaTypeOf(self, type):
+        pass
+
 class TypedValue(ValueInterface):
     def getType(self):
         raise NotImplementedError('getType() in %s' % repr(self.__class__))
@@ -91,10 +98,26 @@ class PrimitiveMethod(TypedValue):
         self.method = method
         self.functionTypeSpec = functionTypeSpec
         self.functionType = None
+        self.rawOwnerType = None
+        self.rawOwnerTypeIsMetaType = False
+
+    def installedInType(self, type):
+        self.rawOwnerType = type
+        self.rawOwnerTypeIsMetaType = False
+
+    def installedInMetaTypeOf(self, type):
+        self.rawOwnerType = type
+        self.rawOwnerTypeIsMetaType = True
+
+    def getOwnerType(self):
+        if self.rawOwnerTypeIsMetaType:
+            return self.rawOwnerType.getType()
+        else:
+            return self.rawOwnerType
 
     def getType(self):
         if self.functionType is None:
-            self.functionType = Function.constructFromTypeSpec(self.functionTypeSpec)
+            self.functionType = Function.constructFromTypeSpec(self.functionTypeSpec, self.getOwnerType())
         return self.functionType
 
     def runWithIn(self, machine, selector, arguments, receiver):
@@ -578,6 +601,12 @@ class TypeSchema:
 
     def isDefaultConstructible(self):
         return False
+
+    def installedInType(self, type):
+        for method in self.methodDict:
+            method.installedInType(type)
+        for method in self.metaTypeMethodDict:
+            method.installedInMetaTypeOf(type)
 
     def buildPrimitiveMethodDictionary(self):
         self.methodDict[Symbol('shallowCopy')] = TypeSchemaPrimitiveMethod(self.shallowCopy, '(SelfType => SelfType)')
@@ -1129,6 +1158,7 @@ class BehaviorType(TypedValue, TypeInterface):
         self.supertype = supertype
         self.traits = traits
         self.schema = schema
+        self.schema.installedInType(self)
         self.type = None
 
         self.typeFlags = []
@@ -1210,9 +1240,10 @@ class BehaviorType(TypedValue, TypeInterface):
 
     def addMethodWithSelector(self, method, selector):
         self.methodDict[selector] = method
+        method.installedInType(self)
 
     def withSelectorAddMethod(self, selector, method):
-        self.methodDict[selector] = method
+        self.addMethodWithSelector(method, selector)
 
     def addTypeFlag(self, flagName):
         self.typeFlags.append(flagName)
@@ -1407,6 +1438,32 @@ class Function(SimpleType):
         self.canonicalArgumentsArraySlice = None
         self.computeFunctionTypeClassification()
         super().__init__(supertype = getBasicTypeNamed('Function'))
+
+    @classmethod
+    def constructFromTypeSpec(cls, functionSpec, ownerType = None):
+        if isinstance(functionSpec, tuple):
+            return cls.constructFromTupleTypeSpec(functionSpec, ownerType)
+        else:
+            return cls.constructFromStringTypeSpec(functionSpec, ownerType)
+
+    @classmethod
+    def constructFromStringTypeSpec(cls, functionSpec, ownerType):
+        from parser import parseString
+        environment = cls.constructTypeSpecParsingEnvironmentForType(ownerType)
+        parsedTypeSpec = parseString(functionSpec)
+        evaluatedTypeSpec = parsedTypeSpec.evaluateWithEnvironment(EvaluationMachine.getActive(), environment)
+        if isinstance(evaluatedTypeSpec, BlockClosure):
+            return evaluatedTypeSpec.getType()
+        print(evaluatedTypeSpec)
+        pass
+
+    @classmethod
+    def constructTypeSpecParsingEnvironmentForType(cls, ownerType):
+        environment = ActiveBootstrapCompiler.getTopLevelEnvironment()
+        if ownerType is not None:
+            environment = environment.makeChildLexicalScope()
+            environment.setSymbolValueBinding(Symbol('SelfType'), ownerType)
+        return environment
 
     def computeFunctionTypeClassification(self):
         ## Check the presence of a for all argument.
