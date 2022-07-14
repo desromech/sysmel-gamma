@@ -1185,6 +1185,9 @@ class BehaviorType(TypedValue, TypeInterface):
         self.constructionTemplate = None
         self.constructionTemplateArguments = None
 
+    def shallowCopyValue(self):
+        return self
+
     def canBeCoercedToType(self, targetType):
         return self.isSubtypeOf(targetType)
 
@@ -1389,7 +1392,7 @@ class MetaType(BehaviorType):
 
     def getName(self):
         if self.thisType is not None:
-            return String(self.thisType.getName() + ' type')
+            return String(self.thisType.getName() + ' __type__')
         return super().getName()
 
 class SimpleType(BehaviorType):
@@ -1466,7 +1469,7 @@ class Function(SimpleType):
     def makeSimpleFunction(cls, argumentTypes, resultType):
         cacheKey = (argumentTypes, resultType)
         if cacheKey in SimpleFunctionMemoizationTable:
-            return SimpleFunctionMemoizationTable
+            return SimpleFunctionMemoizationTable[cacheKey]
 
         self = cls()
         SimpleFunctionMemoizationTable[cacheKey] = self
@@ -1680,7 +1683,7 @@ class TypeBuilder(BehaviorTypedObject):
         return self.newSimpleFunctionTypeWithArgumentAndResultType((), resultType)
 
     def newSimpleFunctionTypeWithArgumentAndResultType(self, argumentType, resultType):
-        return self.newSimpleFunctionTypeWithArgumentAndResultType((argumentType,), resultType)
+        return self.doNewSimpleFunctionTypeWithArgumentsAndResultType((argumentType,), resultType)
 
     def newSimpleFunctionTypeWithArgumentsAndResultType(self, argumentsTypes, resultType):
         return self.doNewSimpleFunctionTypeWithArgumentsAndResultType(tuple(argumentsTypes.schema.elementTypes), resultType)

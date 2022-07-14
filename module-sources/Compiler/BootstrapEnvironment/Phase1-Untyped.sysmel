@@ -378,19 +378,6 @@ __BootstrapCompiler__
     } templated;
     addBasicTypeNamed: #AnyArrayList with: ArrayList(AnyValue);
 
-    #*addBasicTypeNamed: #Tuple with: {:(Type arraySlice)elementTypes :: Type |
-        {:(Type)tupleType :: Type |
-            tupleType __type__
-                withSelector: #-- addMethod: {:(Type)self :(Type) nextType :: Type |
-                    __TypeBuilder__ extendTupleType: self with: nextType
-                };
-                withSelector: #=> addMethod: {:(Type)self :(Type) resultType :: Type |
-                    __TypeBuilder__ newSimpleFunctionTypeWithArguments: self resultType: resultType
-                }.
-            tupleType
-        }(__TypeBuilder__ newProductTypeWith: elementTypes)
-    } templated;*#
-
     addBasicTypeNamed: #Tuple with: {:*(Size)N :(Type array: N)elementTypes :: Type |
         {:(Type)tupleType :: Type |
             tupleType __type__
@@ -1022,7 +1009,13 @@ __BootstrapCompiler__
     print: (`'(1 negated) analyzeNodeIfNeededWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
 
     print: nil isNil;
-    print: nil isNotNil.
+    print: nil isNotNil;
+
+    print: Int32 => Void;
+    print: Void => Void;
+    print: (Int32 -- Int32) => Void;
+    print: (Int32 -- Int32 -- Int32) => Void;
+    print: Float32 -- Int32 -- Float64.
 
 if: (Boolean basicNew: true) then: {
     __BootstrapCompiler__ print: "then branch"
