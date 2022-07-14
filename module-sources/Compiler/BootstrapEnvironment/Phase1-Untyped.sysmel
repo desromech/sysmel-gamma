@@ -45,7 +45,7 @@ AnyValue addTypeFlag: #anyValue.
 
 
 ## Object primitives.
-Object
+AnyValue
     withSelector: #== addMethod: {:(Object)self :(AnyValue)other :: Integer |
         <primitive: #"object.comparison.identityEquals">
         __BootstrapCompiler__ primitiveFailed
