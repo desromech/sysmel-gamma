@@ -200,6 +200,13 @@ class TypeInterface:
     def primitiveLookupLocalSelector(self, selector):
         return self.lookupLocalSelector(selector)
 
+    @primitiveNamed('type.supportsDynamicDispatch')
+    def primitiveSupportsDynamicDispatch(self):
+        return getBooleanValue(self.supportsDynamicDispatch())
+
+    def supportsDynamicDispatch(self):
+        return False
+
 class Integer(int, TypedValue):
     def getType(self):
         return getBasicTypeNamed(Symbol('Integer'))
@@ -674,6 +681,9 @@ class TypeSchema:
     def hasPointerOrReferenceValueCopySemantics(self):
         return False
 
+    def supportsDynamicDispatch(self):
+        return False
+
 class TrivialTypedValue(TypedValue):
     def __init__(self, type):
         self.type = type
@@ -982,6 +992,8 @@ class ProductTypeValue(TypedValue):
         return result
 
     def __iter__(self):
+        if self.type.hasArraySliceFlag:
+            return iter(extractArraySliceElements(self))
         return iter(self.elements)
 
 class ProductTypeSchema(TypeSchema):
@@ -1169,6 +1181,9 @@ class GCClassTypeSchema(RecordTypeSchema):
     def hasPointerOrReferenceValueCopySemantics(self):
         return True
 
+    def supportsDynamicDispatch(self):
+        return True
+
 class BehaviorType(TypedValue, TypeInterface):
     def __init__(self, name = None, supertype = None, traits = [], schema = EmptyTypeSchema(), methodDict = {}):
         self.name = name
@@ -1181,6 +1196,7 @@ class BehaviorType(TypedValue, TypeInterface):
 
         self.typeFlags = []
         self.hasAnyValueFlag = False
+        self.hasArraySliceFlag = False
 
         self.constructionTemplate = None
         self.constructionTemplateArguments = None
@@ -1270,6 +1286,8 @@ class BehaviorType(TypedValue, TypeInterface):
         self.typeFlags.append(flagName)
         if flagName == 'anyValue':
             self.hasAnyValueFlag = True
+        elif flagName == 'arraySlice': 
+            self.hasArraySliceFlag = True
 
     def addMethodsWithSelectors(self, methodsWithSelector):
         for method, selector in methodsWithSelector:
@@ -1348,6 +1366,9 @@ class BehaviorType(TypedValue, TypeInterface):
 
     def isDefaultConstructible(self):
         return self.schema.isDefaultConstructible()
+
+    def supportsDynamicDispatch(self):
+        return self.schema.supportsDynamicDispatch()
 
 class BehaviorTypedObject(TypedValue):
     def __init__(self) -> None:

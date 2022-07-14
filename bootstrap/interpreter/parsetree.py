@@ -346,6 +346,8 @@ class PTKeywordMessage(PTNode):
         receiver = self.receiver.evaluateWithEnvironment(machine, environment)
         selector = self.selector.evaluateWithEnvironment(machine, environment)
         arguments = list(map(lambda arg: arg.evaluateWithEnvironment(machine, environment), self.arguments))
+        if selector == 'perform:withArguments:':
+            return receiver.performWithArguments(machine, arguments[0], list(arguments[1]))
         return receiver.performWithArguments(machine, selector, arguments)
 
     def convertIntoGenericASTWith(self, bootstrapCompiler):

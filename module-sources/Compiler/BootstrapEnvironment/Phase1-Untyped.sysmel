@@ -55,6 +55,30 @@ Object
         __BootstrapCompiler__ primitiveFailed
     }.
 
+## Boolean primitives
+Boolean
+    withSelector: #| addMethod: {:(Boolean)self :(Boolean)other :: Boolean |
+        if: self then: {
+            true
+        } else: {
+            other
+        }
+    };
+    withSelector: #& addMethod: {:(Boolean)self :(Boolean)other :: Boolean |
+        if: self then: {
+            other
+        } else: {
+            false
+        }
+    };
+    withSelector: #not addMethod: {:(Boolean)self :: Boolean |
+        if: self then: {
+            false
+        } else: {
+            true
+        }
+    }.
+
 ## Integer arithmetics primitive methods
 Integer
     withSelector: #negated addMethod: {:(Integer)self :: Integer |
@@ -319,6 +343,7 @@ __BootstrapCompiler__
     addBasicTypeNamed: #ArraySlice with: {:(Type)elementType :: Type |
         {:(Type)arraySliceType :: Type |
             arraySliceType
+                addTypeFlag: #arraySlice;
                 withSelector: #isEmpty addMethod: {:(arraySliceType)self :: Boolean |
                     self size = 0sz
                 };
@@ -565,6 +590,7 @@ __BootstrapCompiler__
         selector: SysmelCompiler AST Node.
         arguments: SysmelCompiler AST Node arraySlice.
         boundMethod: AnyValue optional.
+        usesDynamicDispatch: Boolean.
     });
     addBindingNamed: #MessageChainNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
         receiver: SysmelCompiler AST Node.
@@ -815,8 +841,8 @@ SysmelCompiler AST MessageSendNode
                 }) in: nil
         } else: {
             {:(AnyValue)receiver :(AnyValue)selector :(AnyValue arraySlice)arguments :: AnyValue |
-                if: self boundMethod isNil then: {
-                    receiver perform: selector withArguments: argumnets
+                if: self usesDynamicDispatch | self boundMethod isNil then: {
+                    receiver perform: selector withArguments: arguments
                 } else: {
                     self boundMethod _ run: selector with: arguments in: receiver
                 }
@@ -933,6 +959,10 @@ Type
             analyzedType: self.
             value: binding value
         }
+    };
+    withSelector: #supportsDynamicDispatch addMethod: {:(Type)self :: AnyValue |
+        <primitive: #"type.supportsDynamicDispatch">
+        __BootstrapCompiler__ primitiveFailed
     }.
 
 Function __type__
@@ -953,11 +983,15 @@ Function
             });
             analyzedType: self __type__ canonicalResultType;
             boundMethod: self;
+            usesDynamicDispatch: node receiver _ analyzedType _ supportsDynamicDispatch & self usesDynamicDispatch;
             yourself.
     };
     withSelector: #run:with:in: addMethod: {:(Function)self :(AnyValue)selector :(AnyValue arraySlice)arguments :(AnyValue)receiver :: AnyValue |
         <primitive: #"object.runWithIn">
         __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #usesDynamicDispatch addMethod: {:(Function)self :: Boolean |
+        true
     }.
 
 if: (Boolean basicNew: true) then: {
