@@ -121,6 +121,7 @@ class PrimitiveMethod(TypedValue):
     def getType(self):
         if self.functionType is None:
             self.functionType = Function.constructFromTypeSpec(self.functionTypeSpec, self.getOwnerType())
+            assert self.functionType is not None
         return self.functionType
 
     def runWithIn(self, machine, selector, arguments, receiver):
@@ -1445,16 +1446,48 @@ class FunctionTypeResult:
     def __repr__(self):
         return self.expression.formatAST()
 
+SimpleFunctionMemoizationTable = {}
+
 class Function(SimpleType):
-    def __init__(self, environment, arguments, resultType):
-        self.environment = environment
-        self.arguments = arguments
-        self.resultType = resultType
+    def __init__(self):
+        self.isDependentFunctionType = False
+        self.isSimpleFunctionType = False
+        self.canonicalSimpleFunctionType = None
+        self.dependentDefinitionEnvironment = None
+        self.dependentDefinitionArguments = None
+        self.dependentDefinitionResultType = None
         self.canonicalArgumentTypes = None
         self.canonicalResultType = None
         self.canonicalArgumentsArraySlice = None
-        self.computeFunctionTypeClassification()
+        self.hasForAllArgument = False
         super().__init__(supertype = getBasicTypeNamed('Function'))
+
+    @classmethod
+    def makeSimpleFunction(cls, argumentTypes, resultType):
+        cacheKey = (argumentTypes, resultType)
+        if cacheKey in SimpleFunctionMemoizationTable:
+            return SimpleFunctionMemoizationTable
+
+        self = cls()
+        SimpleFunctionMemoizationTable[cacheKey] = self
+
+        self.isSimpleFunctionType = True
+        self.canonicalArgumentTypes = argumentTypes
+        self.canonicalResultType = resultType
+        self.canonicalArgumentsArraySlice = None
+        self.canonicalSimpleFunctionType = self
+        self.computeFunctionTypeClassification()
+        return self
+
+    @classmethod
+    def makeDependentFunctionType(cls, environment, arguments, resultType):
+        self = cls()
+        self.isDependentFunctionType = True
+        self.dependentDefinitionEnvironment = environment
+        self.dependentDefinitionArguments = arguments
+        self.dependentDefinitionResultType = resultType
+        self.computeFunctionTypeClassification()
+        return self
 
     @classmethod
     def constructFromTypeSpec(cls, functionSpec, ownerType = None):
@@ -1471,8 +1504,7 @@ class Function(SimpleType):
         evaluatedTypeSpec = parsedTypeSpec.evaluateWithEnvironment(EvaluationMachine.getActive(), environment)
         if isinstance(evaluatedTypeSpec, BlockClosure):
             return evaluatedTypeSpec.getType()
-        print(evaluatedTypeSpec)
-        pass
+        return evaluatedTypeSpec
 
     @classmethod
     def constructTypeSpecParsingEnvironmentForType(cls, ownerType):
@@ -1485,8 +1517,11 @@ class Function(SimpleType):
     def computeFunctionTypeClassification(self):
         ## Check the presence of a for all argument.
         self.hasForAllArgument = False
-        for argument in self.arguments:
-            if argument.isForAllArgumentExpression:
+        if self.isSimpleFunctionType:
+            return
+
+        for argument in self.dependentDefinitionArguments:
+            if argument.isForAllArgumentExpression():
                 self.hasForAllArgument = True
                 break
 
@@ -1494,30 +1529,45 @@ class Function(SimpleType):
 
     def getName(self):
         if self.name is None:
-            self.name = '{'
-            argumentIndex = 0
-            for argument in self.arguments:
-                if argumentIndex > 0:
-                    self.name += ' '
-                self.name += repr(argument)
-                argumentIndex += 1
-            self.name += ' :: ('
-            self.name += repr(self.resultType)
-            self.name += ')} __type__'
+            if self.isSimpleFunctionType:
+                self.name = '('
+                argumentIndex = 0
+                for argument in self.canonicalArgumentTypes:
+                    if argumentIndex > 0:
+                        self.name += ' -- '
+                    self.name += repr(argument)
+                    argumentIndex += 1
+                if argumentIndex == 0:
+                    self.name += 'Void'
+                self.name += ') => '
+                self.name += repr(self.canonicalResultType)
+            else:
+                self.name = '{'
+                argumentIndex = 0
+                for argument in self.dependentDefinitionArguments:
+                    if argumentIndex > 0:
+                        self.name += ' '
+                    self.name += repr(argument)
+                    argumentIndex += 1
+                self.name += ' :: ('
+                self.name += repr(self.dependentDefinitionResultType)
+                self.name += ')} __type__'
         return self.name
 
     def ensureCanonicalTypeIsEvaluated(self):
+        if not self.isDependentFunctionType:
+            return
         if self.canonicalArgumentTypes is not None:
             return
 
         self.canonicalArgumentTypes = []
-        canonicalEvaluationEnvironment = self.environment.makeChildLexicalScope()
-        for argument in self.arguments:
+        canonicalEvaluationEnvironment = self.dependentDefinitionEnvironment.makeChildLexicalScope()
+        for argument in self.dependentDefinitionArguments:
             argumentType = argument.evaluateCanonicalFormInEnvironment(canonicalEvaluationEnvironment)
             if not argument.isForAllArgumentExpression():
                 self.canonicalArgumentTypes.append(argumentType)
 
-        self.canonicalResultType = self.resultType.evaluateCanonicalFormInEnvironment(canonicalEvaluationEnvironment)
+        self.canonicalResultType = self.dependentDefinitionResultType.evaluateCanonicalFormInEnvironment(canonicalEvaluationEnvironment)
 
     def getCanonicalArgumentTypes(self):
         self.ensureCanonicalTypeIsEvaluated()
@@ -1621,11 +1671,9 @@ class TypeBuilder(BehaviorTypedObject):
         return SimpleType(schema = PrimitiveFloatTypeSchema(size, alignment))
 
     def newPairTypeWith(self, first, second):
-        print('newPairTypeWith', first, second)
         return getTupleTypeWithElements((first, second))
 
     def extendTupleTypeWith(self, tupleType, next):
-        print('extendTupleTypeWith')
         return getTupleTypeWithElements(tuple(list(tupleType.schema.elementTypes) + [next]))
 
     def newSimpleFunctionTypeWithResultType(self, resultType):
@@ -1635,9 +1683,10 @@ class TypeBuilder(BehaviorTypedObject):
         return self.newSimpleFunctionTypeWithArgumentAndResultType((argumentType,), resultType)
 
     def newSimpleFunctionTypeWithArgumentsAndResultType(self, argumentsTypes, resultType):
-        print('argumentsTypes ', argumentsTypes)
-        print(resultType)
-        return None
+        return self.doNewSimpleFunctionTypeWithArgumentsAndResultType(tuple(argumentsTypes.schema.elementTypes), resultType)
+
+    def doNewSimpleFunctionTypeWithArgumentsAndResultType(self, argumentsTypes, resultType):
+        return Function.makeSimpleFunction(argumentsTypes, resultType)
 
 class ArraySlicePrimitives:
     @primitiveNamed('arraySlice.collect')
