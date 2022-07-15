@@ -25,6 +25,7 @@ ESCAPE_CHARACTERS = {
 MethodFlagPragmas = [
     ## Macro
     'macro',
+    'messageMethod',
     'fallback',
 
     ## Side effects
@@ -365,12 +366,21 @@ class PTKeywordMessage(PTNode):
     def doEvaluateWithEnvironment(self, machine, environment):
         if self.receiver is None:
             selector = self.selector.evaluateWithEnvironment(machine, environment)
+            ## Core forms: branch, loop
             if selector == 'if:then:else:':
                 condition = self.arguments[0].evaluateWithEnvironment(machine, environment)
                 if condition.asBooleanValue():
                     return self.arguments[1].evaluateWithEnvironment(machine, environment)
                 else:
                     return self.arguments[2].evaluateWithEnvironment(machine, environment)
+            elif selector == 'while:do:':
+                result = None
+                while True:
+                    condition = self.arguments[0].evaluateWithEnvironment(machine, environment)
+                    if not condition.asBooleanValue():
+                        break
+                    result = self.arguments[1].evaluateWithEnvironment(machine, environment)
+                return coerceNoneToNil(result)
 
             boundMessage = environment.lookupSymbolRecursively(selector)
             if boundMessage is None:

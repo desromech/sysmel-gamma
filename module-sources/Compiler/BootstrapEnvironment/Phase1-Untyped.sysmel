@@ -1065,14 +1065,18 @@ Function __type__
 
 Function
     withSelector: #analyzeMessageSendNode:with: addMethod: {:(Function)self :(SysmelCompiler AST MessageSendNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
-        node shallowCopy
-            arguments: (node arguments collectWithIndex: {:(SysmelCompiler AST Node)node :(Size)argumentIndex :: SysmelCompiler AST Node |
-                node analyzeNodeIfNeededWith: analyzer
-            });
-            analyzedType: self __type__ canonicalResultType;
-            boundMethod: self;
-            usesDynamicDispatch: node receiver _ analyzedType _ supportsDynamicDispatch & self usesDynamicDispatch;
-            yourself.
+        if: self hasMacroFlag then: {
+            analyzer makeSemanticAnalysisError: "TODO: Invoke and expand macro." at: node sourcePosition
+        } else: {
+            node shallowCopy
+                arguments: (node arguments collectWithIndex: {:(SysmelCompiler AST Node)node :(Size)argumentIndex :: SysmelCompiler AST Node |
+                    node analyzeNodeIfNeededWith: analyzer
+                });
+                analyzedType: self __type__ canonicalResultType;
+                boundMethod: self;
+                usesDynamicDispatch: node receiver _ analyzedType _ supportsDynamicDispatch & self usesDynamicDispatch;
+                yourself
+        }.
     };
     withSelector: #run:with:in: addMethod: {:(Function)self :(AnyValue)selector :(AnyValue arraySlice)arguments :(AnyValue)receiver :: AnyValue |
         <primitive: #"object.runWithIn">
@@ -1082,26 +1086,37 @@ Function
         <primitive: #"function.getMethodFlags">
         __BootstrapCompiler__ primitiveFailed
     };
-    withSelector: #hasMacroFlag addMethod: {:(Function)self  :: Boolean |
+
+    ## Macro
+    withSelector: #hasMacroFlag addMethod: {:(Function)self :: Boolean |
         self hasMethodFlag: #macro
     };
-    withSelector: #hasFallback addMethod: {:(Function)self  :: Boolean |
+    withSelector: #hasMessageMethodFlag addMethod: {:(Function)self :: Boolean |
+        self hasMethodFlag: #messageMethod
+    };
+    withSelector: #hasFallbackFlag addMethod: {:(Function)self :: Boolean |
         self hasMethodFlag: #fallback
     };
 
-    withSelector: #hasAbstractFlag addMethod: {:(Function)self  :: Boolean |
+    ## Side effects
+    withSelector: #hasPureFlag addMethod: {:(Function)self :: Boolean |
+        self hasMethodFlag: #pure
+    };
+
+    ## Dispatch mode
+    withSelector: #hasAbstractFlag addMethod: {:(Function)self :: Boolean |
         self hasMethodFlag: #abstract
     };
-    withSelector: #hasVirtualFlag addMethod: {:(Function)self  :: Boolean |
+    withSelector: #hasVirtualFlag addMethod: {:(Function)self :: Boolean |
         self hasMethodFlag: #virtual
     };
-    withSelector: #hasOverrideFlag addMethod: {:(Function)self  :: Boolean |
+    withSelector: #hasOverrideFlag addMethod: {:(Function)self :: Boolean |
         self hasMethodFlag: #override
     };
-    withSelector: #hasStaticFlag addMethod: {:(Function)self  :: Boolean |
+    withSelector: #hasStaticFlag addMethod: {:(Function)self :: Boolean |
         self hasMethodFlag: #static
     };
-    withSelector: #hasFinalFlag addMethod: {:(Function)self  :: Boolean |
+    withSelector: #hasFinalFlag addMethod: {:(Function)self :: Boolean |
         self hasMethodFlag: #final
     };
 
