@@ -22,6 +22,42 @@ ESCAPE_CHARACTERS = {
     't' : '\t',
 }
 
+MethodFlagPragmas = [
+    ## Macro
+    'macro',
+    'fallback',
+
+    ## Side effects
+    'const',
+    'pure',
+
+    ## Unwinding semantics
+    'noThrow',
+    'returnsTwice',
+
+    ## Type conversions
+    'constructor',
+    'conversion',
+    'explicit',
+
+    ## Dispatch mode
+    'abstract',
+    'final',
+    'override',
+    'virtual',
+    'static',
+
+    ## Special semantics.
+    'trivial',
+
+    ## Compile time availability.
+    'notInCompileTime',
+    'compileTime',
+
+    ## Optimizations
+    'inline',
+]
+
 def parseCStringEscapeSequences(string):
     result = ''
     i = 0
@@ -540,6 +576,7 @@ class PTBlockClosure(PTNode):
         self.primitiveName = None
         self.hasForAllArgument = False
         self.expectedArgumentCount = 0
+        self.methodFlags = []
         for argument in self.arguments:
             if argument.isForallBlockArgument():
                 self.hasForAllArgument = True
@@ -549,15 +586,17 @@ class PTBlockClosure(PTNode):
         for pragma in self.pragmas:
             if pragma.isPrimitivePragma():
                 self.primitiveName = pragma.getPrimitiveName()
+            elif pragma.isMethodFlagPragma():
+                self.methodFlags.append(Symbol(pragma.getSelector()))
 
     def isBlockClosure(self):
         return True
 
     def constructFunctionTypeWithEnvironment(self, environment):
-        return Function.makeDependentFunctionType(environment, list(map(lambda arg: arg.asFunctionTypeArgument(), self.arguments)), FunctionTypeResult(self.resultType))
+        return FunctionType.makeDependentFunctionType(environment, list(map(lambda arg: arg.asFunctionTypeArgument(), self.arguments)), FunctionTypeResult(self.resultType))
 
     def doEvaluateWithEnvironment(self, machine, environment):
-        return BlockClosure(self, environment, primitiveName = self.primitiveName)
+        return BlockClosure(self, environment, primitiveName = self.primitiveName, methodFlags = self.methodFlags)
 
     def evaluateClosureWithEnvironmentAndArguments(self, machine, closureEnvironment, arguments):
         if self.expectedArgumentCount != len(arguments):
@@ -679,11 +718,17 @@ class PTPragma(PTNode):
 class PTUnaryPragma(PTPragma):
     def __init__(self, identifier, tokens):
         PTNode.__init__(self)
-        self.identifier = identifier
+        self.identifier = Symbol(identifier.value)
         self.sourcePosition = sourcePositionFromList([sourcePositionFromTokens(tokens), identifier])
 
     def isUnaryPragma(self):
         return True
+
+    def isMethodFlagPragma(self):
+        return self.identifier in MethodFlagPragmas
+
+    def getSelector(self):
+        return self.identifier
 
 class PTKeywordPragma(PTPragma):
     def __init__(self, selector, arguments, tokens):

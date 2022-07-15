@@ -47,10 +47,12 @@ AnyValue addTypeFlag: #anyValue.
 ## Object primitives.
 AnyValue
     withSelector: #== addMethod: {:(Object)self :(AnyValue)other :: Integer |
+        <pure>
         <primitive: #"object.comparison.identityEquals">
         __BootstrapCompiler__ primitiveFailed
     };
     withSelector: #~~ addMethod: {:(Object)self :(AnyValue)other :: Integer |
+        <pure>
         <primitive: #"object.comparison.identityNotEquals">
         __BootstrapCompiler__ primitiveFailed
     }.
@@ -58,6 +60,7 @@ AnyValue
 ## Boolean primitives
 Boolean
     withSelector: #| addMethod: {:(Boolean)self :(Boolean)other :: Boolean |
+        <pure>
         if: self then: {
             true
         } else: {
@@ -65,6 +68,7 @@ Boolean
         }
     };
     withSelector: #& addMethod: {:(Boolean)self :(Boolean)other :: Boolean |
+        <pure>
         if: self then: {
             other
         } else: {
@@ -82,61 +86,75 @@ Boolean
 ## Integer arithmetics primitive methods
 Integer
     withSelector: #negated addMethod: {:(Integer)self :: Integer |
+        <pure>
         <primitive: #"integer.arithmetic.neg">
         __BootstrapCompiler__ primitiveFailed
     };
     withSelector: #+ addMethod: {:(Integer)self :(Integer)other :: Integer |
+        <pure>
         <primitive: #"integer.arithmetic.add">
         __BootstrapCompiler__ primitiveFailed
     };
     withSelector: #- addMethod: {:(Integer)self :(Integer)other :: Integer |
+        <pure>
         <primitive: #"integer.arithmetic.sub">
         __BootstrapCompiler__ primitiveFailed
     };
     withSelector: #"*" addMethod: {:(Integer)self :(Integer)other :: Integer |
+        <pure>
         <primitive: #"integer.arithmetic.mul">
         __BootstrapCompiler__ primitiveFailed
     };
     withSelector: #// addMethod: {:(Integer)self :(Integer)other :: Integer |
+        <pure>
         <primitive: #"integer.arithmetic.div">
         __BootstrapCompiler__ primitiveFailed
     };
     withSelector: #% addMethod: {:(Integer)self :(Integer)other :: Integer |
+        <pure>
         <primitive: #"integer.arithmetic.rem">
         __BootstrapCompiler__ primitiveFailed
     };
 
     withSelector: #= addMethod: {:(Integer)self :(Integer)other :: Boolean |
+        <pure>
         <primitive: #"integer.comparison.equals">
         __BootstrapCompiler__ primitiveFailed
     };
     withSelector: #~= addMethod: {:(Integer)self :(Integer)other :: Boolean |
+        <pure>
         <primitive: #"integer.comparison.notEquals">
         __BootstrapCompiler__ primitiveFailed
     };
     
     withSelector: #< addMethod: {:(Integer)self :(Integer)other :: Boolean |
+        <pure>
         <primitive: #"integer.comparison.lessThan">
         __BootstrapCompiler__ primitiveFailed
     };
     withSelector: #<= addMethod: {:(Integer)self :(Integer)other :: Boolean |
+        <pure>
         <primitive: #"integer.comparison.lessOrEqual">
         __BootstrapCompiler__ primitiveFailed
     };
     withSelector: #> addMethod: {:(Integer)self :(Integer)other :: Boolean |
+        <pure>
         <primitive: #"integer.comparison.greaterThan">
         __BootstrapCompiler__ primitiveFailed
     };
     withSelector: #>= addMethod: {:(Integer)self :(Integer)other :: Boolean |
+        <pure>
         <primitive: #"integer.comparison.greaterOrEqual">
         __BootstrapCompiler__ primitiveFailed
     };
 
     withSelector: #asString addMethod: {:(Integer)self :: String |
+        <pure>
         <primitive: #"integer.conversion.toString">
         __BootstrapCompiler__ primitiveFailed
     };
     withSelector: #printString addMethod: {:(Integer)self :: String |
+        <pure>
         <primitive: #"integer.conversion.toString">
         __BootstrapCompiler__ primitiveFailed
     }.
@@ -180,47 +198,58 @@ __BootstrapCompiler__
 ## Integer conversion primitives
 Integer
     withSelector: #u8 addMethod: {:(Integer)self :: UInt8 |
+        <pure>
         <primitive: #"integer.conversion.toUInt8">
         UInt8 basicNew: self
     };
     withSelector: #s8 addMethod: {:(Integer)self :: Int8 |
+        <pure>
         <primitive: #"integer.conversion.toInt8">
         Int8 basicNew: self
     };
     withSelector: #u16 addMethod: {:(Integer)self :: UInt16 |
+        <pure>
         <primitive: #"integer.conversion.toUInt16">
         UInt16 basicNew: self
     };
     withSelector: #s16 addMethod: {:(Integer)self :: Int16 |
+        <pure>
         <primitive: #"integer.conversion.toInt16">
         Int16 basicNew: self
     };
     withSelector: #u32 addMethod: {:(Integer)self :: UInt32 |
+        <pure>
         <primitive: #"integer.conversion.toUInt32">
         UInt32 basicNew: self
     };
     withSelector: #s32 addMethod: {:(Integer)self :: Int32 |
+        <pure>
         <primitive: #"integer.conversion.toInt32">
         Int32 basicNew: self
     };
     withSelector: #u64 addMethod: {:(Integer)self :: UInt64 |
+        <pure>
         <primitive: #"integer.conversion.toUInt64">
         UInt64 basicNew: self
     };
     withSelector: #s64 addMethod: {:(Integer)self :: Int64 |
+        <pure>
         <primitive: #"integer.conversion.toInt64">
         Int64 basicNew: self
     };
 
     withSelector: #sz addMethod: {:(Integer)self :: Size |
+        <pure>
         <primitive: #"integer.conversion.toSize">
         Size basicNew: self
     };
     withSelector: #uptr addMethod: {:(Integer)self :: UIntPointer |
+        <pure>
         <primitive: #"integer.conversion.toUIntPointer">
         UIntPointer basicNew: self
     };
     withSelector: #uptr addMethod: {:(Integer)self :: IntPointer |
+        <pure>
         <primitive: #"integer.conversion.toIntPointer">
         IntPointer basicNew: self
     }.
@@ -237,61 +266,75 @@ Integer
 }({:(Type)primitiveIntegerType |
     primitiveIntegerType
         withSelector: #negated addMethod: {:(primitiveIntegerType)self :: primitiveIntegerType |
+            <pure>
             <primitive: #"primitiveInteger.arithmetic.neg">
             __BootstrapCompiler__ primitiveFailed
         };
         withSelector: #+ addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: primitiveIntegerType |
+            <pure>
             <primitive: #"primitiveInteger.arithmetic.add">
             __BootstrapCompiler__ primitiveFailed
         };
         withSelector: #- addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: primitiveIntegerType |
+            <pure>
             <primitive: #"primitiveInteger.arithmetic.sub">
             __BootstrapCompiler__ primitiveFailed
         };
         withSelector: #"*" addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: primitiveIntegerType |
+            <pure>
             <primitive: #"primitiveInteger.arithmetic.mul">
             __BootstrapCompiler__ primitiveFailed
         };
         withSelector: #// addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: primitiveIntegerType |
+            <pure>
             <primitive: #"primitiveInteger.arithmetic.div">
             __BootstrapCompiler__ primitiveFailed
         };
         withSelector: #% addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: primitiveIntegerType |
+            <pure>
             <primitive: #"primitiveInteger.arithmetic.rem">
             __BootstrapCompiler__ primitiveFailed
         };
 
         withSelector: #= addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: Boolean |
+            <pure>
             <primitive: #"primitiveInteger.comparison.equals">
             __BootstrapCompiler__ primitiveFailed
         };
         withSelector: #~= addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: Boolean |
+            <pure>
             <primitive: #"primitiveInteger.comparison.notEquals">
             __BootstrapCompiler__ primitiveFailed
         };
         
         withSelector: #< addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: Boolean |
+            <pure>
             <primitive: #"primitiveInteger.comparison.lessThan">
             __BootstrapCompiler__ primitiveFailed
         };
         withSelector: #<= addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: Boolean |
+            <pure>
             <primitive: #"primitiveInteger.comparison.lessOrEqual">
             __BootstrapCompiler__ primitiveFailed
         };
         withSelector: #> addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: Boolean |
+            <pure>
             <primitive: #"primitiveInteger.comparison.greaterThan">
             __BootstrapCompiler__ primitiveFailed
         };
         withSelector: #>= addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: Boolean |
+            <pure>
             <primitive: #"primitiveInteger.comparison.greaterOrEqual">
             __BootstrapCompiler__ primitiveFailed
         };
 
         withSelector: #asString addMethod: {:(Integer)self :: String |
+            <pure>
             <primitive: #"primitiveInteger.conversion.toString">
             __BootstrapCompiler__ primitiveFailed
         };
         withSelector: #printString addMethod: {:(Integer)self :: String |
+            <pure>
             <primitive: #"primitiveInteger.conversion.toString">
             __BootstrapCompiler__ primitiveFailed
         }.
@@ -305,15 +348,19 @@ __BootstrapCompiler__
         {:(Type)sumType :: Type |
             sumType
                 withSelector: #isNil addMethod: {:(sumType)self :: Boolean |
+                    <pure>
                     self __typeSelector__ = 0
                 };
                 withSelector: #isNotNil addMethod: {:(sumType)self :: Boolean |
+                    <pure>
                     self __typeSelector__ ~= 0
                 };
                 withSelector: #_ addMethod: {:(sumType)self :: optionalType |
+                    <pure>
                     self get: optionalType
                 };
                 withSelector: #value addMethod: {:(sumType)self :: optionalType |
+                    <pure>
                     self get: optionalType
                 }.
             sumType
@@ -324,12 +371,14 @@ __BootstrapCompiler__
         {:(Type)arrayType :: Type |
             arrayType
                 withSelector: #asArraySlice addMethod: {:(arrayType)self :: ArraySlice(elementType) |
+                    <pure>
                     ArraySlice(elementType) basicNewWithNamedSlots: #{
                         elements: self.
                         size: bounds
                     }
                 };
                 withSelector: #size addMethod: {:(arrayType)self :: Size |
+                    <pure>
                     bounds
                 }.
             arrayType
@@ -345,29 +394,37 @@ __BootstrapCompiler__
             arraySliceType
                 addTypeFlag: #arraySlice;
                 withSelector: #isEmpty addMethod: {:(arraySliceType)self :: Boolean |
+                    <pure>
                     self size = 0sz
                 };
                 withSelector: #isNotEmpty addMethod: {:(arraySliceType)self :: Boolean |
+                    <pure>
                     self size ~= 0sz
                 };
                 withSelector: #basicAt: addMethod: {:(arraySliceType)self :(Size)index :: elementType |
+                    <pure>
                     self elements basicAt: index
                 };
                 withSelector: #first addMethod: {:(arraySliceType)self :: elementType |
+                    <pure>
                     self basicAt: 0sz
                 };
                 withSelector: #last addMethod: {:(arraySliceType)self :: elementType |
+                    <pure>
                     self basicAt: self size - 1sz
                 };
                 withSelector: #collect: addMethod: {:*(Type)ResultType :(elementType => ResultType)block :: ArraySlice(ResultType) |
+                    <pure>
                     <primitive: #"arraySlice.collect">
                     __BootstrapCompiler__ primitiveFailed
                 };
                 withSelector: #collectWithIndex: addMethod: {:*(Type)ResultType :((elementType -- Size) => ResultType)block :: ArraySlice(ResultType) |
+                    <pure>
                     <primitive: #"arraySlice.collectWithIndex">
                     __BootstrapCompiler__ primitiveFailed
                 };
                 withSelector: #do: addMethod: {:*(Type)ResultType :((elementType) => ResultType)block :: ResultType |
+                    <pure>
                     <primitive: #"arraySlice.do">
                     __BootstrapCompiler__ primitiveFailed
                 }.
@@ -407,9 +464,11 @@ __BootstrapCompiler__
         {:(Type)tupleType :: Type |
             tupleType __type__
                 withSelector: #-- addMethod: {:(Type)self :(Type) nextType :: Type |
+                    <override>
                     __TypeBuilder__ extendTupleType: self with: nextType
                 };
                 withSelector: #=> addMethod: {:(Type)self :(Type) resultType :: Type |
+                    <override>
                     __TypeBuilder__ newSimpleFunctionTypeWithArguments: self resultType: resultType
                 }.
             tupleType
@@ -434,31 +493,38 @@ __BootstrapCompiler__
 ## String primitive methods
 String
     withSelector: #-- addMethod: {:(String)self :(String)other :: String |
+        <pure>
         <primitive: #"string.concat">
         __BootstrapCompiler__ primitiveFailed
     };
     withSelector: #format: addMethod: {:(String)self :(String arraySlice)parameters :: String |
+        <pure>
         <primitive: #"string.format">
         __BootstrapCompiler__ primitiveFailed
     };
     withSelector: #asSymbol addMethod: {:(String)self :: Symbol |
+        <pure>
         <primitive: #"symbol.internString">
         __BootstrapCompiler__ primitiveFailed
     };
     withSelector: #asString addMethod: {:(String)self :: String |
+        <pure>
         self
     };
     withSelector: #printString addMethod: {:(String)self :: String |
+        <pure>
         <primitive: #"string.conversion.printString">
         self
     }.
 
 Symbol
     withSelector: #asString addMethod: {:(Integer)self :: String |
+        <pure>
         <primitive: #"symbol.conversion.toString">
         __BootstrapCompiler__ primitiveFailed
     };
     withSelector: #printString addMethod: {:(Integer)self :: String |
+        <pure>
         <primitive: #"symbol.conversion.printString">
         __BootstrapCompiler__ primitiveFailed
     }.
@@ -466,58 +532,80 @@ Symbol
 ## Basic type system methods.
 Type
     withSelector: #-- addMethod: {:(Type)self :(Type)second :: Type |
+        <pure>
+        <virtual>
         __TypeBuilder__ newPairType: self with: second
     };
     withSelector: #=> addMethod: {:(Type)self :(Type) resultType :: Type |
+        <pure>
+        <virtual>
         __TypeBuilder__ newSimpleFunctionTypeWithArgument: self resultType: resultType
     }.
 
 Void __type__
     withSelector: #=> addMethod: {:(Type)self :(Type) resultType :: Type |
+        <pure>
+        <override>
         __TypeBuilder__ newSimpleFunctionTypeWithResultType: resultType
     }.
 
 ## Basic type system methods.
 MetaType
     withSelector: #"[]" addMethod: {:(Type)self :: Type |
+        <pure>
         Array(self, 0)
     };
     withSelector: #"[]" addMethod: {:(Type)self :(Size)bounds :: Type |
+        <pure>
         Array(self, bounds)
     };
     withSelector: #optional addMethod: {:(Type)self :: Type |
+        <pure>
         Optional(self)
     };
     withSelector: #array addMethod: {:(Type)self :: Type |
+        <pure>
         Array(self, 0)
     };
     withSelector: #array: addMethod: {:(Type)self :(Size)bounds :: Type |
+        <pure>
         Array(self, bounds)
     };
     withSelector: #arraySlice addMethod: {:(Type)self :: Type |
+        <pure>
         ArraySlice(self)
     };
     withSelector: #arrayList addMethod: {:(Type)self :: Type |
+        <pure>
         ArrayList(self)
     };
     withSelector: #valueBox addMethod: {:(Type)self :: Type |
+        <pure>
         ArrayList(self)
     }.
 
 ## Basic methods.
 AnyValue
     withSelector: #isNil addMethod: {:(Undefined)self :: Boolean |
+        <pure>
+        <virtual>
         false
     };
     withSelector: #isNotNil addMethod: {:(Undefined)self :: Boolean |
+        <pure>
+        <virtual>
         true
     }.
 
 Undefined
     withSelector: #isNil addMethod: {:(Undefined)self :: Boolean |
+        <pure>
+        <override>
         true
     };
     withSelector: #isNotNil addMethod: {:(Undefined)self :: Boolean |
+        <pure>
+        <override>
         false
     }.
 
@@ -990,8 +1078,39 @@ Function
         <primitive: #"object.runWithIn">
         __BootstrapCompiler__ primitiveFailed
     };
+    withSelector: #hasMethodFlag: addMethod: {:(Function)self :(AnyValue)methodFlag :: Boolean |
+        <primitive: #"function.getMethodFlags">
+        __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #hasMacroFlag addMethod: {:(Function)self  :: Boolean |
+        self hasMethodFlag: #macro
+    };
+    withSelector: #hasFallback addMethod: {:(Function)self  :: Boolean |
+        self hasMethodFlag: #fallback
+    };
+
+    withSelector: #hasAbstractFlag addMethod: {:(Function)self  :: Boolean |
+        self hasMethodFlag: #abstract
+    };
+    withSelector: #hasVirtualFlag addMethod: {:(Function)self  :: Boolean |
+        self hasMethodFlag: #virtual
+    };
+    withSelector: #hasOverrideFlag addMethod: {:(Function)self  :: Boolean |
+        self hasMethodFlag: #override
+    };
+    withSelector: #hasStaticFlag addMethod: {:(Function)self  :: Boolean |
+        self hasMethodFlag: #static
+    };
+    withSelector: #hasFinalFlag addMethod: {:(Function)self  :: Boolean |
+        self hasMethodFlag: #final
+    };
+
+    withSelector: #hasDynamicDispatchFlag addMethod: {:(Function)self :: Boolean |
+        self hasAbstractFlag | self hasVirtualFlag | self hasOverrideFlag
+    };
+
     withSelector: #usesDynamicDispatch addMethod: {:(Function)self :: Boolean |
-        true
+        self hasDynamicDispatchFlag & self hasFinalFlag not 
     }.
 
 if: (Boolean basicNew: true) then: {

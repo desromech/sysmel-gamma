@@ -99,6 +99,7 @@ class TypedValue(ValueInterface):
 class PrimitiveMethod(TypedValue):
     def __init__(self, method, functionTypeSpec):
         self.method = method
+        self.methodFlags = []
         self.functionTypeSpec = functionTypeSpec
         self.functionType = None
         self.rawOwnerType = None
@@ -120,7 +121,7 @@ class PrimitiveMethod(TypedValue):
 
     def getType(self):
         if self.functionType is None:
-            self.functionType = Function.constructFromTypeSpec(self.functionTypeSpec, self.getOwnerType())
+            self.functionType = FunctionType.constructFromTypeSpec(self.functionTypeSpec, self.getOwnerType())
             assert self.functionType is not None
         return self.functionType
 
@@ -500,11 +501,12 @@ class RecordTypeSetterPrimitiveMethod(RecordTypeAccessorPrimitiveMethod):
         return receiver.setSlotWithIndexAndName(self.slotIndex, self.slotName, arguments[0])
 
 class BlockClosure(TypedValue):
-    def __init__(self, node, environment, primitiveName = None):
+    def __init__(self, node, environment, primitiveName = None, methodFlags = []):
         self.node = node
         self.environment = environment
         self.name = None
         self.primitiveName = primitiveName
+        self.methodFlags = methodFlags
         self.functionType = None
 
     def getType(self):
@@ -549,6 +551,10 @@ class BlockClosure(TypedValue):
         if self.name is not None:
             return self.name
         return 'BlockClosure(' + str(self.getType()) + ')'
+
+    @primitiveNamed('function.getMethodFlags')
+    def hasMethodFlag(self, methodFlag):
+        return getBooleanValue(methodFlag in self.methodFlags)
 
     def __call__(self, *args):
         return self.evaluateWithArguments(EvaluationMachine.getActive(), tuple(args))
@@ -1472,7 +1478,7 @@ class FunctionTypeResult:
 
 SimpleFunctionMemoizationTable = {}
 
-class Function(SimpleType):
+class FunctionType(SimpleType):
     def __init__(self):
         self.isDependentFunctionType = False
         self.isSimpleFunctionType = False
@@ -1487,7 +1493,7 @@ class Function(SimpleType):
         super().__init__(supertype = getBasicTypeNamed('Function'))
 
     @classmethod
-    def makeSimpleFunction(cls, argumentTypes, resultType):
+    def makeSimpleFunctionType(cls, argumentTypes, resultType):
         cacheKey = (argumentTypes, resultType)
         if cacheKey in SimpleFunctionMemoizationTable:
             return SimpleFunctionMemoizationTable[cacheKey]
@@ -1710,7 +1716,7 @@ class TypeBuilder(BehaviorTypedObject):
         return self.doNewSimpleFunctionTypeWithArgumentsAndResultType(tuple(argumentsTypes.schema.elementTypes), resultType)
 
     def doNewSimpleFunctionTypeWithArgumentsAndResultType(self, argumentsTypes, resultType):
-        return Function.makeSimpleFunction(argumentsTypes, resultType)
+        return FunctionType.makeSimpleFunctionType(argumentsTypes, resultType)
 
 class ArraySlicePrimitives:
     @primitiveNamed('arraySlice.collect')
