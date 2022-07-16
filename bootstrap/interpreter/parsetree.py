@@ -373,13 +373,14 @@ class PTKeywordMessage(PTNode):
                     return self.arguments[1].evaluateWithEnvironment(machine, environment)
                 else:
                     return self.arguments[2].evaluateWithEnvironment(machine, environment)
-            elif selector == 'while:do:':
+            elif selector == 'while:do:continueWith:':
                 result = None
                 while True:
                     condition = self.arguments[0].evaluateWithEnvironment(machine, environment)
                     if not condition.asBooleanValue():
                         break
                     result = self.arguments[1].evaluateWithEnvironment(machine, environment)
+                    self.arguments[2].evaluateWithEnvironment(machine, environment)
                 return coerceNoneToNil(result)
 
             boundMessage = environment.lookupSymbolRecursively(selector)

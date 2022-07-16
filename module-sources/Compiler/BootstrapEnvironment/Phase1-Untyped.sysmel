@@ -713,9 +713,10 @@ __BootstrapCompiler__
         trueExpression: SysmelCompiler AST Node optional.
         falseExpression: SysmelCompiler AST Node optional.
     });
-    addBindingNamed: #WhileDoNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
+    addBindingNamed: #WhileDoContinueNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
         condition: SysmelCompiler AST Node.
         bodyExpression: SysmelCompiler AST Node optional.
+        continueExpression: SysmelCompiler AST Node optional.
     });
 
     ## Stablish the basic ast node mapping that is required for converting a parse tree onto the actual AST object.
@@ -986,7 +987,7 @@ SysmelCompiler AST SemanticErrorNode
 
 SysmelCompiler AST IfTrueIfFalseNode
     withSelector: #analyzeNodeWith: addMethod: {:(SysmelCompiler AST IfTrueIfFalseNode)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
-        {:(SysmelCompiler AST Node)analyzedNode :: SysmelCompiler AST Node |
+        {:(SysmelCompiler AST IfTrueIfFalseNode)analyzedNode :: SysmelCompiler AST Node |
             analyzedNode condition: (analyzer analyzeNodeIfNeeded: self condition withExpectedType: Boolean).
             ## Initial per-branch analysis
             if: analyzedNode trueExpression isNil then: {
@@ -1035,6 +1036,46 @@ SysmelCompiler AST IfTrueIfFalseNode
                 void
             } else: {
                 self falseExpression _ evaluateNodeWith: evaluationEnvironment
+            }
+        }
+    }.
+
+SysmelCompiler AST WhileDoContinueNode
+withSelector: #analyzeNodeWith: addMethod: {:(SysmelCompiler AST WhileDoContinueNode)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
+        {:(SysmelCompiler AST WhileDoContinueNode)analyzedNode :: SysmelCompiler AST Node |
+            analyzedNode
+                condition: (analyzer analyzeNodeIfNeeded: self condition withExpectedType: Boolean);
+                analyzedType: Void.
+
+            ## Body expression.
+            if: analyzedNode bodyExpression isNil then: {
+                ## Nothing is required here
+            } else: {
+                analyzedNode bodyExpression: (analyzer analyzeNodeIfNeeded: analyzedNode bodyExpression _ withExpectedType: Void)
+            }.
+
+            ## Continue expression.
+            if: analyzedNode continueExpression isNil then: {
+                ## Nothing is required here
+            } else: {
+                analyzedNode continueExpression: (analyzer analyzeNodeIfNeeded: analyzedNode continueExpression _ withExpectedType: Void)
+            }.
+
+            analyzedNode
+        } (self shallowCopy)
+    };
+    withSelector: #evaluateNodeWith: addMethod: {:(SysmelCompiler AST WhileDoContinueNode)self :(SysmelCompiler Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+        while: (self condition evaluateNodeWith: evaluationEnvironment) do: {
+            if: self bodyExpression isNil then: {
+                void
+            } else: {
+                self bodyExpression _ evaluateNodeWith: evaluationEnvironment
+            }
+        } continueWith: {
+            if: self continueExpression isNil then: {
+                void
+            } else: {
+                self continueExpression _ evaluateNodeWith: evaluationEnvironment
             }
         }
     }.
@@ -1257,9 +1298,26 @@ __BootstrapCompiler__
             falseExpression: falseExpression.
         })
     };
-    addBindingNamed: #while:do: with: {:(MacroInvocationContext)macroSelf :(SysmelCompiler AST Node)condition :(SysmelCompiler AST Node)bodyExpression :: (SysmelCompiler AST WhileDoNode) |
+    addBindingNamed: #if:then: with: {:(MacroInvocationContext)macroSelf :(SysmelCompiler AST Node)condition :(SysmelCompiler AST Node)trueExpression :: (SysmelCompiler AST IfTrueIfFalseNode) |
         <macro>
-        (SysmelCompiler AST WhileDoNode basicNewWithNamedSlots: #{
+        (SysmelCompiler AST IfTrueIfFalseNode basicNewWithNamedSlots: #{
+            sourcePosition: macroSelf sourcePosition.
+            condition: condition.
+            trueExpression: trueExpression.
+        })
+    };
+    addBindingNamed: #while:do:continueWith: with: {:(MacroInvocationContext)macroSelf :(SysmelCompiler AST Node)condition :(SysmelCompiler AST Node)bodyExpression :(SysmelCompiler AST Node)continueExpression :: (SysmelCompiler AST WhileDoContinueNode) |
+        <macro>
+        (SysmelCompiler AST WhileDoContinueNode basicNewWithNamedSlots: #{
+            sourcePosition: macroSelf sourcePosition.
+            condition: condition.
+            bodyExpression: bodyExpression.
+            continueExpression: continueExpression
+        })
+    };
+    addBindingNamed: #while:do: with: {:(MacroInvocationContext)macroSelf :(SysmelCompiler AST Node)condition :(SysmelCompiler AST Node)bodyExpression :: (SysmelCompiler AST WhileDoContinueNode) |
+        <macro>
+        (SysmelCompiler AST WhileDoContinueNode basicNewWithNamedSlots: #{
             sourcePosition: macroSelf sourcePosition.
             condition: condition.
             bodyExpression: bodyExpression.
@@ -1316,6 +1374,9 @@ __BootstrapCompiler__
 
     print: (`'(if: 1 = 1 then: 1 else: 2) analyzeNodeIfNeededWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
     print: (`'(if: 1 = 1 then: 1 else: 2) analyzeAndEvaluateNodeWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
+
+    print: (`'(if: 1 = 1 then: 1) analyzeNodeIfNeededWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
+    print: (`'(if: 1 = 1 then: 1) analyzeAndEvaluateNodeWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
 
     print: nil isNil;
     print: nil isNotNil;
