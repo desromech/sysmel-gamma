@@ -1758,6 +1758,14 @@ def extractArraySliceElements(arraySlice):
     return list(map(lambda index: elements[Integer(index)], range(size.asInteger())))
 
 class ObjectPrimitives:
+    @primitiveNamed('object.comparison.identityEquals')
+    def primitiveIdentityEquals(self, other):
+        return getBooleanValue(self is other)
+
+    @primitiveNamed('object.comparison.identityNotEquals')
+    def primitiveIdentityNotEquals(self, other):
+        return getBooleanValue(self is not other)
+
     @primitiveNamed('object.runWithIn')
     def primitiveRunWithIn(self, selector, arguments, receiver):
         return self.runWithIn(EvaluationMachine.getActive(), selector, extractArraySliceElements(arguments), receiver)

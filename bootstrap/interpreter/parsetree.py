@@ -460,6 +460,9 @@ class PTParenthesis(PTNode):
     def doEvaluateWithEnvironment(self, machine, environment):
         return self.expression.evaluateWithEnvironment(machine, environment)
 
+    def formatAST(self):
+        return '(' + self.expression.formatAST() + ')'
+
 class PTMakeTuple(PTNode):
     def __init__(self, elements, tokens = []):
         PTNode.__init__(self)
