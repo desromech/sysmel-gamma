@@ -1143,6 +1143,26 @@ SysmelCompiler Semantic ASTAnalyzer __type__
         self forEnvironment: SysmelCompiler Semantic EvaluationEnvironment default
     }.
 
+SysmelCompiler Semantic TypeInferenceEnvironment
+    withSelector: #solveAnalyzedNodeType:with: addMethod: {:(SysmelCompiler Semantic TypeInferenceEnvironment)self :(SysmelCompiler AST Node)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer |
+        __BootstrapCompiler__ subclassResponsibility
+    }.
+
+SysmelCompiler Semantic DirectAutoTypeInferenceEnvironment
+    withSelector: #solveAnalyzedNodeType:with: addMethod: {:(SysmelCompiler Semantic TypeInferenceEnvironment)self :(SysmelCompiler AST Node)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
+        node
+    }.
+
+SysmelCompiler Semantic AutoTypeInferenceEnvironment
+    withSelector: #solveAnalyzedNodeType:with: addMethod: {:(SysmelCompiler Semantic TypeInferenceEnvironment)self :(SysmelCompiler AST Node)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node  |
+        analyzer addImplicitCoercionTo: node analyzedType _ asDecayedType node: node
+    }.
+
+SysmelCompiler Semantic ExpectedTypeInferenceEnvironment
+    withSelector: #solveAnalyzedNodeType:with: addMethod: {:(SysmelCompiler Semantic TypeInferenceEnvironment)self :(SysmelCompiler AST Node)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node  |
+        analyzer addImplicitCoercionTo: self expectedType node: node
+    }.
+
 SysmelCompiler Semantic ASTAnalyzer
     withSelector: #makeSemanticAnalysisError:at: addMethod: {:(SysmelCompiler Semantic ASTAnalyzer)self :(String)errorMessage :(SysmelCompiler AST SourcePosition)sourcePosition :: SysmelCompiler AST SemanticErrorNode |
         SysmelCompiler AST SemanticErrorNode basicNewWithNamedSlots: #{
@@ -1196,7 +1216,7 @@ SysmelCompiler Semantic ASTAnalyzer
         })
     };
     withSelector: #analyzeNodeIfNeededWithCurrentExpectedType: addMethod: {:(SysmelCompiler Semantic ASTAnalyzer)self :(SysmelCompiler AST Node)node :: SysmelCompiler AST Node |
-        node analyzeNodeIfNeededWith: self
+        self typeInferenceEnvironment solveAnalyzedNodeType: (node analyzeNodeIfNeededWith: self) with: self
     };
     withSelector: #computeBranchResultTypeOf:with: addMethod: {:(SysmelCompiler Semantic ASTAnalyzer)self :(Type)leftType :(Type)rightType :: Type |
         if: leftType == rightType then: {
@@ -1204,9 +1224,10 @@ SysmelCompiler Semantic ASTAnalyzer
         } else: {
             Void
         }
+    };
+    withSelector: #addImplicitCoercionTo:node: addMethod: {:(SysmelCompiler Semantic ASTAnalyzer)self :(Type)targetType :(SysmelCompiler AST Node)node :: SysmelCompiler AST Node |
+        node
     }.
-
-##TypeInferenceEnvironment
 
 Type
     withSelector: #lookupSelector: addMethod: {:(Type)self :(AnyValue)selector :: AnyValue |
@@ -1241,6 +1262,9 @@ Type
     withSelector: #supportsDynamicDispatch addMethod: {:(Type)self :: AnyValue |
         <primitive: #"type.supportsDynamicDispatch">
         __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #asDecayedType addMethod: {:(Type)self :: Type |
+        self
     }.
 
 Function __type__
