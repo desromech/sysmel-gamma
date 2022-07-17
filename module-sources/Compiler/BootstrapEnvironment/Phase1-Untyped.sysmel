@@ -773,8 +773,14 @@ __BootstrapCompiler__
     addBindingNamed: #EvaluationEnvironment with: (__TypeBuilder__ newGCClassWithPublicSlots: #{
         lexicalScope: SysmelCompiler Semantic LexicalScope
     });
+    addBindingNamed: #TypeInferenceEnvironment with: (__TypeBuilder__ newGCClassWithPublicSlots: #{});
+    addBindingNamed: #ExpectedTypeInferenceEnvironment with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler Semantic TypeInferenceEnvironment publicSlots: #{
+        expectedType: Type
+    });
+    addBindingNamed: #AutoTypeInferenceEnvironment with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler Semantic TypeInferenceEnvironment publicSlots: #{});
     addBindingNamed: #ASTAnalyzer with: (__TypeBuilder__ newGCClassWithPublicSlots: #{
-        environment: SysmelCompiler Semantic EvaluationEnvironment
+        environment: SysmelCompiler Semantic EvaluationEnvironment.
+        typeInferenceEnvironment: SysmelCompiler Semantic TypeInferenceEnvironment.
     });
     setSemanticAnalysisMapping: #{
         SymbolBinding: SysmelCompiler Semantic SymbolBinding.
@@ -860,7 +866,7 @@ SysmelCompiler AST CleanUpScopeNode
                 body: analyzedBody;
                 analyzedType: analyzedBody analyzedType _;
                 yourself
-        } (self body analyzeNodeIfNeededWith: analyzer)
+        } (analyzer analyzeNodeIfNeededWithCurrentExpectedType: self body)
     };
     withSelector: #evaluateNodeWith: addMethod: {:(Type)self :(SysmelCompiler Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         self body evaluateNodeWith: evaluationEnvironment
@@ -873,7 +879,7 @@ SysmelCompiler AST LexicalScopeNode
                 body: analyzedBody;
                 analyzedType: analyzedBody analyzedType _;
                 yourself
-        } (self body analyzeNodeIfNeededWith: analyzer)
+        } (analyzer analyzeNodeIfNeededWithCurrentExpectedType: self body)
     };
     withSelector: #evaluateNodeWith: addMethod: {:(Type)self :(SysmelCompiler Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         self body evaluateNodeWith: evaluationEnvironment
@@ -889,10 +895,14 @@ SysmelCompiler AST SequenceNode
                 yourself
         }(
             self pragmas collect: {:(SysmelCompiler AST Node)node :: SysmelCompiler AST Node |
-                node analyzeNodeIfNeededWith: analyzer
+                analyzer analyzedNodeIfNeeded: node withExpectedType: Pragma
             },
-            self expressions collect: {:(SysmelCompiler AST Node)node :: SysmelCompiler AST Node |
-                node analyzeNodeIfNeededWith: analyzer
+            self expressions collectWithIndex: {:(SysmelCompiler AST Node)node :(Size)index :: SysmelCompiler AST Node |
+                if: index + 1sz < self expressions size then: {
+                    analyzer analyzeNodeIfNeeded: node withExpectedType: Void.
+                } else: {
+                    analyzer analyzeNodeIfNeededWithCurrentExpectedType: node
+                }
             }
         )
     };
@@ -939,9 +949,9 @@ SysmelCompiler AST MessageSendNode
                         receiver: analyzedReceiver;
                         selector: analyzedSelector;
                         yourself) with: analyzer
-                }(self receiver _ analyzeNodeIfNeededWith: analyzer)
+                }(analyzer analyzeNodeIfNeededWithDirectAutoType: self receiver _ )
             }.
-        }(self selector analyzeNodeIfNeededWith: analyzer)
+        }(analyzer analyzeNodeIfNeededWithAutoType: self selector)
     };
     withSelector: #evaluateNodeWith: addMethod: {:(SysmelCompiler AST MessageSendNode)self :(SysmelCompiler Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         if: self receiver isNil then: {
@@ -1109,7 +1119,7 @@ SysmelCompiler Semantic SymbolValueBinding
 SysmelCompiler Semantic EvaluationEnvironment __type__
     withSelector: #default addMethod: {:(SysmelCompiler Semantic EvaluationEnvironment __type__)self :: self |
         self basicNewWithNamedSlots: #{
-            lexicalScope: __BootstrapCompiler__ getTopLevelEnvironment
+            lexicalScope: __BootstrapCompiler__ getTopLevelEnvironment.
         }
     };
     withSelector: #forScriptEvaluationScope: addMethod: {:(SysmelCompiler Semantic EvaluationEnvironment __type__)self :(SysmelCompiler Semantic ScriptEvaluationScope)scope :: self |
@@ -1121,7 +1131,8 @@ SysmelCompiler Semantic EvaluationEnvironment __type__
 SysmelCompiler Semantic ASTAnalyzer __type__
     withSelector: #forEnvironment: addMethod: {:(SysmelCompiler Semantic ASTAnalyzer __type__)self :(SysmelCompiler Semantic EvaluationEnvironment)environment :: self |
         self basicNewWithNamedSlots: #{
-            environment: environment
+            environment: environment.
+            typeInferenceEnvironment: SysmelCompiler Semantic AutoTypeInferenceEnvironment basicNew.
         }
     };
     withSelector: #forScriptEvaluationScope: addMethod: {:(SysmelCompiler Semantic ASTAnalyzer __type__)self :(SysmelCompiler Semantic ScriptEvaluationScope)scope :: self |
@@ -1153,6 +1164,9 @@ SysmelCompiler Semantic ASTAnalyzer
         }
     };
 
+    withSelector: #analyzeNodeIfNeededWithDirectAutoType: addMethod: {:(SysmelCompiler Semantic ASTAnalyzer)self :(SysmelCompiler AST Node)node :: SysmelCompiler AST Node |
+        node analyzeNodeIfNeededWith: self
+    };
     withSelector: #analyzeNodeIfNeededWithAutoType: addMethod: {:(SysmelCompiler Semantic ASTAnalyzer)self :(SysmelCompiler AST Node)node :: SysmelCompiler AST Node |
         node analyzeNodeIfNeededWith: self
     };
