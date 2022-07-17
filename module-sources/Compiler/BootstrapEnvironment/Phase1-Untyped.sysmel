@@ -778,6 +778,7 @@ __BootstrapCompiler__
         expectedType: Type
     });
     addBindingNamed: #AutoTypeInferenceEnvironment with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler Semantic TypeInferenceEnvironment publicSlots: #{});
+    addBindingNamed: #DirectAutoTypeInferenceEnvironment with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler Semantic TypeInferenceEnvironment publicSlots: #{});
     addBindingNamed: #ASTAnalyzer with: (__TypeBuilder__ newGCClassWithPublicSlots: #{
         environment: SysmelCompiler Semantic EvaluationEnvironment.
         typeInferenceEnvironment: SysmelCompiler Semantic TypeInferenceEnvironment.
@@ -1165,15 +1166,36 @@ SysmelCompiler Semantic ASTAnalyzer
     };
 
     withSelector: #analyzeNodeIfNeededWithDirectAutoType: addMethod: {:(SysmelCompiler Semantic ASTAnalyzer)self :(SysmelCompiler AST Node)node :: SysmelCompiler AST Node |
-        node analyzeNodeIfNeededWith: self
+        self analyzeNodeIfNeeded: node withTypeInferenceEnvironment: SysmelCompiler Semantic DirectAutoTypeInferenceEnvironment basicNew
     };
     withSelector: #analyzeNodeIfNeededWithAutoType: addMethod: {:(SysmelCompiler Semantic ASTAnalyzer)self :(SysmelCompiler AST Node)node :: SysmelCompiler AST Node |
-        node analyzeNodeIfNeededWith: self
+        self analyzeNodeIfNeeded: node withTypeInferenceEnvironment: SysmelCompiler Semantic AutoTypeInferenceEnvironment basicNew
+    };
+    withSelector: #analyzeNodeIfNeeded:withEnvironment: addMethod: {:(SysmelCompiler Semantic ASTAnalyzer)self :(SysmelCompiler AST Node)node :(SysmelCompiler Semantic EvaluationEnvironment)environment :: SysmelCompiler AST Node |
+        { :(SysmelCompiler Semantic EvaluationEnvironment)oldEnvironment :: SysmelCompiler AST Node |
+            self environment: environment.
+            {:(SysmelCompiler AST Node)analyzedNode :: SysmelCompiler AST Node |
+                self environment: oldEnvironment.
+                analyzedNode
+            } (self analyzeNodeIfNeededWithCurrentExpectedType: node)
+        } (self environment)
+    };
+    withSelector: #analyzeNodeIfNeeded:withTypeInferenceEnvironment: addMethod: {:(SysmelCompiler Semantic ASTAnalyzer)self :(SysmelCompiler AST Node)node :(SysmelCompiler Semantic TypeInferenceEnvironment)typeInferenceEnvironment :: SysmelCompiler AST Node |
+        { :(SysmelCompiler Semantic TypeInferenceEnvironment)oldTypeInferenceEnvironment :: SysmelCompiler AST Node |
+            self typeInferenceEnvironment: typeInferenceEnvironment.
+            {:(SysmelCompiler AST Node)analyzedNode :: SysmelCompiler AST Node |
+                self typeInferenceEnvironment: oldTypeInferenceEnvironment.
+                analyzedNode
+            } (self analyzeNodeIfNeededWithCurrentExpectedType: node)
+        } (self typeInferenceEnvironment)
+    };
+    
+    withSelector: #analyzeNodeIfNeeded:withExpectedType: addMethod: {:(SysmelCompiler Semantic ASTAnalyzer)self :(SysmelCompiler AST Node)node :(Type)expectedType :: SysmelCompiler AST Node |
+        self analyzeNodeIfNeeded: node withTypeInferenceEnvironment: (SysmelCompiler Semantic ExpectedTypeInferenceEnvironment basicNewWithNamedSlots: #{
+            expectedType: expectedType
+        })
     };
     withSelector: #analyzeNodeIfNeededWithCurrentExpectedType: addMethod: {:(SysmelCompiler Semantic ASTAnalyzer)self :(SysmelCompiler AST Node)node :: SysmelCompiler AST Node |
-        node analyzeNodeIfNeededWith: self
-    };
-    withSelector: #analyzeNodeIfNeeded:withExpectedType: addMethod: {:(SysmelCompiler Semantic ASTAnalyzer)self :(SysmelCompiler AST Node)node :(Type)expectedType :: SysmelCompiler AST Node |
         node analyzeNodeIfNeededWith: self
     };
     withSelector: #computeBranchResultTypeOf:with: addMethod: {:(SysmelCompiler Semantic ASTAnalyzer)self :(Type)leftType :(Type)rightType :: Type |
@@ -1183,6 +1205,8 @@ SysmelCompiler Semantic ASTAnalyzer
             Void
         }
     }.
+
+##TypeInferenceEnvironment
 
 Type
     withSelector: #lookupSelector: addMethod: {:(Type)self :(AnyValue)selector :: AnyValue |
