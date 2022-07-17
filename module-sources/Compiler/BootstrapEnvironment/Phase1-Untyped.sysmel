@@ -23,6 +23,18 @@ __BootstrapCompiler__
     addBasicTypeNamed: #SimpleType with: (__TypeBuilder__ newGCClassWithSuperclass: Type slots: #{});
     addBasicTypeNamed: #MetaType with: (__TypeBuilder__ newGCClassWithSuperclass: Type slots: #{});
 
+    addBasicTypeNamed: #TypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
+    addBasicTypeNamed: #TrivialTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: TypeSchema slots: #{});
+    addBasicTypeNamed: #AbsurdTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: TypeSchema slots: #{});
+    addBasicTypeNamed: #SumTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: TypeSchema slots: #{});
+    addBasicTypeNamed: #PrimitiveTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: TypeSchema slots: #{});
+    addBasicTypeNamed: #ProductTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: TypeSchema slots: #{});
+    addBasicTypeNamed: #RecordTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: ProductTypeSchema slots: #{});
+    addBasicTypeNamed: #GCClassTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: RecordTypeSchema slots: #{});
+    addBasicTypeNamed: #ArrayTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: TypeSchema slots: #{});
+    addBasicTypeNamed: #PointerTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: TypeSchema slots: #{});
+    addBasicTypeNamed: #ReferenceTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: TypeSchema slots: #{});
+
     addBasicTypeNamed: #Tuple with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
     addBasicTypeNamed: #Function with: (__TypeBuilder__ newGCClassWithSuperclass: SimpleType slots: #{});
     addBasicTypeNamed: #FunctionImplementation with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
@@ -1264,6 +1276,10 @@ Type
         __BootstrapCompiler__ primitiveFailed
     };
     withSelector: #asDecayedType addMethod: {:(Type)self :: Type |
+        self
+    };
+    withSelector: #schema addMethod: {:(Type)self :: TypeSchema |
+        <primitive: #"type.getSchema">
         self
     }.
 

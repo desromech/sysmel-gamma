@@ -197,6 +197,10 @@ class TypeInterface:
     def primitiveLookupSelector(self, selector):
         return self.lookupSelector(selector)
 
+    @primitiveNamed('type.getSchema')
+    def primitiveGetSchema(self):
+        return self.schema
+
     @primitiveNamed('type.lookupLocalSelector')
     def primitiveLookupLocalSelector(self, selector):
         return self.lookupLocalSelector(selector)
@@ -621,11 +625,14 @@ class TemplatedBlockClosure(AbstractMemoizedBlockClosure):
         result.setConstructionTemplateAndArguments(self, arguments)
         result.onGlobalBindingWithSymbolAdded(Symbol(valueName))
 
-class TypeSchema:
+class TypeSchema(TypedValue):
     def __init__(self):
         self.methodDict = {}
         self.metaTypeMethodDict = {}
         self.buildPrimitiveMethodDictionary()
+
+    def getType(self):
+        return getBasicTypeNamed('TypeSchema')
 
     def isDefaultConstructible(self):
         return False
@@ -637,8 +644,8 @@ class TypeSchema:
             method.installedInMetaTypeOf(type)
 
     def buildPrimitiveMethodDictionary(self):
-        self.methodDict[Symbol('shallowCopy')] = TypeSchemaPrimitiveMethod(self.shallowCopy, '(SelfType => SelfType)')
-        self.methodDict[Symbol('yourself')] = TypeSchemaPrimitiveMethod(self.yourself, '(SelfType => SelfType)')
+        self.methodDict[Symbol('shallowCopy')] = TypeSchemaPrimitiveMethod(self.primitiveShallowCopy, '(SelfType => SelfType)')
+        self.methodDict[Symbol('yourself')] = TypeSchemaPrimitiveMethod(self.primitiveYourself, '(SelfType => SelfType)')
         self.methodDict[Symbol('__type__')] = TypeSchemaPrimitiveMethod(self.getTypeFromValue, '(SelfType => SelfType __type__)')
 
     def lookupPrimitiveWithSelector(self, selector):
@@ -651,10 +658,10 @@ class TypeSchema:
             return self.metaTypeMethodDict[selector]
         return None
 
-    def shallowCopy(self, value):
+    def primitiveShallowCopy(self, value):
         return value.shallowCopy()
 
-    def yourself(self, value):
+    def primitiveYourself(self, value):
         return value
 
     def getTypeFromValue(self, value):
@@ -710,12 +717,16 @@ class TrivialTypedValue(TypedValue):
         return str(self.type) + '()'
 
 class OpaqueTypeSchema(TypeSchema):
-    pass
+    def getType(self):
+        return getBasicTypeNamed('OpaqueTypeSchema')
 
 class EmptyTypeSchema(TypeSchema):
     def __init__(self):
         super().__init__()
         self.uniqueInstance = None
+
+    def getType(self):
+        return getBasicTypeNamed('EmptyTypeSchema')
 
     def isDefaultConstructible(self):
         return True
@@ -735,6 +746,9 @@ class EmptyTypeSchema(TypeSchema):
 class AbsurdTypeSchema(TypeSchema):
     def buildPrimitiveMethodDictionary(self):
         pass
+
+    def getType(self):
+        return getBasicTypeNamed('AbsurdTypeSchema')
 
 class PrimitiveNumberTypeValue(TypedValue):
     def __init__(self, type, value):
@@ -821,6 +835,9 @@ class PrimitiveTypeSchema(TypeSchema):
         super().__init__()
         self.size = size
         self.alignment = alignment
+
+    def getType(self):
+        return getBasicTypeNamed('PrimitiveTypeSchema')
 
 class PrimitiveNumberTypeSchema(PrimitiveTypeSchema):
     def isDefaultConstructible(self):
@@ -912,6 +929,9 @@ class SumTypeSchema(TypeSchema):
     def __init__(self, elementTypes):
         super().__init__()
         self.elementTypes = elementTypes
+
+    def getType(self):
+        return getBasicTypeNamed('SumTypeSchema')
 
     def isDefaultConstructible(self):
         return self.elementTypes[0].isDefaultConstructible()
@@ -1008,6 +1028,9 @@ class ProductTypeSchema(TypeSchema):
         self.elementTypes = elementTypes
         self.isDefaultConstructibleCache = None
 
+    def getType(self):
+        return getBasicTypeNamed('ProductTypeSchema')
+
     def buildPrimitiveMethodDictionary(self):
         self.metaTypeMethodDict[Symbol('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew, '{:(SelfType)self :: self}')
         self.metaTypeMethodDict[Symbol('basicNewWithSlots:')] = TypeSchemaPrimitiveMethod(self.basicNewWithSequentialSlots, '{:(SelfType)self :(AnyValue)sequentialSlots :: self}')
@@ -1049,6 +1072,9 @@ class RecordTypeSchema(ProductTypeSchema):
             slotName = assoc.key
             self.slotNameDictionary[slotName] = slotIndex
             slotIndex += 1
+
+    def getType(self):
+        return getBasicTypeNamed('RecordTypeSchema')
 
     def getIndexOfSlotNamed(self, slotName):
         return self.slotNameDictionary[slotName]
@@ -1103,6 +1129,9 @@ class ArrayTypeSchema(TypeSchema):
         self.bounds = bounds.asInteger()
         super().__init__()
 
+    def getType(self):
+        return getBasicTypeNamed('ArrayTypeSchema')
+
     def buildPrimitiveMethodDictionary(self):
         self.metaTypeMethodDict[Symbol('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew, '{:(SelfType)self :: self}')
         self.metaTypeMethodDict[Symbol('basicNewWithSlots:')] = TypeSchemaPrimitiveMethod(self.basicNewWithSequentialSlots, '{:(SelfType)self :(AnyValue)slots :: self}')
@@ -1150,6 +1179,9 @@ class PointerTypeSchema(TypeSchema):
         self.elementType = elementType
         super().__init__()
 
+    def getType(self):
+        return getBasicTypeNamed('PointerTypeSchema')
+
     def hasPointerOrReferenceValueCopySemantics(self):
         return True
 
@@ -1183,7 +1215,27 @@ class PointerTypeSchema(TypeSchema):
     def basicNewWithValue(self, valueType, initialValue):
         return PointerTypeValue(valueType, initialValue)
 
+class ReferenceTypeSchema(TypeSchema):
+    def __init__(self, elementType):
+        self.elementType = elementType
+        super().__init__()
+
+    def getType(self):
+        return getBasicTypeNamed('ReferenceTypeSchema')
+
+    def hasPointerOrReferenceValueCopySemantics(self):
+        return True
+
+    def canCoerceValueOfType(self, valueType):
+        if valueType.schema.hasDirectCoercionToPointerOf(self.elementType):
+            return True
+
+        return super().canCoerceValueOfType(valueType)
+
 class GCClassTypeSchema(RecordTypeSchema):
+    def getType(self):
+        return getBasicTypeNamed('GCClassTypeSchema')
+
     def hasPointerOrReferenceValueCopySemantics(self):
         return True
 
@@ -1629,6 +1681,7 @@ class TypeBuilder(BehaviorTypedObject):
             (cls.newRecordTypeWith, 'newRecordTypeWith:', '(SelfType -- AnyValue) => Type'),
             (cls.newArrayTypeForWithBounds, 'newArrayTypeFor:withBounds:', '(SelfType -- AnyValue -- Integer) => Type'),
             (cls.newPointerTypeFor, 'newPointerTypeFor:', '(SelfType -- AnyValue -- Integer) => Type'),
+            (cls.newReferenceTypeFor, 'newReferenceTypeFor:', '(SelfType -- AnyValue -- Integer) => Type'),
 
             (cls.newBooleanTypeWithSizeAndAlignment, 'newBooleanTypeWithSize:alignment:', '(SelfType -- Integer -- Integer) => Type'),
             (cls.newUnsignedIntegerTypeWithSizeAndAlignment, 'newUnsignedIntegerTypeWithSize:alignment:', '(SelfType -- Integer -- Integer) => Type'),
@@ -1672,6 +1725,9 @@ class TypeBuilder(BehaviorTypedObject):
 
     def newPointerTypeFor(self, elementType):
         return SimpleType(schema = PointerTypeSchema(elementType))
+
+    def newReferenceTypeFor(self, elementType):
+        return SimpleType(schema = ReferenceTypeSchema(elementType))
 
     def newGCClassWithSuperclassSlots(self, supertype, instanceVariable):
         return SimpleType(supertype = supertype, schema = GCClassTypeSchema(instanceVariable, supertypeSchema = supertype.schema))
