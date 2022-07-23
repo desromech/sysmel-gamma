@@ -149,6 +149,8 @@ def getBoolean8Value(value):
     return getBasicTypeNamed('Boolean8').basicNewWithValue(int(value))
 
 def getSizeValue(value):
+    if 'Size' not in BasicTypeEnvironment:
+        return Integer(value)
     return getBasicTypeNamed('Size').basicNewWithValue(int(value))
 
 def coerceNoneToNil(value):
@@ -913,8 +915,8 @@ class SumTypeValue(TypedValue):
 
     def asBooleanValue(self):
         if self.type.isTypeTheoryBoolean():
-            return self.typeSelector == 1
-        super().asBooleanValue()
+            return self.typeSelector.asInteger() == 1
+        return super().asBooleanValue()
 
     def getType(self):
         return self.type
@@ -923,7 +925,7 @@ class SumTypeValue(TypedValue):
         return SumTypeValue(self.type, self.typeSelector, self.wrappedValue.shallowCopyValue())
 
     def defaultPrintString(self) -> str:
-        return '%s(%d: %s)' % (repr(self.type), self.typeSelector, repr(self.wrappedValue))
+        return '%s(%s: %s)' % (repr(self.type), repr(self.typeSelector), repr(self.wrappedValue))
 
 class SumTypeSchema(TypeSchema):
     def __init__(self, elementTypes):
@@ -937,10 +939,11 @@ class SumTypeSchema(TypeSchema):
         return self.elementTypes[0].isDefaultConstructible()
 
     def buildPrimitiveMethodDictionary(self):
-        self.methodDict[Symbol('__typeSelector__')] = TypeSchemaPrimitiveMethod(self.getTypeSelector, '(SelfType) => SelfType __type__')
+        self.methodDict[Symbol('__typeSelector__')] = TypeSchemaPrimitiveMethod(self.getTypeSelector, '(SelfType) => Size')
         self.methodDict[Symbol('get:')] = TypeSchemaPrimitiveMethod(self.getWithType, '{:(SelfType)self :(Type)expectedType :: expectedType}')
         self.metaTypeMethodDict[Symbol('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew, '{:(SelfType)self :: self}')
         self.metaTypeMethodDict[Symbol('basicNew:')] = TypeSchemaPrimitiveMethod(self.basicNewWithValue, '{:(SelfType)self :(AnyValue)initialValue :: self}')
+        self.metaTypeMethodDict[Symbol('basicNew:typeSelector:')] = TypeSchemaPrimitiveMethod(self.basicNewWithValueTypeSelector, '{:(SelfType)self :(AnyValue)initialValue :(Size)typeSelector :: self}')
         return super().buildPrimitiveMethodDictionary()
 
     def getTypeSelector(self, sumValue):
@@ -948,23 +951,26 @@ class SumTypeSchema(TypeSchema):
 
     def getWithType(self, sumValue, requiredType):
         requiredTypeIndex = self.elementTypes.index(requiredType)
-        if sumValue.typeSelector != requiredTypeIndex:
-            raise SumTypeNotMatched('Sum type value is not of the expected type (%s).' & repr(requiredType))
+        if sumValue.typeSelector.asInteger() != requiredTypeIndex:
+            raise SumTypeNotMatched('Sum type value is not of the expected type (%s).' % repr(requiredType))
         return sumValue.wrappedValue
 
     def basicNew(self, sumType):
-        return SumTypeValue(sumType, Integer(0), self.elementTypes[0].basicNew())
+        return SumTypeValue(sumType, getSizeValue(0), self.elementTypes[0].basicNew())
 
     def basicNewWithValue(self, sumType, value):
         if value.getType() is sumType:
             return value.shallowCopy()
         return self.coerceValueOfTypeIntoType(value, value.getType(), sumType)
 
+    def basicNewWithValueTypeSelector(self, sumType, value, typeSelector):
+        return SumTypeValue(sumType, typeSelector, value)
+
     def basicNewWithTypeTheoryBoolean(self, sumType, value):
         if value:
-            return SumTypeValue(sumType, Integer(1), self.elementTypes[1].basicNew())
+            return SumTypeValue(sumType, getSizeValue(1), self.elementTypes[1].basicNew())
         else:
-            return SumTypeValue(sumType, Integer(0), self.elementTypes[0].basicNew())
+            return SumTypeValue(sumType, getSizeValue(0), self.elementTypes[0].basicNew())
 
     def isTypeTheoryBoolean(self):
         return len(self.elementTypes) == 2 and self.elementTypes[0].hasTrivialTypeSchema() and self.elementTypes[1].hasTrivialTypeSchema()
@@ -979,8 +985,16 @@ class SumTypeSchema(TypeSchema):
         for i in range(len(self.elementTypes)):
             elementType = self.elementTypes[i]
             if valueType.canBeCoercedToType(elementType):
-                return SumTypeValue(targetType, Integer(i), value)
+                return SumTypeValue(targetType, getSizeValue(i), value)
         return self.basicNewWithValue(targetType, value)
+
+    @primitiveNamed('sumTypeSchema.containsType')
+    def primitiveContainsType(self, elementTypeToCheck):
+        return getBooleanValue(elementTypeToCheck in self.elementTypes)
+
+    @primitiveNamed('sumTypeSchema.getTypeSelectorIndexFor')
+    def primitiveGetTypeSelectorIndexFor(self, elementTypeToCheck):
+        return getSizeValue(self.elementTypes.index(elementTypeToCheck))
 
 class ProductTypeValue(TypedValue):
     def __init__(self, type, elements):
@@ -1379,11 +1393,13 @@ class BehaviorType(TypedValue, TypeInterface):
             typeSupertype = self.getMetaTypeRoot()
         return MetaType(thisType = self, supertype = typeSupertype, schema = OpaqueTypeSchema())
 
+    @primitiveNamed('type.conversion.toString')
     def defaultToString(self):
-        return self.getName()
+        return String(self.getName())
 
+    @primitiveNamed('type.conversion.printString')
     def defaultPrintString(self):
-        return self.getName()
+        return String(self.getName())
 
     def addMetaTypeRootMethods(self):
         cls = self.__class__

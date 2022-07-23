@@ -361,11 +361,11 @@ __BootstrapCompiler__
             sumType
                 withSelector: #isNil addMethod: {:(sumType)self :: Boolean |
                     <pure>
-                    self __typeSelector__ = 0
+                    self __typeSelector__ = 0sz
                 };
                 withSelector: #isNotNil addMethod: {:(sumType)self :: Boolean |
                     <pure>
-                    self __typeSelector__ ~= 0
+                    self __typeSelector__ ~= 0sz
                 };
                 withSelector: #_ addMethod: {:(sumType)self :: optionalType |
                     <pure>
@@ -729,6 +729,15 @@ __BootstrapCompiler__
         condition: SysmelCompiler AST Node.
         bodyExpression: SysmelCompiler AST Node optional.
         continueExpression: SysmelCompiler AST Node optional.
+    });
+
+    ## Basic type conversion nodes
+    addBindingNamed: #ValueAsVoidNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
+        expression: SysmelCompiler AST Node.
+    });
+    addBindingNamed: #WrapValueInSumTypeNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
+        expression: SysmelCompiler AST Node.
+        typeSelector: Size.
     });
 
     ## Stablish the basic ast node mapping that is required for converting a parse tree onto the actual AST object.
@@ -1103,6 +1112,17 @@ withSelector: #analyzeNodeWith: addMethod: {:(SysmelCompiler AST WhileDoContinue
         }
     }.
 
+SysmelCompiler AST ValueAsVoidNode
+    withSelector: #evaluateNodeWith: addMethod: {:(SysmelCompiler AST ValueAsVoidNode)self :(SysmelCompiler Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+        self expression evaluateNodeWith: evaluationEnvironment.
+        void
+    }.
+
+SysmelCompiler AST WrapValueInSumTypeNode
+    withSelector: #evaluateNodeWith: addMethod: {:(SysmelCompiler AST WrapValueInSumTypeNode)self :(SysmelCompiler Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+        self analyzedType _ basicNew: (self expression evaluateNodeWith: evaluationEnvironment) typeSelector: self typeSelector
+    }.
+
 SysmelCompiler Semantic IdentifierLookupScope
     withSelector: #lookupSymbol: addMethod: {:(SysmelCompiler Semantic IdentifierLookupScope)self :(AnyValue)symbol :: SysmelCompiler Semantic SymbolBinding optional |
         <primitive: #"identifierLookupScope.lookupSymbol">
@@ -1238,10 +1258,20 @@ SysmelCompiler Semantic ASTAnalyzer
         }
     };
     withSelector: #addImplicitCoercionTo:node: addMethod: {:(SysmelCompiler Semantic ASTAnalyzer)self :(Type)targetType :(SysmelCompiler AST Node)node :: SysmelCompiler AST Node |
-        node
+        node analyzedType _ addImplicitCoercionToNode: node targetType: targetType with: self
     }.
 
 Type
+    withSelector: #asString addMethod: {:(Type)self :: String |
+        <pure>
+        <primitive: #"type.conversion.toString">
+        __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #printString addMethod: {:(Type)self :: String |
+        <pure>
+        <primitive: #"type.conversion.toString">
+        __BootstrapCompiler__ primitiveFailed
+    };
     withSelector: #lookupSelector: addMethod: {:(Type)self :(AnyValue)selector :: AnyValue |
         <primitive: #"type.lookupSelector">
         __BootstrapCompiler__ primitiveFailed
@@ -1281,6 +1311,69 @@ Type
     withSelector: #schema addMethod: {:(Type)self :: TypeSchema |
         <primitive: #"type.getSchema">
         self
+    };
+    withSelector: #addImplicitCoercionToNode:targetType:with: addMethod: {:(Type)self
+        :(SysmelCompiler AST Node)node :(Type)targetType :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
+        if: self == targetType then: {
+            node
+        } else: {
+            targetType addImplicitCoercionToNode: node fromType: self with: analyzer
+        }
+    };
+    withSelector: #addImplicitCoercionToNode:fromType:with: addMethod: {:(Type)self
+        :(SysmelCompiler AST Node)node :(Type)fromType :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
+        if: self == fromType then: {
+            node
+        } else: {
+            if: (self schema canConstructWithValueOfType: fromType) then: {
+                self schema addConstructionNodeFor: node valueType: fromType into: self with: analyzer
+            } else: {
+                analyzer makeSemanticAnalysisError: ("Failed to perform implicit conversion {0} -> {1}" format: (fromType printString, self printString)) at: node sourcePosition
+            }
+        }
+    }.
+
+TypeSchema 
+    withSelector: #canConstructWithValueOfType: addMethod: {:(TypeSchema)self :(Type)sourceType :: Boolean |
+        Boolean basicNew: false
+    };
+    withSelector: #addConstructionNodeFor:valueType:into:with: addMethod: {:(TypeSchema)self :(SysmelCompiler AST Node)node :(Type)sourceType :(Type)targetType :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
+        __BootstrapCompiler__ subclassResponsibility
+    }.
+
+SumTypeSchema 
+    withSelector: #containsType: addMethod: {:(SumTypeSchema)self :(Type)typeToCheck :: Boolean |
+        <primitive: #"sumTypeSchema.containsType" >
+        __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #getTypeSelectorIndexFor: addMethod: {:(SumTypeSchema)self :(Type)elementType :: Size |
+        <primitive: #"sumTypeSchema.getTypeSelectorIndexFor" >
+        __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #canConstructWithValueOfType: addMethod: {:(SumTypeSchema)self :(Type)sourceType :: Boolean |
+        self containsType: sourceType
+    };
+    withSelector: #addConstructionNodeFor:valueType:into:with: addMethod: {:(TypeSchema)self :(SysmelCompiler AST Node)node :(Type)sourceType :(Type)targetType :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
+        SysmelCompiler AST WrapValueInSumTypeNode basicNewWithNamedSlots: #{
+            sourcePosition: node sourcePosition.
+            expression: node.
+            typeSelector: (self getTypeSelectorIndexFor: sourceType).
+            analyzedType: targetType.
+        }
+    }.
+
+Void __type__
+    withSelector: #addImplicitCoercionToNode:fromType:with: addMethod: {:(Type)self
+        :(SysmelCompiler AST Node)node :(Type)fromType :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
+        if: self == fromType then: {
+            node
+        } else: {
+            SysmelCompiler AST ValueAsVoidNode basicNewWithNamedSlots: #{
+                sourcePosition: node sourcePosition.
+                expression: node.
+                analyzedType: self
+            }
+        }
     }.
 
 Function __type__
@@ -1450,11 +1543,12 @@ __BootstrapCompiler__
 
     print: (`'(1 negated) analyzeNodeIfNeededWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
 
-    print: (`'(if: 1 = 1 then: 1 else: 2) analyzeNodeIfNeededWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
-    print: (`'(if: 1 = 1 then: 1 else: 2) analyzeAndEvaluateNodeWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
+    print: (`'(if: true then: 1 else: 2) analyzeNodeIfNeededWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
+    print: (`'(if: true then: 1 else: 2) analyzeAndEvaluateNodeWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
+    print: (`'(if: false then: 1 else: 2) analyzeAndEvaluateNodeWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
 
-    print: (`'(if: 1 = 1 then: 1) analyzeNodeIfNeededWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
-    print: (`'(if: 1 = 1 then: 1) analyzeAndEvaluateNodeWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
+    print: (`'(if: true then: 1) analyzeNodeIfNeededWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
+    print: (`'(if: false then: 1) analyzeAndEvaluateNodeWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
 
     print: nil isNil;
     print: nil isNotNil;
