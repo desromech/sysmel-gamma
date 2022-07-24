@@ -357,44 +357,43 @@ __BootstrapCompiler__
     
     ## The polymorphic types
     addBasicTypeNamed: #Optional with: {:(Type)optionalType :: Type |
-        {:(Type)sumType :: Type |
-            sumType
-                withSelector: #isNil addMethod: {:(sumType)self :: Boolean |
-                    <pure>
-                    self __typeSelector__ = 0sz
-                };
-                withSelector: #isNotNil addMethod: {:(sumType)self :: Boolean |
-                    <pure>
-                    self __typeSelector__ ~= 0sz
-                };
-                withSelector: #_ addMethod: {:(sumType)self :: optionalType |
-                    <pure>
-                    self get: optionalType
-                };
-                withSelector: #value addMethod: {:(sumType)self :: optionalType |
-                    <pure>
-                    self get: optionalType
-                }.
-            sumType
-        }(__TypeBuilder__ newSumTypeWith: (Undefined, optionalType))
+        let: #sumType with: (__TypeBuilder__ newSumTypeWith: (Undefined, optionalType)).
+
+        sumType
+            withSelector: #isNil addMethod: {:(sumType)self :: Boolean |
+                <pure>
+                self __typeSelector__ = 0sz
+            };
+            withSelector: #isNotNil addMethod: {:(sumType)self :: Boolean |
+                <pure>
+                self __typeSelector__ ~= 0sz
+            };
+            withSelector: #_ addMethod: {:(sumType)self :: optionalType |
+                <pure>
+                self get: optionalType
+            };
+            withSelector: #value addMethod: {:(sumType)self :: optionalType |
+                <pure>
+                self get: optionalType
+            }.
+        sumType
     } templated;
 
     addBasicTypeNamed: #Array with: {:(Type)elementType :(Size)bounds :: Type |
-        {:(Type)arrayType :: Type |
-            arrayType
-                withSelector: #asArraySlice addMethod: {:(arrayType)self :: ArraySlice(elementType) |
-                    <pure>
-                    ArraySlice(elementType) basicNewWithNamedSlots: #{
-                        elements: self.
-                        size: bounds
-                    }
-                };
-                withSelector: #size addMethod: {:(arrayType)self :: Size |
-                    <pure>
-                    bounds
-                }.
-            arrayType
-        } (__TypeBuilder__ newArrayTypeFor: elementType withBounds: bounds)
+        let: #arrayType with: (__TypeBuilder__ newArrayTypeFor: elementType withBounds: bounds).
+        arrayType
+            withSelector: #asArraySlice addMethod: {:(arrayType)self :: ArraySlice(elementType) |
+                <pure>
+                ArraySlice(elementType) basicNewWithNamedSlots: #{
+                    elements: self.
+                    size: bounds
+                }
+            };
+            withSelector: #size addMethod: {:(arrayType)self :: Size |
+                <pure>
+                bounds
+            }.
+        arrayType
     } templated;
 
     addBasicTypeNamed: #Pointer with: {:(Type)elementType :: Type |
@@ -402,49 +401,49 @@ __BootstrapCompiler__
     } templated;
 
     addBasicTypeNamed: #ArraySlice with: {:(Type)elementType :: Type |
-        {:(Type)arraySliceType :: Type |
-            arraySliceType
-                addTypeFlag: #arraySlice;
-                withSelector: #isEmpty addMethod: {:(arraySliceType)self :: Boolean |
-                    <pure>
-                    self size = 0sz
-                };
-                withSelector: #isNotEmpty addMethod: {:(arraySliceType)self :: Boolean |
-                    <pure>
-                    self size ~= 0sz
-                };
-                withSelector: #basicAt: addMethod: {:(arraySliceType)self :(Size)index :: elementType |
-                    <pure>
-                    self elements basicAt: index
-                };
-                withSelector: #first addMethod: {:(arraySliceType)self :: elementType |
-                    <pure>
-                    self basicAt: 0sz
-                };
-                withSelector: #last addMethod: {:(arraySliceType)self :: elementType |
-                    <pure>
-                    self basicAt: self size - 1sz
-                };
-                withSelector: #collect: addMethod: {:*(Type)ResultType :(elementType => ResultType)block :: ArraySlice(ResultType) |
-                    <pure>
-                    <primitive: #"arraySlice.collect">
-                    __BootstrapCompiler__ primitiveFailed
-                };
-                withSelector: #collectWithIndex: addMethod: {:*(Type)ResultType :((elementType -- Size) => ResultType)block :: ArraySlice(ResultType) |
-                    <pure>
-                    <primitive: #"arraySlice.collectWithIndex">
-                    __BootstrapCompiler__ primitiveFailed
-                };
-                withSelector: #do: addMethod: {:*(Type)ResultType :((elementType) => ResultType)block :: ResultType |
-                    <pure>
-                    <primitive: #"arraySlice.do">
-                    __BootstrapCompiler__ primitiveFailed
-                }.
-            arraySliceType
-        } (__TypeBuilder__ newRecordTypeWith: #{
+        let: #arraySliceType with: (__TypeBuilder__ newRecordTypeWith: #{
             elements: Pointer(elementType).
             size: Size.
-        })
+        }).
+
+        arraySliceType
+            addTypeFlag: #arraySlice;
+            withSelector: #isEmpty addMethod: {:(arraySliceType)self :: Boolean |
+                <pure>
+                self size = 0sz
+            };
+            withSelector: #isNotEmpty addMethod: {:(arraySliceType)self :: Boolean |
+                <pure>
+                self size ~= 0sz
+            };
+            withSelector: #basicAt: addMethod: {:(arraySliceType)self :(Size)index :: elementType |
+                <pure>
+                self elements basicAt: index
+            };
+            withSelector: #first addMethod: {:(arraySliceType)self :: elementType |
+                <pure>
+                self basicAt: 0sz
+            };
+            withSelector: #last addMethod: {:(arraySliceType)self :: elementType |
+                <pure>
+                self basicAt: self size - 1sz
+            };
+            withSelector: #collect: addMethod: {:*(Type)ResultType :(elementType => ResultType)block :: ArraySlice(ResultType) |
+                <pure>
+                <primitive: #"arraySlice.collect">
+                __BootstrapCompiler__ primitiveFailed
+            };
+            withSelector: #collectWithIndex: addMethod: {:*(Type)ResultType :((elementType -- Size) => ResultType)block :: ArraySlice(ResultType) |
+                <pure>
+                <primitive: #"arraySlice.collectWithIndex">
+                __BootstrapCompiler__ primitiveFailed
+            };
+            withSelector: #do: addMethod: {:*(Type)ResultType :((elementType) => ResultType)block :: ResultType |
+                <pure>
+                <primitive: #"arraySlice.do">
+                __BootstrapCompiler__ primitiveFailed
+            }.
+        arraySliceType
     } templated;
     addBasicTypeNamed: #AnyArraySlice with: ArraySlice(AnyValue);
 
@@ -473,32 +472,30 @@ __BootstrapCompiler__
     addBasicTypeNamed: #AnyArrayList with: ArrayList(AnyValue);
 
     addBasicTypeNamed: #Tuple with: {:*(Size)N :(Type array: N)elementTypes :: Type |
-        {:(Type)tupleType :: Type |
-            tupleType __type__
-                withSelector: #-- addMethod: {:(Type)self :(Type) nextType :: Type |
-                    <override>
-                    __TypeBuilder__ extendTupleType: self with: nextType
-                };
-                withSelector: #=> addMethod: {:(Type)self :(Type) resultType :: Type |
-                    <override>
-                    __TypeBuilder__ newSimpleFunctionTypeWithArguments: self resultType: resultType
-                }.
-            tupleType
-        }(__TypeBuilder__ newProductTypeWith: elementTypes)
+        let: #tupleType with: (__TypeBuilder__ newProductTypeWith: elementTypes).
+        tupleType __type__
+            withSelector: #-- addMethod: {:(Type)self :(Type) nextType :: Type |
+                <override>
+                __TypeBuilder__ extendTupleType: self with: nextType
+            };
+            withSelector: #=> addMethod: {:(Type)self :(Type) resultType :: Type |
+                <override>
+                __TypeBuilder__ newSimpleFunctionTypeWithArguments: self resultType: resultType
+            }.
+        tupleType
     } templated;
 
     addBasicTypeNamed: #ValueBox with: {:(Type)elementType :: Type |
-        {:(Type)valueBoxType :: Type |
-            valueBoxType __type__
-                withSelector: #with: addMethod: {:(valueBoxType __type__)self :(elementType)value :: self |
-                    self basicNewWithNamedSlots: {
-                        _: value
-                    }
-                }.
-            valueBoxType
-        }(__TypeBuilder__ newGCClassWithSlots: #{
+        let: #valueBoxType with: (__TypeBuilder__ newGCClassWithSlots: #{
             _: elementType
-        })
+        }).
+        valueBoxType __type__
+            withSelector: #with: addMethod: {:(valueBoxType __type__)self :(elementType)value :: self |
+                self basicNewWithNamedSlots: {
+                    _: value
+                }
+            }.
+        valueBoxType
     } templated;
     addBasicTypeNamed: #AnyValueBox with: ArrayList(AnyValue).
 
@@ -883,12 +880,11 @@ SysmelCompiler AST LiteralValueNode
 
 SysmelCompiler AST CleanUpScopeNode
     withSelector: #analyzeNodeWith: addMethod: {:(SysmelCompiler AST CleanUpScopeNode)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
-        {:(SysmelCompiler AST Node)analyzedBody :: SysmelCompiler AST Node  |
-            self shallowCopy
-                body: analyzedBody;
-                analyzedType: analyzedBody analyzedType _;
-                yourself
-        } (analyzer analyzeNodeIfNeededWithCurrentExpectedType: self body)
+        let: #analyzedBody with: (analyzer analyzeNodeIfNeededWithCurrentExpectedType: self body).
+        self shallowCopy
+            body: analyzedBody;
+            analyzedType: analyzedBody analyzedType _;
+            yourself
     };
     withSelector: #evaluateNodeWith: addMethod: {:(Type)self :(SysmelCompiler Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         self body evaluateNodeWith: evaluationEnvironment
@@ -896,12 +892,11 @@ SysmelCompiler AST CleanUpScopeNode
 
 SysmelCompiler AST LexicalScopeNode
     withSelector: #analyzeNodeWith: addMethod: {:(SysmelCompiler AST LexicalScopeNode)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
-        {:(SysmelCompiler AST Node)analyzedBody :: SysmelCompiler AST Node  |
-            self shallowCopy
-                body: analyzedBody;
-                analyzedType: analyzedBody analyzedType _;
-                yourself
-        } (analyzer analyzeNodeIfNeededWithCurrentExpectedType: self body)
+        let: #analyzedBody with: (analyzer analyzeNodeIfNeededWithCurrentExpectedType: self body).
+        self shallowCopy
+            body: analyzedBody;
+            analyzedType: analyzedBody analyzedType _;
+            yourself
     };
     withSelector: #evaluateNodeWith: addMethod: {:(Type)self :(SysmelCompiler Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         self body evaluateNodeWith: evaluationEnvironment
@@ -909,24 +904,22 @@ SysmelCompiler AST LexicalScopeNode
 
 SysmelCompiler AST SequenceNode
     withSelector: #analyzeNodeWith: addMethod: {:(SysmelCompiler AST SequenceNode)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
-        {:(SysmelCompiler AST Node arraySlice)analyzedPragmas :(SysmelCompiler AST Node arraySlice)analyzedExpressions :: SysmelCompiler AST Node  |
-            self shallowCopy
-                pragmas: analyzedPragmas;
-                expressions: analyzedExpressions;
-                analyzedType: (if: analyzedExpressions isEmpty then: Void else: analyzedExpressions last analyzedType _);
-                yourself
-        }(
-            self pragmas collect: {:(SysmelCompiler AST Node)node :: SysmelCompiler AST Node |
+        let: #analyzedPragmas with: (self pragmas collect: {:(SysmelCompiler AST Node)node :: SysmelCompiler AST Node |
                 analyzer analyzedNodeIfNeeded: node withExpectedType: Pragma
-            },
-            self expressions collectWithIndex: {:(SysmelCompiler AST Node)node :(Size)index :: SysmelCompiler AST Node |
+        }).
+        let: #analyzedExpressions with: (self expressions collectWithIndex: {:(SysmelCompiler AST Node)node :(Size)index :: SysmelCompiler AST Node |
                 if: index + 1sz < self expressions size then: {
                     analyzer analyzeNodeIfNeeded: node withExpectedType: Void.
                 } else: {
                     analyzer analyzeNodeIfNeededWithCurrentExpectedType: node
                 }
-            }
-        )
+        }).
+
+        self shallowCopy
+            pragmas: analyzedPragmas;
+            expressions: analyzedExpressions;
+            analyzedType: (if: analyzedExpressions isEmpty then: Void else: analyzedExpressions last analyzedType _);
+            yourself
     };
     withSelector: #evaluateNodeWith: addMethod: {:(Type)self :(SysmelCompiler Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         self expressions do: {:(SysmelCompiler AST Node)node :: AnyValue |
@@ -936,13 +929,13 @@ SysmelCompiler AST SequenceNode
 
 SysmelCompiler AST IdentifierReferenceNode
     withSelector: #analyzeNodeWith: addMethod: {:(SysmelCompiler AST IdentifierReferenceNode)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
-        {:(AnyValue optional)binding :: SysmelCompiler AST Node  |
-            if: binding isNil then: {
-                analyzer makeSemanticAnalysisError: ("Failed to binding for symbol {0}." format: (self value printString, )) at: self sourcePosition
-            } else: {
-                binding _ analyzeIdentifierReferenceNode: self with: analyzer
-            }
-        }(analyzer environment lexicalScope lookupSymbolRecursively: self value)
+        let: #binding with: (analyzer environment lexicalScope lookupSymbolRecursively: self value).
+        
+        if: binding isNil then: {
+            analyzer makeSemanticAnalysisError: ("Failed to binding for symbol {0}." format: (self value printString, )) at: self sourcePosition
+        } else: {
+            binding _ analyzeIdentifierReferenceNode: self with: analyzer
+        }
     };
     withSelector: #evaluateNodeWith: addMethod: {:(Type)self :(SysmelCompiler Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         self binding evaluateBindingWithEnvironment: evaluationEnvironment
@@ -950,50 +943,46 @@ SysmelCompiler AST IdentifierReferenceNode
 
 SysmelCompiler AST MessageSendNode
     withSelector: #analyzeNodeWith: addMethod: {:(SysmelCompiler AST MessageSendNode)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
-        {:(SysmelCompiler AST Node)analyzedSelector :: SysmelCompiler AST Node |
-            if: self receiver isNil then: {
-                if: analyzedSelector isLiteralValueNode then: {
-                    {:(AnyValue optional)binding :: SysmelCompiler AST Node |
-                        if: binding isNil then: {
-                            analyzer makeSemanticAnalysisError: ("Failed to binding for selector {0}." format: (self analyzedSelector printString, )) at: self sourcePosition
-                        } else: {
-                            binding _ analyzeMessageSendNode: (self shallowCopy
-                                selector: analyzedSelector;
-                                yourself) with: analyzer
-                        }
-                    } (analyzer environment lexicalScope lookupSymbolRecursively: (analyzedSelector evaluateNodeWith: analyzer))
+        let: #analyzedSelector with: (analyzer analyzeNodeIfNeededWithAutoType: self selector).
+        if: self receiver isNil then: {
+            if: analyzedSelector isLiteralValueNode then: {
+                let: #binding with: (analyzer environment lexicalScope lookupSymbolRecursively: (analyzedSelector evaluateNodeWith: analyzer)).
+
+                if: binding isNil then: {
+                    analyzer makeSemanticAnalysisError: ("Failed to binding for selector {0}." format: (self analyzedSelector printString, )) at: self sourcePosition
                 } else: {
-                    analyzer makeSemanticAnalysisError: ("Message  {0}." format: (self analyzedSelector printString, )) at: self sourcePosition
-                }
-            } else: {
-                {:(SysmelCompiler AST Node)analyzedReceiver :: SysmelCompiler AST Node |
-                    analyzedReceiver analyzedType _ analyzeMessageSendNode: (self shallowCopy
-                        receiver: analyzedReceiver;
+                    binding _ analyzeMessageSendNode: (self shallowCopy
                         selector: analyzedSelector;
                         yourself) with: analyzer
-                }(analyzer analyzeNodeIfNeededWithDirectAutoType: self receiver _ )
-            }.
-        }(analyzer analyzeNodeIfNeededWithAutoType: self selector)
+                }
+            } else: {
+                analyzer makeSemanticAnalysisError: ("Message  {0}." format: (self analyzedSelector printString, )) at: self sourcePosition
+            }
+        } else: {
+            let: #analyzedReceiver with: (analyzer analyzeNodeIfNeededWithDirectAutoType: self receiver _ ).
+            analyzedReceiver analyzedType _ analyzeMessageSendNode: (self shallowCopy
+                receiver: analyzedReceiver;
+                selector: analyzedSelector;
+                yourself) with: analyzer
+        }.
     };
     withSelector: #evaluateNodeWith: addMethod: {:(SysmelCompiler AST MessageSendNode)self :(SysmelCompiler Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         if: self receiver isNil then: {
             self boundMethod run: (self selector evaluateNodeWith: evaluationEnvironment) with: (self arguments collect: {:(SysmelCompiler AST Node)arg :: AnyValue |
-                    arg evaluateNodeWith: evaluationEnvironment
-                }) in: nil
+                arg evaluateNodeWith: evaluationEnvironment
+            }) in: nil
         } else: {
-            {:(AnyValue)receiver :(AnyValue)selector :(AnyValue arraySlice)arguments :: AnyValue |
-                if: self usesDynamicDispatch | self boundMethod isNil then: {
-                    receiver perform: selector withArguments: arguments
-                } else: {
-                    self boundMethod _ run: selector with: arguments in: receiver
-                }
-            }(
-                self receiver _ evaluateNodeWith: evaluationEnvironment,
-                self selector evaluateNodeWith: evaluationEnvironment,
-                self arguments collect: {:(SysmelCompiler AST Node)arg :: AnyValue |
+            let: #receiver with: (self receiver _ evaluateNodeWith: evaluationEnvironment).
+            let: #selector with: (self selector evaluateNodeWith: evaluationEnvironment).
+            let: #arguments with: (self arguments collect: {:(SysmelCompiler AST Node)arg :: AnyValue |
                     arg evaluateNodeWith: evaluationEnvironment
-                }
-            )
+            }).
+
+            if: self usesDynamicDispatch | self boundMethod isNil then: {
+                receiver perform: selector withArguments: arguments
+            } else: {
+                self boundMethod _ run: selector with: arguments in: receiver
+            }
         }
     }.
 
@@ -1019,42 +1008,42 @@ SysmelCompiler AST SemanticErrorNode
 
 SysmelCompiler AST IfTrueIfFalseNode
     withSelector: #analyzeNodeWith: addMethod: {:(SysmelCompiler AST IfTrueIfFalseNode)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
-        {:(SysmelCompiler AST IfTrueIfFalseNode)analyzedNode :: SysmelCompiler AST Node |
-            analyzedNode condition: (analyzer analyzeNodeIfNeeded: self condition withExpectedType: Boolean).
-            ## Initial per-branch analysis
-            if: analyzedNode trueExpression isNil then: {
-                ## Nothing is required here.
-            } else: {
-                analyzedNode trueExpression: (analyzer analyzeNodeIfNeededWithCurrentExpectedType: analyzedNode trueExpression _)
-            }.
+        let: #analyzedNode with: self shallowCopy.
 
-            if: analyzedNode falseExpression isNil then: {
-                ## Nothing is required here.
-            } else: {
-                analyzedNode falseExpression:  (analyzer analyzeNodeIfNeededWithCurrentExpectedType: analyzedNode falseExpression _)
-            }.
+        analyzedNode condition: (analyzer analyzeNodeIfNeeded: self condition withExpectedType: Boolean).
+        ## Initial per-branch analysis
+        if: analyzedNode trueExpression isNil then: {
+            ## Nothing is required here.
+        } else: {
+            analyzedNode trueExpression: (analyzer analyzeNodeIfNeededWithCurrentExpectedType: analyzedNode trueExpression _)
+        }.
 
-            ## Compute the result type.
-            if: analyzedNode falseExpression isNil | analyzedNode trueExpression isNil then: {
-                analyzedNode analyzedType: Void
-            } else: {
-                analyzedNode analyzedType: (analyzer computeBranchResultTypeOf: analyzedNode falseExpression _ analyzedType _ with: analyzedNode trueExpression _ analyzedType _)
-            }.
+        if: analyzedNode falseExpression isNil then: {
+            ## Nothing is required here.
+        } else: {
+            analyzedNode falseExpression:  (analyzer analyzeNodeIfNeededWithCurrentExpectedType: analyzedNode falseExpression _)
+        }.
 
-            if: analyzedNode trueExpression isNil then: {
-                ## Nothing is required here.
-            } else: {
-                analyzedNode trueExpression: (analyzer analyzeNodeIfNeeded: analyzedNode trueExpression _ withExpectedType: analyzedNode analyzedType _)
-            }.
+        ## Compute the result type.
+        if: analyzedNode falseExpression isNil | analyzedNode trueExpression isNil then: {
+            analyzedNode analyzedType: Void
+        } else: {
+            analyzedNode analyzedType: (analyzer computeBranchResultTypeOf: analyzedNode falseExpression _ analyzedType _ with: analyzedNode trueExpression _ analyzedType _)
+        }.
 
-            if: analyzedNode falseExpression isNil then: {
-                ## Nothing is required here.
-            } else: {
-                analyzedNode falseExpression: (analyzer analyzeNodeIfNeeded: analyzedNode falseExpression _ withExpectedType: analyzedNode analyzedType _)
-            }.
+        if: analyzedNode trueExpression isNil then: {
+            ## Nothing is required here.
+        } else: {
+            analyzedNode trueExpression: (analyzer analyzeNodeIfNeeded: analyzedNode trueExpression _ withExpectedType: analyzedNode analyzedType _)
+        }.
 
-            analyzedNode
-        } (self shallowCopy)
+        if: analyzedNode falseExpression isNil then: {
+            ## Nothing is required here.
+        } else: {
+            analyzedNode falseExpression: (analyzer analyzeNodeIfNeeded: analyzedNode falseExpression _ withExpectedType: analyzedNode analyzedType _)
+        }.
+
+        analyzedNode
     };
     withSelector: #evaluateNodeWith: addMethod: {:(SysmelCompiler AST IfTrueIfFalseNode)self :(SysmelCompiler Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         if: (self condition evaluateNodeWith: evaluationEnvironment) then: {
@@ -1074,27 +1063,27 @@ SysmelCompiler AST IfTrueIfFalseNode
 
 SysmelCompiler AST WhileDoContinueNode
 withSelector: #analyzeNodeWith: addMethod: {:(SysmelCompiler AST WhileDoContinueNode)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
-        {:(SysmelCompiler AST WhileDoContinueNode)analyzedNode :: SysmelCompiler AST Node |
-            analyzedNode
-                condition: (analyzer analyzeNodeIfNeeded: self condition withExpectedType: Boolean);
-                analyzedType: Void.
+        let: #analyzedNode with: self shallowCopy.
 
-            ## Body expression.
-            if: analyzedNode bodyExpression isNil then: {
-                ## Nothing is required here
-            } else: {
-                analyzedNode bodyExpression: (analyzer analyzeNodeIfNeeded: analyzedNode bodyExpression _ withExpectedType: Void)
-            }.
+        analyzedNode
+            condition: (analyzer analyzeNodeIfNeeded: self condition withExpectedType: Boolean);
+            analyzedType: Void.
 
-            ## Continue expression.
-            if: analyzedNode continueExpression isNil then: {
-                ## Nothing is required here
-            } else: {
-                analyzedNode continueExpression: (analyzer analyzeNodeIfNeeded: analyzedNode continueExpression _ withExpectedType: Void)
-            }.
+        ## Body expression.
+        if: analyzedNode bodyExpression isNil then: {
+            ## Nothing is required here
+        } else: {
+            analyzedNode bodyExpression: (analyzer analyzeNodeIfNeeded: analyzedNode bodyExpression _ withExpectedType: Void)
+        }.
 
-            analyzedNode
-        } (self shallowCopy)
+        ## Continue expression.
+        if: analyzedNode continueExpression isNil then: {
+            ## Nothing is required here
+        } else: {
+            analyzedNode continueExpression: (analyzer analyzeNodeIfNeeded: analyzedNode continueExpression _ withExpectedType: Void)
+        }.
+
+        analyzedNode
     };
     withSelector: #evaluateNodeWith: addMethod: {:(SysmelCompiler AST WhileDoContinueNode)self :(SysmelCompiler Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         while: (self condition evaluateNodeWith: evaluationEnvironment) do: {
@@ -1224,22 +1213,21 @@ SysmelCompiler Semantic ASTAnalyzer
         self analyzeNodeIfNeeded: node withTypeInferenceEnvironment: SysmelCompiler Semantic AutoTypeInferenceEnvironment basicNew
     };
     withSelector: #analyzeNodeIfNeeded:withEnvironment: addMethod: {:(SysmelCompiler Semantic ASTAnalyzer)self :(SysmelCompiler AST Node)node :(SysmelCompiler Semantic EvaluationEnvironment)environment :: SysmelCompiler AST Node |
-        { :(SysmelCompiler Semantic EvaluationEnvironment)oldEnvironment :: SysmelCompiler AST Node |
-            self environment: environment.
-            {:(SysmelCompiler AST Node)analyzedNode :: SysmelCompiler AST Node |
-                self environment: oldEnvironment.
-                analyzedNode
-            } (self analyzeNodeIfNeededWithCurrentExpectedType: node)
-        } (self environment)
+        let: #oldEnvironment with: self environment.
+        self environment: environment.
+
+        let: #analyzedNode with: (self analyzeNodeIfNeededWithCurrentExpectedType: node).
+        self environment: oldEnvironment.
+
+        analyzedNode
     };
     withSelector: #analyzeNodeIfNeeded:withTypeInferenceEnvironment: addMethod: {:(SysmelCompiler Semantic ASTAnalyzer)self :(SysmelCompiler AST Node)node :(SysmelCompiler Semantic TypeInferenceEnvironment)typeInferenceEnvironment :: SysmelCompiler AST Node |
-        { :(SysmelCompiler Semantic TypeInferenceEnvironment)oldTypeInferenceEnvironment :: SysmelCompiler AST Node |
-            self typeInferenceEnvironment: typeInferenceEnvironment.
-            {:(SysmelCompiler AST Node)analyzedNode :: SysmelCompiler AST Node |
-                self typeInferenceEnvironment: oldTypeInferenceEnvironment.
-                analyzedNode
-            } (self analyzeNodeIfNeededWithCurrentExpectedType: node)
-        } (self typeInferenceEnvironment)
+        let: #oldTypeInferenceEnvironment with: (self typeInferenceEnvironment).
+        self typeInferenceEnvironment: typeInferenceEnvironment.
+
+        let: #analyzedNode with: (self analyzeNodeIfNeededWithCurrentExpectedType: node).
+        self typeInferenceEnvironment: oldTypeInferenceEnvironment.
+        analyzedNode
     };
     
     withSelector: #analyzeNodeIfNeeded:withExpectedType: addMethod: {:(SysmelCompiler Semantic ASTAnalyzer)self :(SysmelCompiler AST Node)node :(Type)expectedType :: SysmelCompiler AST Node |
@@ -1278,15 +1266,14 @@ Type
     };
     withSelector: #analyzeMessageSendNode:with: addMethod: {:(Type)self :(SysmelCompiler AST MessageSendNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
         if: node selector isLiteralValueNode then: {
-            {:(AnyValue)selector :: SysmelCompiler AST Node |
-                {:(AnyValue)method :: SysmelCompiler AST Node |
-                    if: method isNil then: {
-                        self analyzeUnboundMessageSendNode: node with: analyzer
-                    } else: {
-                        method analyzeMessageSendNode: node with: analyzer
-                    }
-                } (self lookupSelector: selector)
-            }(node selector evaluateLiteralValue)
+            let: #selector with: (node selector evaluateLiteralValue).
+            let: #method with: (self lookupSelector: selector).
+
+            if: method isNil then: {
+                self analyzeUnboundMessageSendNode: node with: analyzer
+            } else: {
+                method analyzeMessageSendNode: node with: analyzer
+            }
         } else: {
             self analyzeUnboundMessageSendNode: node with: analyzer
         }

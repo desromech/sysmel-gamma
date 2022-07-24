@@ -382,6 +382,17 @@ class PTKeywordMessage(PTNode):
                     result = self.arguments[1].evaluateWithEnvironment(machine, environment)
                     self.arguments[2].evaluateWithEnvironment(machine, environment)
                 return coerceNoneToNil(result)
+            elif selector == 'let:with:':
+                symbol = self.arguments[0].evaluateWithEnvironment(machine, environment)
+                value = self.arguments[1].evaluateWithEnvironment(machine, environment)
+                environment.setSymbolValueBinding(symbol, value)
+                return value
+            elif selector == 'let:type:with:':
+                symbol = self.arguments[0].evaluateWithEnvironment(machine, environment)
+                type = self.arguments[1].evaluateWithEnvironment(machine, environment)
+                value = self.arguments[2].evaluateWithEnvironment(machine, environment)
+                environment.setSymbolValueBinding(symbol, type.coerceValue(value))
+                return value
 
             boundMessage = environment.lookupSymbolRecursively(selector)
             if boundMessage is None:
