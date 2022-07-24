@@ -727,15 +727,25 @@ __BootstrapCompiler__
         bodyExpression: SysmelCompiler AST Node optional.
         continueExpression: SysmelCompiler AST Node optional.
     });
+    addBindingNamed: #LocalVariableDefinitionNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
+        nameExpression: SysmelCompiler AST Node.
+        typeExpression: SysmelCompiler AST Node optional.
+        initialValueExpression: SysmelCompiler AST Node.
+
+        analyzedSymbol: AnyValue optional.
+        analyzedExpectedValueType: Type optional.
+    });
 
     ## Basic type conversion nodes
-    addBindingNamed: #ValueAsVoidNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
+    addBindingNamed: #TypeConversionNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
         expression: SysmelCompiler AST Node.
     });
-    addBindingNamed: #WrapValueInSumTypeNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
-        expression: SysmelCompiler AST Node.
+    addBindingNamed: #ValueAsVoidNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST TypeConversionNode publicSlots: #{});
+    addBindingNamed: #WrapValueInSumTypeNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST TypeConversionNode publicSlots: #{
         typeSelector: Size.
     });
+    addBindingNamed: #WrapAnyValueNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST TypeConversionNode publicSlots: #{});
+    addBindingNamed: #UnwrapAnyValueNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST TypeConversionNode publicSlots: #{});
 
     ## Stablish the basic ast node mapping that is required for converting a parse tree onto the actual AST object.
     setParseTreeASTMaping: #{
@@ -1112,6 +1122,17 @@ SysmelCompiler AST WrapValueInSumTypeNode
         self analyzedType _ basicNew: (self expression evaluateNodeWith: evaluationEnvironment) typeSelector: self typeSelector
     }.
 
+SysmelCompiler AST WrapAnyValueNode
+    withSelector: #evaluateNodeWith: addMethod: {:(SysmelCompiler AST WrapValueInSumTypeNode)self :(SysmelCompiler Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+        ## This is a nop in the evaluator.
+        self expression evaluateNodeWith: evaluationEnvironment
+    }.
+SysmelCompiler AST UnwrapAnyValueNode
+    withSelector: #evaluateNodeWith: addMethod: {:(SysmelCompiler AST WrapValueInSumTypeNode)self :(SysmelCompiler Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+        ## This is a nop in the evaluator.
+        self expression evaluateNodeWith: evaluationEnvironment
+    }.
+
 SysmelCompiler Semantic IdentifierLookupScope
     withSelector: #lookupSymbol: addMethod: {:(SysmelCompiler Semantic IdentifierLookupScope)self :(AnyValue)symbol :: SysmelCompiler Semantic SymbolBinding optional |
         <primitive: #"identifierLookupScope.lookupSymbol">
@@ -1299,6 +1320,14 @@ Type
         <primitive: #"type.getSchema">
         self
     };
+    withSelector: #hasTypeFlag: addMethod: {:(Type)self :(AnyValue)methodFlag :: Boolean |
+        <primitive: #"type.hasTypeFlag">
+        __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #hasAnyValueFlag addMethod: {:(Type)self :: Boolean |
+        self hasTypeFlag: #anyValue
+    };
+
     withSelector: #addImplicitCoercionToNode:targetType:with: addMethod: {:(Type)self
         :(SysmelCompiler AST Node)node :(Type)targetType :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
         if: self == targetType then: {
@@ -1312,10 +1341,18 @@ Type
         if: self == fromType then: {
             node
         } else: {
-            if: (self schema canConstructWithValueOfType: fromType) then: {
-                self schema addConstructionNodeFor: node valueType: fromType into: self with: analyzer
+            if: self hasAnyValueFlag then: {
+                WrapAnyValueNode basicNewWithNamedSlots: #{
+                    sourcePosition: node sourcePosition.
+                    expression: node.
+                    analyzedType: self
+                }
             } else: {
-                analyzer makeSemanticAnalysisError: ("Failed to perform implicit conversion {0} -> {1}" format: (fromType printString, self printString)) at: node sourcePosition
+                if: (self schema canConstructWithValueOfType: fromType) then: {
+                    self schema addConstructionNodeFor: node valueType: fromType into: self with: analyzer
+                } else: {
+                    analyzer makeSemanticAnalysisError: ("Failed to perform implicit conversion {0} -> {1}" format: (fromType printString, self printString)) at: node sourcePosition
+                }
             }
         }
     }.
@@ -1400,7 +1437,7 @@ Function
         __BootstrapCompiler__ primitiveFailed
     };
     withSelector: #hasMethodFlag: addMethod: {:(Function)self :(AnyValue)methodFlag :: Boolean |
-        <primitive: #"function.getMethodFlags">
+        <primitive: #"function.hasMethodFlag">
         __BootstrapCompiler__ primitiveFailed
     };
 
@@ -1480,7 +1517,25 @@ __BootstrapCompiler__
             condition: condition.
             bodyExpression: bodyExpression.
         })
+    };
+    addBindingNamed: #let:with: with: {:(MacroInvocationContext)macroSelf :(SysmelCompiler AST Node)nameExpression :(SysmelCompiler AST Node)initialValueExpression :: (SysmelCompiler AST LocalVariableDefinitionNode) |
+        <macro>
+        (SysmelCompiler AST LocalVariableDefinitionNode basicNewWithNamedSlots: #{
+            sourcePosition: macroSelf sourcePosition.
+            nameExpression: nameExpression.
+            initialValueExpression: initialValueExpression.
+        })
+    };
+    addBindingNamed: #let:type:with: with: {:(MacroInvocationContext)macroSelf :(SysmelCompiler AST Node)nameExpression :(SysmelCompiler AST Node)typeExpression :(SysmelCompiler AST Node)initialValueExpression :: (SysmelCompiler AST LocalVariableDefinitionNode) |
+        <macro>
+        (SysmelCompiler AST LocalVariableDefinitionNode basicNewWithNamedSlots: #{
+            sourcePosition: macroSelf sourcePosition.
+            nameExpression: nameExpression.
+            typeExpression: typeExpression;
+            initialValueExpression: initialValueExpression.
+        })
     }.
+
 
 if: (Boolean basicNew: true) then: {
 __BootstrapCompiler__

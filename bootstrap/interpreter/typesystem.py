@@ -558,7 +558,7 @@ class BlockClosure(TypedValue):
             return self.name
         return 'BlockClosure(' + str(self.getType()) + ')'
 
-    @primitiveNamed('function.getMethodFlags')
+    @primitiveNamed('function.hasMethodFlag')
     def hasMethodFlag(self, methodFlag):
         return getBooleanValue(methodFlag in self.methodFlags)
 
@@ -1360,6 +1360,10 @@ class BehaviorType(TypedValue, TypeInterface):
             self.hasAnyValueFlag = True
         elif flagName == 'arraySlice': 
             self.hasArraySliceFlag = True
+
+    @primitiveNamed('type.hasTypeFlag')
+    def hasTypeFlag(self, typeFlag):
+        return getBooleanValue(typeFlag in self.typeFlags)
 
     def addMethodsWithSelectors(self, methodsWithSelector):
         for method, selector in methodsWithSelector:
