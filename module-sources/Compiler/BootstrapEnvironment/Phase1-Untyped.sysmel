@@ -19,7 +19,8 @@ __BootstrapCompiler__
     addBasicTypeNamed: #AnyValue with: (__TypeBuilder__ newGCClassWithSlots: #{});
 
     addBasicTypeNamed: #Object with: (__TypeBuilder__ newGCClassWithSuperclass: AnyValue slots: #{});
-    addBasicTypeNamed: #Type with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
+    addBasicTypeNamed: #ProgramEntity with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
+    addBasicTypeNamed: #Type with: (__TypeBuilder__ newGCClassWithSuperclass: ProgramEntity slots: #{});
     addBasicTypeNamed: #SimpleType with: (__TypeBuilder__ newGCClassWithSuperclass: Type slots: #{});
     addBasicTypeNamed: #MetaType with: (__TypeBuilder__ newGCClassWithSuperclass: Type slots: #{});
 
@@ -1296,11 +1297,28 @@ Type
                 method analyzeMessageSendNode: node with: analyzer
             }
         } else: {
-            self analyzeUnboundMessageSendNode: node with: analyzer
+            self analyzeUnboundOrDynamicMessageSendNode: node with: analyzer
         }
     };
     withSelector: #analyzeUnboundMessageSendNode:with: addMethod: {:(Type)self :(SysmelCompiler AST MessageSendNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
-        analyzer makeSemanticAnalysisError: "Unsupported unbound message send." at: node sourcePosition
+        self analyzeUnboundOrDynamicMessageSendNode: node with: analyzer
+    };
+    withSelector: #analyzeUnboundOrDynamicMessageSendNode:with: addMethod: {:(Type)self :(SysmelCompiler AST MessageSendNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
+        if: self hasAnyValueFlag then: {
+            self analyzeDynamicMessageSendNode: node with: analyzer
+        } else: {
+            analyzer makeSemanticAnalysisError: "Unsupported dynamic message send." at: node sourcePosition
+        }
+    };
+    withSelector: #analyzeDynamicMessageSendNode:with: addMethod: {:(Type)self :(SysmelCompiler AST MessageSendNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
+        let: #analyzedNode with: node shallowCopy.
+        analyzedNode
+            selector: (analyzer analyzeNodeIfNeeded: analyzedNode selector withExpectedType: self);
+            arguments: (node arguments collect: {:(SysmelCompiler AST Node)argumentNode :: SysmelCompiler AST Node |
+                analyzer analyzeNodeIfNeeded: argumentNode withExpectedType: AnyValue
+            });
+            usesDynamicDispatch: true;
+            yourself
     };
     withSelector: #analyzeIdentifierReferenceNode:with:valueBinding: addMethod: {:(SysmelCompiler Semantic SymbolValueBinding)self :(SysmelCompiler AST IdentifierReferenceNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :(SysmelCompiler Semantic SymbolValueBinding)binding :: SysmelCompiler AST Node |
         SysmelCompiler AST LiteralValueNode basicNewWithNamedSlots: #{
