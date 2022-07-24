@@ -1075,22 +1075,28 @@ class ProductTypeSchema(TypeSchema):
 
 class RecordTypeSchema(ProductTypeSchema):
     def __init__(self, slots, supertypeSchema = None):
+        self.slots = []
+        super().__init__([])
+        self.supertypeSchema = supertypeSchema
+        self.definePublicSlots(slots)
+
+    def definePublicSlots(self, slots):
         self.slots = slots
         self.allSlots = slots
         self.startSlotIndex = 0
-        if supertypeSchema is not None:
-            self.startSlotIndex = len(supertypeSchema.allSlots)
-            self.allSlots = supertypeSchema.allSlots + self.allSlots
+        if self.supertypeSchema is not None:
+            self.startSlotIndex = len(self.supertypeSchema.allSlots)
+            self.allSlots = self.supertypeSchema.allSlots + self.allSlots
         self.slotNameDictionary = {}
         self.slotNameTable = list(map(lambda s: s.key, self.allSlots))
-
-        super().__init__(list(map(lambda s: s.value, self.allSlots)))
+        self.elementTypes = list(map(lambda s: s.value, self.allSlots))
 
         slotIndex = 0
         for assoc in self.allSlots:
             slotName = assoc.key
             self.slotNameDictionary[slotName] = slotIndex
             slotIndex += 1
+        self.buildPrimitiveMethodDictionary()
 
     def getType(self):
         return getBasicTypeNamed('RecordTypeSchema')
@@ -1415,7 +1421,11 @@ class BehaviorType(TypedValue, TypeInterface):
         self.addPrimitiveMethodsWithSelectors([
             (cls.withSelectorAddMethod, 'withSelector:addMethod:', '(AnyValue -- AnyValue) => AnyValue'),
             (cls.addTypeFlag, 'addTypeFlag:', 'AnyValue => AnyValue'),
+            (cls.definePublicSlots, 'definePublicSlots:', '(SelfType -- AnyValue) => Type'),
         ])
+
+    def definePublicSlots(self, slotDefinitions):
+        return self.schema.definePublicSlots(slotDefinitions)
 
     def asArrayType(self):
         return self

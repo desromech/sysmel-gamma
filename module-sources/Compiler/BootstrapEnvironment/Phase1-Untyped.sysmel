@@ -629,6 +629,14 @@ __BootstrapCompiler__
     });
     addBindingNamed: #CleanUpScope with: (__TypeBuilder__ newGCClassWithPublicSlots: #{}).
 
+SysmelCompiler Semantic IdentifierLookupScope definePublicSlots: #{
+    parent: SysmelCompiler Semantic IdentifierLookupScope optional
+}.
+
+SysmelCompiler Semantic CleanUpScope definePublicSlots: #{
+    parent: SysmelCompiler Semantic CleanUpScope optional
+}.
+
 ## The AST nodes.
 __BootstrapCompiler__
     enterTopLevelNamespace;
@@ -800,6 +808,7 @@ __BootstrapCompiler__
     enterTopLevelNamespace;
     enterNamespaceNamed: #SysmelCompiler;
     enterNamespaceNamed: #Semantic;
+    addBindingNamed: #FunctionSignatureAnalyzer with: (__TypeBuilder__ newGCClassWithPublicSlots: #{});
     addBindingNamed: #SymbolBinding with: (__TypeBuilder__ newGCClassWithPublicSlots: #{});
     addBindingNamed: #SymbolValueBinding with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler Semantic SymbolBinding publicSlots: #{
         name: AnyValue.
@@ -822,6 +831,7 @@ __BootstrapCompiler__
         typeInferenceEnvironment: SysmelCompiler Semantic TypeInferenceEnvironment.
     });
     setSemanticAnalysisMapping: #{
+        FunctionSignatureAnalyzer: SysmelCompiler Semantic FunctionSignatureAnalyzer.
         SymbolBinding: SysmelCompiler Semantic SymbolBinding.
         SymbolValueBinding: SysmelCompiler Semantic SymbolValueBinding.
         IdentifierLookupScope: SysmelCompiler Semantic IdentifierLookupScope.
@@ -1183,7 +1193,9 @@ SysmelCompiler Semantic IdentifierLookupScope
 
 SysmelCompiler Semantic CleanUpScope
     withSelector: #makeChildCleanUpScope addMethod: {:(SysmelCompiler Semantic CleanUpScope)self :: SysmelCompiler Semantic CleanUpScope |
-        SysmelCompiler Semantic CleanUpScope basicNew
+        SysmelCompiler Semantic CleanUpScope basicNewWithNamedSlots: {
+            parent: self
+        }
     }.
 
 SysmelCompiler Semantic SymbolBinding
