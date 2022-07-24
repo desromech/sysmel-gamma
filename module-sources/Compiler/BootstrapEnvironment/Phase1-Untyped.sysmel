@@ -1305,7 +1305,7 @@ Type
     };
     withSelector: #analyzeUnboundOrDynamicMessageSendNode:with: addMethod: {:(Type)self :(SysmelCompiler AST MessageSendNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
         if: self hasAnyValueFlag then: {
-            self analyzeDynamicMessageSendNode: node with: analyzer
+            self analyzeDynamicMessageSendNode: node with: analyzerx
         } else: {
             analyzer makeSemanticAnalysisError: "Unsupported dynamic message send." at: node sourcePosition
         }
@@ -1377,7 +1377,7 @@ Type
 
 TypeSchema 
     withSelector: #canConstructWithValueOfType: addMethod: {:(TypeSchema)self :(Type)sourceType :: Boolean |
-        Boolean basicNew: false
+        false
     };
     withSelector: #addConstructionNodeFor:valueType:into:with: addMethod: {:(TypeSchema)self :(SysmelCompiler AST Node)node :(Type)sourceType :(Type)targetType :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
         __BootstrapCompiler__ subclassResponsibility
@@ -1555,7 +1555,7 @@ __BootstrapCompiler__
     }.
 
 
-if: (Boolean basicNew: true) then: {
+if: true then: {
 __BootstrapCompiler__
     print: false;
     print: true;
@@ -1619,7 +1619,7 @@ __BootstrapCompiler__
     print: (Int32 -- Int32 -- Int32) => Void;
     print: Float32 -- Int32 -- Float64.
 
-if: (Boolean basicNew: true) then: {
+if: true then: {
     __BootstrapCompiler__ print: "then branch"
 } else: {
     __BootstrapCompiler__ print: "else branch"

@@ -148,6 +148,11 @@ def getBooleanValue(value):
 def getBoolean8Value(value):
     return getBasicTypeNamed('Boolean8').basicNewWithValue(int(value))
 
+def coerceValueToBoolean(value):
+    if 'Boolean' in BasicTypeEnvironment:
+        return getBasicTypeNamed('Boolean').coerceValue(value)
+    return value
+
 def getSizeValue(value):
     if 'Size' not in BasicTypeEnvironment:
         return Integer(value)

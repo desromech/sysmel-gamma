@@ -368,7 +368,7 @@ class PTKeywordMessage(PTNode):
             selector = self.selector.evaluateWithEnvironment(machine, environment)
             ## Core forms: branch, loop
             if selector == 'if:then:else:':
-                condition = self.arguments[0].evaluateWithEnvironment(machine, environment)
+                condition = coerceValueToBoolean(self.arguments[0].evaluateWithEnvironment(machine, environment))
                 if condition.asBooleanValue():
                     return self.arguments[1].evaluateWithEnvironment(machine, environment)
                 else:
@@ -376,7 +376,7 @@ class PTKeywordMessage(PTNode):
             elif selector == 'while:do:continueWith:':
                 result = None
                 while True:
-                    condition = self.arguments[0].evaluateWithEnvironment(machine, environment)
+                    condition = coerceValueToBoolean(self.arguments[0].evaluateWithEnvironment(machine, environment))
                     if not condition.asBooleanValue():
                         break
                     result = self.arguments[1].evaluateWithEnvironment(machine, environment)
