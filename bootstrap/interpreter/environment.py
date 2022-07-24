@@ -27,6 +27,7 @@ class IdentifierLookupScope(TypedValue):
         else:
             return None
 
+    @primitiveNamed('identifierLookupScope.makeChildLexicalScope')
     def makeChildLexicalScope(self):
         return LexicalScope(self)
 
