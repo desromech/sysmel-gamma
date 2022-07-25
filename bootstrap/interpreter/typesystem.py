@@ -241,6 +241,10 @@ class TypeInterface:
     def primitiveGetSchema(self):
         return self.schema
 
+    @primitiveNamed('type.getSupertype')
+    def primitiveGetSupertype(self):
+        return self.supertype
+
     @primitiveNamed('type.lookupLocalSelector')
     def primitiveLookupLocalSelector(self, selector):
         return self.lookupLocalSelector(selector)

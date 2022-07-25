@@ -769,6 +769,7 @@ __BootstrapCompiler__
     });
     addBindingNamed: #WrapAnyValueNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST TypeConversionNode publicSlots: #{});
     addBindingNamed: #UnwrapAnyValueNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST TypeConversionNode publicSlots: #{});
+    addBindingNamed: #UpcastConversionNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST TypeConversionNode publicSlots: #{});
 
     ## Stablish the basic ast node mapping that is required for converting a parse tree onto the actual AST object.
     setParseTreeASTMaping: #{
@@ -1174,6 +1175,12 @@ SysmelCompiler AST WrapValueInSumTypeNode
         self analyzedType _ basicNew: (self expression evaluateNodeWith: evaluationEnvironment) typeSelector: self typeSelector
     }.
 
+SysmelCompiler AST UpcastConversionNode
+    withSelector: #evaluateNodeWith: addMethod: {:(SysmelCompiler AST WrapValueInSumTypeNode)self :(SysmelCompiler Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+        ## This is a nop in the evaluator.
+        self expression evaluateNodeWith: evaluationEnvironment
+    }.
+
 SysmelCompiler AST WrapAnyValueNode
     withSelector: #evaluateNodeWith: addMethod: {:(SysmelCompiler AST WrapValueInSumTypeNode)self :(SysmelCompiler Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         ## This is a nop in the evaluator.
@@ -1422,6 +1429,22 @@ Type
         <primitive: #"type.getSchema">
         self
     };
+    withSelector: #supertype addMethod: {:(Type)self :: Type optional |
+        <primitive: #"type.getSupertype">
+        self
+    };
+    withSelector: #isSubtypeOf: addMethod: {:(Type)self :(Type)other :: Boolean |
+        <primitive: #"type.isSubtypeOf">
+        if: self == other then: {
+            true
+        } else: {
+            if: self supertype isNil then: {
+                false
+            } else: {
+                self supertype _ isSubtypeOf: other
+            }
+        }
+    };
     withSelector: #hasTypeFlag: addMethod: {:(Type)self :(AnyValue)methodFlag :: Boolean |
         <primitive: #"type.hasTypeFlag">
         __BootstrapCompiler__ primitiveFailed
@@ -1435,7 +1458,15 @@ Type
         if: self == targetType then: {
             node
         } else: {
-            targetType addImplicitCoercionToNode: node fromType: self with: analyzer
+            if: (self isSubtypeOf: targetType) then: {
+                SysmelCompiler AST UpcastConversionNode basicNewWithNamedSlots: #{
+                    sourcePosition: node sourcePosition.
+                    expression: node.
+                    analyzedType: targetType
+                }
+            } else: {
+                targetType addImplicitCoercionToNode: node fromType: self with: analyzer
+            }
         }
     };
     withSelector: #addImplicitCoercionToNode:fromType:with: addMethod: {:(Type)self
