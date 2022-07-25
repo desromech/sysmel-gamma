@@ -80,6 +80,18 @@ class ValueInterface:
     def asArraySlice(self):
         return self.performWithArguments(EvaluationMachine.getActive(), Symbol('asArraySlice'), ())
 
+    def isConversionMethod(self):
+        return False
+
+    def isConstructionMethod(self):
+        return False
+
+    def isExplicitMethod(self):
+        return False
+
+    def asCanonicalTypeForDependentType(self):
+        raise SubclassResponsibility()
+
 class TypedValue(ValueInterface):
     def getType(self):
         raise NotImplementedError('getType() in %s' % repr(self.__class__))
@@ -95,6 +107,9 @@ class TypedValue(ValueInterface):
             return self
 
         return self.shallowCopy()
+
+    def asCanonicalTypeForDependentType(self):
+        return getBasicTypeNamed('AnyValue')
 
 class PrimitiveMethod(TypedValue):
     def __init__(self, method, functionTypeSpec):
@@ -170,6 +185,9 @@ class SymbolBinding(TypedValue):
     def getSymbolBindingReferenceValue(self):
         raise NotImplementedError()
 
+    def asSymbolBindingWithName(self, name):
+        return self
+
 class SymbolValueBinding(SymbolBinding):
     def __init__(self, name, value):
         self.name = name
@@ -187,6 +205,21 @@ class SymbolValueBinding(SymbolBinding):
         if slotName == 'name':
             return self.name
         return super().getSlotWithIndexAndName(slotIndex, slotName)
+
+class ForAllPlaceholderBinding(SymbolBinding):
+    def __init__(self, name, expectedType):
+        self.name = name
+        self.value = None
+        self.expectedType = expectedType
+
+    def getSymbolBindingReferenceValue(self):
+        if self.value is None:
+            return self
+        else:
+            return self.value
+
+    def getType(self):
+        return getSemanticAnalysisType(Symbol('ForAllPlaceholderBinding'))
 
 class TypeInterface:
     def canBeCoercedToType(self, targetType):
@@ -519,6 +552,15 @@ class BlockClosure(TypedValue):
         self.primitiveName = primitiveName
         self.methodFlags = methodFlags
         self.functionType = None
+
+    def isConversionMethod(self):
+        return 'conversion' in self.methodFlags
+
+    def isConstructionMethod(self):
+        return 'construction' in self.methodFlags
+
+    def isExplicitMethod(self):
+        return 'explicit' in self.methodFlags
 
     def getType(self):
         if self.functionType is None:
@@ -946,6 +988,7 @@ class SumTypeSchema(TypeSchema):
     def buildPrimitiveMethodDictionary(self):
         self.methodDict[Symbol('__typeSelector__')] = TypeSchemaPrimitiveMethod(self.getTypeSelector, '(SelfType) => Size')
         self.methodDict[Symbol('get:')] = TypeSchemaPrimitiveMethod(self.getWithType, '{:(SelfType)self :(Type)expectedType :: expectedType}')
+        self.methodDict[Symbol('is:')] = TypeSchemaPrimitiveMethod(self.isWithType, '{:(SelfType)self :(Type)expectedType :: Boolean}')
         self.metaTypeMethodDict[Symbol('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew, '{:(SelfType)self :: self}')
         self.metaTypeMethodDict[Symbol('basicNew:')] = TypeSchemaPrimitiveMethod(self.basicNewWithValue, '{:(SelfType)self :(AnyValue)initialValue :: self}')
         self.metaTypeMethodDict[Symbol('basicNew:typeSelector:')] = TypeSchemaPrimitiveMethod(self.basicNewWithValueTypeSelector, '{:(SelfType)self :(AnyValue)initialValue :(Size)typeSelector :: self}')
@@ -959,6 +1002,10 @@ class SumTypeSchema(TypeSchema):
         if sumValue.typeSelector.asInteger() != requiredTypeIndex:
             raise SumTypeNotMatched('Sum type value is not of the expected type (%s).' % repr(requiredType))
         return sumValue.wrappedValue
+
+    def isWithType(self, sumValue, requiredType):
+        requiredTypeIndex = self.elementTypes.index(requiredType)
+        return getBooleanValue(sumValue.typeSelector.asInteger() == requiredTypeIndex)
 
     def basicNew(self, sumType):
         return SumTypeValue(sumType, getSizeValue(0), self.elementTypes[0].basicNew())
@@ -1271,6 +1318,10 @@ class BehaviorType(TypedValue, TypeInterface):
     def __init__(self, name = None, supertype = None, traits = [], schema = EmptyTypeSchema(), methodDict = {}):
         self.name = name
         self.methodDict = dict(methodDict)
+        self.implicitConversionMethods = []
+        self.explicitConversionMethods = []
+        self.implicitConstructionMethods = []
+        self.explicitConstructionMethods = []
         self.supertype = supertype
         self.traits = traits
         self.schema = schema
@@ -1361,6 +1412,17 @@ class BehaviorType(TypedValue, TypeInterface):
     def addMethodWithSelector(self, method, selector):
         self.methodDict[selector] = method
         method.installedInType(self)
+
+        if method.isConversionMethod():
+            if method.isExplicitMethod():
+                self.explicitConversionMethods.append(method)
+            else:
+                self.implicitConversionMethods.append(method)
+        if method.isConstructionMethod():
+            if method.isExplicitMethod():
+                self.implicitConstructionMethods.append(method)
+            else:
+                self.explicitConstructionMethods.append(method)
 
     def withSelectorAddMethod(self, selector, method):
         self.addMethodWithSelector(method, selector)
@@ -1481,6 +1543,11 @@ class MetaType(BehaviorType):
         super().__init__(name, supertype, traits, schema, methodDict)
         self.thisType = thisType
 
+    def asCanonicalTypeForDependentType(self):
+        if self.thisType is not None:
+            return self.thisType
+        return super().asCanonicalTypeForDependentType()
+
     def lookupLocalSelector(self, selector):
         found = self.methodDict.get(selector, None)
         if found is not None:
@@ -1524,13 +1591,23 @@ class AbstractFunctionTypeArgument:
             argumentType = self.typeExpression.evaluateWithEnvironment(EvaluationMachine.getActive(), environment)
 
         if self.name is not None:
-            environment.setSymbolValueBinding(self.name, argumentType)
+            environment.setSymbolImmutableValue(self.name, argumentType.asCanonicalTypeForDependentType())
         return argumentType
 
     def isForAllArgumentExpression(self):
         raise SubclassResponsibility()
 
-class FunctionTypeForallArgumentExpression(AbstractFunctionTypeArgument):
+class FunctionTypeForAllArgumentExpression(AbstractFunctionTypeArgument):
+    def evaluateInEnvironment(self, environment):
+        if self.typeExpression is None:
+            placeholderType = getBasicTypeNamed('AnyValue')
+        else:
+            placeholderType = self.typeExpression.evaluateWithEnvironment(EvaluationMachine.getActive(), environment)
+
+        placeholder = ForAllPlaceholderBinding(self.name, placeholderType)
+        if self.name is not None:
+            environment.setSymbolValueBinding(self.name, placeholder)
+
     def isForAllArgumentExpression(self):
         return True
 
@@ -1543,6 +1620,18 @@ class FunctionTypeForallArgumentExpression(AbstractFunctionTypeArgument):
 class FunctionTypeArgumentExpression(AbstractFunctionTypeArgument):
     def isForAllArgumentExpression(self):
         return False
+
+    def evaluateSignatureInEnvironmentWithAnalyzedType(self, evaluationEnvironment, argumentAnalyzedType):
+        canonicalType = argumentAnalyzedType.asCanonicalTypeForDependentType()
+        if self.name is not None:
+            evaluationEnvironment.setSymbolValueBinding(self.name, canonicalType)
+        return canonicalType
+
+    def evaluateInEnvironment(self, environment):
+        if self.typeExpression is None:
+            return getBasicTypeNamed('AnyValue')
+        else:
+            return self.typeExpression.evaluateWithEnvironment(EvaluationMachine.getActive(), environment)
 
     def __repr__(self):
         if self.typeExpression is None:
@@ -1565,6 +1654,87 @@ class FunctionTypeResult:
 
 SimpleFunctionMemoizationTable = {}
 
+class FunctionSignatureAnalyzer(TypedValue):
+    def __init__(self, functionType) -> None:
+        super().__init__()
+        self.functionType = functionType
+
+    def getType(self):
+        return getSemanticAnalysisType('FunctionSignatureAnalyzer')
+
+    @primitiveNamed('functionSignatureAnalyzer.hasPendingArguments')
+    def primitiveHasPendingArguments(self):
+        return self.hasPendingArguments()
+
+    @primitiveNamed('functionSignatureAnalyzer.evaluateNextSignatureType')
+    def primitiveEvaluateNextSignatureType(self):
+        return self.evaluateNextSignatureType()
+
+    @primitiveNamed('functionSignatureAnalyzer.advanceArgument')
+    def primitiveAdvanceArgumentWithAnalyzedType(self, analyzedType):
+        self.advanceArgumentWithAnalyzedType(analyzedType)
+        return getBasicTypeNamed('Void').basicNew()
+
+    @primitiveNamed('functionSignatureAnalyzer.computeResultType')
+    def primitiveComputeResultType(self):
+        return self.computeResultType()
+
+class DependentFunctionSignatureAnalyzer(FunctionSignatureAnalyzer):
+    def __init__(self, functionType):
+        super().__init__(functionType)
+        self.evaluationEnvironment = functionType.dependentDefinitionEnvironment.makeChildLexicalScope()
+        self.currentArgumentIndex = 0
+        self.currentDependentArgumentIndex = 0
+        self.evaluatedSignatures = []
+
+    def hasPendingArguments(self):
+        return getBooleanValue(self.currentArgumentIndex < self.functionType.argumentCount)
+
+    def evaluateNextSignatureType(self):
+        while self.currentDependentArgumentIndex < len(self.functionType.dependentDefinitionArguments):
+            argumentDefinition = self.functionType.dependentDefinitionArguments[self.currentDependentArgumentIndex]
+            if argumentDefinition.isForAllArgumentExpression():
+                self.evaluatedSignatures.append(argumentDefinition.evaluateInEnvironment(self.evaluationEnvironment))
+                self.currentDependentArgumentIndex += 1
+            else:
+                self.lastArgumentEvaluationType = argumentDefinition.evaluateInEnvironment(self.evaluationEnvironment)
+                return self.lastArgumentEvaluationType
+
+        raise Exception("Failed to evaluate next dependent argument signature")
+
+    def advanceArgumentWithAnalyzedType(self, analyzedType):
+        argumentDefinition = self.functionType.dependentDefinitionArguments[self.currentDependentArgumentIndex]
+        self.evaluatedSignatures.append(argumentDefinition.evaluateSignatureInEnvironmentWithAnalyzedType(self.evaluationEnvironment, analyzedType))
+
+        self.currentArgumentIndex += 1
+        self.currentDependentArgumentIndex += 1
+
+    def computeResultType(self):
+        if self.functionType.dependentDefinitionResultType is None:
+            return getBasicTypeNamed('AnyValue')
+
+        if self.hasPendingArguments():
+            return getBasicTypeNamed('CompilationError')
+
+        return self.functionType.dependentDefinitionResultType.evaluateInEnvironment(self.evaluationEnvironment)
+
+class SimpleFunctionSignatureAnalyzer(FunctionSignatureAnalyzer):
+    def __init__(self, functionType):
+        super().__init__(functionType)
+        self.currentArgumentIndex = 0
+    
+    def hasPendingArguments(self):
+        return getBooleanValue(self.currentArgumentIndex < self.functionType.argumentCount)
+
+    def evaluateNextSignatureType(self):
+        return self.functionType.canonicalArgumentTypes[self.currentArgumentIndex]
+
+    def advanceArgumentWithAnalyzedType(self, analyzedType):
+        self.currentArgumentIndex += 1
+
+    def computeResultType(self):
+        return self.functionType.canonicalResultType
+
 class FunctionType(SimpleType):
     def __init__(self):
         self.isDependentFunctionType = False
@@ -1577,6 +1747,7 @@ class FunctionType(SimpleType):
         self.canonicalResultType = None
         self.canonicalArgumentsArraySlice = None
         self.hasForAllArgument = False
+        self.argumentCount = 0
         super().__init__(supertype = getBasicTypeNamed('Function'))
 
     @classmethod
@@ -1628,19 +1799,22 @@ class FunctionType(SimpleType):
         environment = ActiveBootstrapCompiler.getTopLevelEnvironment()
         if ownerType is not None:
             environment = environment.makeChildLexicalScope()
-            environment.setSymbolValueBinding(Symbol('SelfType'), ownerType)
+            environment.setSymbolImmutableValue(Symbol('SelfType'), ownerType)
         return environment
 
     def computeFunctionTypeClassification(self):
         ## Check the presence of a for all argument.
         self.hasForAllArgument = False
         if self.isSimpleFunctionType:
+            self.argumentCount = len(self.canonicalArgumentTypes)
             return
 
+        self.argumentCount = 0
         for argument in self.dependentDefinitionArguments:
             if argument.isForAllArgumentExpression():
                 self.hasForAllArgument = True
-                break
+            else:
+                self.argumentCount += 1
 
         ## TODO: Check on whether this is a dependent function type, or not.
 
@@ -1700,6 +1874,13 @@ class FunctionType(SimpleType):
         if self.canonicalArgumentsArraySlice is None:
             self.canonicalArgumentsArraySlice = getBasicTypeNamed('ArraySlice')(getBasicTypeNamed('Type')).basicNewWithSequentialSlots(self.getCanonicalArgumentTypes())
         return self.canonicalArgumentsArraySlice
+
+    @primitiveNamed('functionType.makeFunctionSignatureAnalyzer')
+    def makeFunctionSignatureAnalyzer(self):
+        if self.isSimpleFunctionType:
+            return SimpleFunctionSignatureAnalyzer(self)
+        else:
+            return DependentFunctionSignatureAnalyzer(self)
 
 class TypeBuilder(BehaviorTypedObject):
     def __init__(self):

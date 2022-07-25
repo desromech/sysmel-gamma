@@ -140,7 +140,7 @@ class PTNode:
     def isBlockArgument(self):
         return False
 
-    def isForallBlockArgument(self):
+    def isForAllBlockArgument(self):
         return False
 
     def isQuote(self):
@@ -385,13 +385,13 @@ class PTKeywordMessage(PTNode):
             elif selector == 'let:with:':
                 symbol = self.arguments[0].evaluateWithEnvironment(machine, environment)
                 value = self.arguments[1].evaluateWithEnvironment(machine, environment)
-                environment.setSymbolValueBinding(symbol, value)
+                environment.setSymbolImmutableValue(symbol, value)
                 return value
             elif selector == 'let:type:with:':
                 symbol = self.arguments[0].evaluateWithEnvironment(machine, environment)
                 type = self.arguments[1].evaluateWithEnvironment(machine, environment)
                 value = self.arguments[2].evaluateWithEnvironment(machine, environment)
-                environment.setSymbolValueBinding(symbol, type.coerceValue(value))
+                environment.setSymbolImmutableValue(symbol, type.coerceValue(value))
                 return value
 
             boundMessage = environment.lookupSymbolRecursively(selector)
@@ -603,7 +603,7 @@ class PTBlockClosure(PTNode):
         self.expectedArgumentCount = 0
         self.methodFlags = []
         for argument in self.arguments:
-            if argument.isForallBlockArgument():
+            if argument.isForAllBlockArgument():
                 self.hasForAllArgument = True
             else:
                 self.expectedArgumentCount += 1
@@ -631,13 +631,13 @@ class PTBlockClosure(PTNode):
         sourceArgumentIndex = 0
         for i in range(len(self.arguments)):
             argumentDeclaration = self.arguments[i]
-            if argumentDeclaration.isForallBlockArgument():
+            if argumentDeclaration.isForAllBlockArgument():
                 ## TODO: Add a placeholder for the generic argument.
                 pass
             else:
                 argumentValue = arguments[sourceArgumentIndex]
                 argumentName = argumentDeclaration.identifier.evaluateWithEnvironment(machine, closureEnvironment)
-                evaluationEnvironment.setSymbolValueBinding(argumentName, argumentValue)
+                evaluationEnvironment.setSymbolImmutableValue(argumentName, argumentValue)
                 sourceArgumentIndex += 1
 
         ## Coerce the result value into the result type
@@ -661,7 +661,7 @@ class PTBlockClosure(PTNode):
             argumentDeclaration = self.arguments[i]
             argumentValue = arguments[i]
             argumentName = argumentDeclaration.identifier.evaluateWithEnvironment(machine, closureEnvironment)
-            evaluationEnvironment.setSymbolValueBinding(argumentName, argumentValue)
+            evaluationEnvironment.setSymbolImmutableValue(argumentName, argumentValue)
 
         ## Coerce the result value into the result type
         if self.resultType is not None:
@@ -689,9 +689,9 @@ class PTBlockGenericArgument(PTNode):
         self.identifier = identifier.asSymbolEvaluatedExpression()
 
     def asFunctionTypeArgument(self):
-        return FunctionTypeForallArgumentExpression(self.identifier.evaluateAsLiteralSymbol(), self.type)
+        return FunctionTypeForAllArgumentExpression(self.identifier.evaluateAsLiteralSymbol(), self.type)
 
-    def isForallBlockArgument(self):
+    def isForAllBlockArgument(self):
         return True
 
 class PTQuote(PTNode):
