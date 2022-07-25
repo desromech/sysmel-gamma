@@ -5,8 +5,8 @@ from errors import *
 from evalmachine import *
 
 ActiveBootstrapCompiler = None
-BasicTypeEnvironment = None
-SemanticAnalysisTypeMapping = None
+BasicTypeEnvironment = {}
+SemanticAnalysisTypeMapping = {}
 
 PrimitiveMethodTable = {}
 
@@ -66,6 +66,8 @@ class ValueInterface:
         return self.shalowCopy()
 
     def asSymbolBindingWithName(self, name):
+        if 'SymbolBinding' in SemanticAnalysisTypeMapping and self.getType().isSubtypeOf(getSemanticAnalysisType('SymbolBinding')):
+            return self
         return SymbolValueBinding(name, self)
 
     def getSlotWithIndexAndName(self, slotIndex, slotName):
@@ -165,6 +167,9 @@ def getBooleanValue(value):
 
 def getBoolean8Value(value):
     return getBasicTypeNamed('Boolean8').basicNewWithValue(int(value))
+
+def getVoidValue():
+    return getBasicTypeNamed('Void').basicNew()
 
 def coerceValueToBoolean(value):
     if 'Boolean' in BasicTypeEnvironment:
@@ -508,6 +513,8 @@ class Dictionary(list, TypedValue):
             i += 1
         result += '}'
         return result
+
+SemanticAnalysisTypeMapping = Dictionary()
 
 def getTupleTypeWithElements(tupleElements):
     elementsArray = Array(tupleElements)

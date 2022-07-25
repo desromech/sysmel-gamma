@@ -19,40 +19,58 @@ __BootstrapCompiler__
     addBasicTypeNamed: #AnyValue with: (__TypeBuilder__ newGCClassWithSlots: #{});
 
     addBasicTypeNamed: #Object with: (__TypeBuilder__ newGCClassWithSuperclass: AnyValue slots: #{});
+
+    enterTopLevelNamespace;
+    enterNamespaceNamed: #Reflection;
     addBasicTypeNamed: #ProgramEntity with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
-    addBasicTypeNamed: #Type with: (__TypeBuilder__ newGCClassWithSuperclass: ProgramEntity slots: #{});
+
+    enterTopLevelNamespace;
+    addBasicTypeNamed: #Type with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection ProgramEntity slots: #{});
     addBasicTypeNamed: #SimpleType with: (__TypeBuilder__ newGCClassWithSuperclass: Type slots: #{});
     addBasicTypeNamed: #MetaType with: (__TypeBuilder__ newGCClassWithSuperclass: Type slots: #{});
 
-    addBasicTypeNamed: #TypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
-    addBasicTypeNamed: #TrivialTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: TypeSchema slots: #{});
-    addBasicTypeNamed: #AbsurdTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: TypeSchema slots: #{});
-    addBasicTypeNamed: #SumTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: TypeSchema slots: #{});
-    addBasicTypeNamed: #PrimitiveTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: TypeSchema slots: #{});
-    addBasicTypeNamed: #ProductTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: TypeSchema slots: #{});
-    addBasicTypeNamed: #RecordTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: ProductTypeSchema slots: #{});
-    addBasicTypeNamed: #GCClassTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: RecordTypeSchema slots: #{});
-    addBasicTypeNamed: #ArrayTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: TypeSchema slots: #{});
-    addBasicTypeNamed: #PointerTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: TypeSchema slots: #{});
-    addBasicTypeNamed: #ReferenceTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: TypeSchema slots: #{});
-
     addBasicTypeNamed: #Tuple with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
     addBasicTypeNamed: #Function with: (__TypeBuilder__ newGCClassWithSuperclass: SimpleType slots: #{});
-    addBasicTypeNamed: #FunctionImplementation with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
-    addBasicTypeNamed: #BlockClosure with: (__TypeBuilder__ newGCClassWithSuperclass: FunctionImplementation slots: #{});
-    addBasicTypeNamed: #AbstractPrimitiveMethod with: (__TypeBuilder__ newGCClassWithSuperclass: FunctionImplementation slots: #{});
-    addBasicTypeNamed: #PrimitiveMethod with: (__TypeBuilder__ newGCClassWithSuperclass: AbstractPrimitiveMethod slots: #{});
-    addBasicTypeNamed: #TypeSchemaPrimitiveMethod with: (__TypeBuilder__ newGCClassWithSuperclass: AbstractPrimitiveMethod slots: #{});
-    addBasicTypeNamed: #RecordTypeAccessorPrimitiveMethod with: (__TypeBuilder__ newGCClassWithSuperclass: AbstractPrimitiveMethod slots: #{});
-    addBasicTypeNamed: #RecordTypeGetterPrimitiveMethod with: (__TypeBuilder__ newGCClassWithSuperclass: RecordTypeAccessorPrimitiveMethod slots: #{});
-    addBasicTypeNamed: #RecordTypeSetterPrimitiveMethod with: (__TypeBuilder__ newGCClassWithSuperclass: RecordTypeAccessorPrimitiveMethod slots: #{});
 
     addBasicTypeNamed: #String with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
     addBasicTypeNamed: #Symbol with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
     addBasicTypeNamed: #Integer with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
     addBasicTypeNamed: #Float with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
     
-    addBasicTypeNamed: #CompilationError with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{}).
+    addBasicTypeNamed: #CompilationError with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
+
+    enterTopLevelNamespace;
+    enterNamespaceNamed: #Reflection;
+    addBasicTypeNamed: #TypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
+    addBasicTypeNamed: #TrivialTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection TypeSchema slots: #{});
+    addBasicTypeNamed: #AbsurdTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection TypeSchema slots: #{});
+    addBasicTypeNamed: #SumTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection TypeSchema slots: #{});
+    addBasicTypeNamed: #PrimitiveTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection TypeSchema slots: #{});
+    addBasicTypeNamed: #ProductTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection TypeSchema slots: #{});
+    addBasicTypeNamed: #RecordTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection ProductTypeSchema slots: #{});
+    addBasicTypeNamed: #GCClassTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection RecordTypeSchema slots: #{});
+    addBasicTypeNamed: #ArrayTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection TypeSchema slots: #{});
+    addBasicTypeNamed: #PointerTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection TypeSchema slots: #{});
+    addBasicTypeNamed: #ReferenceTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection TypeSchema slots: #{});
+
+    addBasicTypeNamed: #FunctionImplementation with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
+    addBasicTypeNamed: #BlockClosure with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection FunctionImplementation slots: #{});
+    addBasicTypeNamed: #AbstractPrimitiveMethod with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection FunctionImplementation slots: #{});
+    addBasicTypeNamed: #PrimitiveMethod with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AbstractPrimitiveMethod slots: #{});
+    addBasicTypeNamed: #TypeSchemaPrimitiveMethod with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AbstractPrimitiveMethod slots: #{});
+    addBasicTypeNamed: #RecordTypeAccessorPrimitiveMethod with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AbstractPrimitiveMethod slots: #{});
+    addBasicTypeNamed: #RecordTypeGetterPrimitiveMethod with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection RecordTypeAccessorPrimitiveMethod slots: #{});
+    addBasicTypeNamed: #RecordTypeSetterPrimitiveMethod with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection RecordTypeAccessorPrimitiveMethod slots: #{});
+
+    addBindingNamed: #SourceCollection with: (__TypeBuilder__ newGCClassWithSlots: #{});
+    addBindingNamed: #SourcePosition with: (__TypeBuilder__ newGCClassWithSlots: #{});
+
+    addBindingNamed: #Variable with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection ProgramEntity publicSlots: #{
+        name: AnyValue.
+        valueType: Type.
+        referenceType: Type.
+    });
+    addBindingNamed: #LocalVariable with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection Variable publicSlots: #{}).
 
 AnyValue addTypeFlag: #anyValue.
 
@@ -492,7 +510,7 @@ __BootstrapCompiler__
         }).
         valueBoxType __type__
             withSelector: #with: addMethod: {:(valueBoxType __type__)self :(elementType)value :: self |
-                self basicNewWithNamedSlots: {
+                self basicNewWithNamedSlots: #{
                     _: value
                 }
             }.
@@ -622,7 +640,7 @@ Undefined
 Type definePublicSlots: #{
     name: String optional.
     supertype: Type optional.
-    schema: TypeSchema.
+    schema: Reflection TypeSchema.
 }.
 
 ## Semantic analysis types.
@@ -630,6 +648,7 @@ __BootstrapCompiler__
     enterTopLevelNamespace;
     enterNamespaceNamed: #SysmelCompiler;
     enterNamespaceNamed: #Semantic;
+    addBindingNamed: #SymbolBinding with: (__TypeBuilder__ newGCClassWithPublicSlots: #{});
     addBindingNamed: #IdentifierLookupScope with: (__TypeBuilder__ newGCClassWithPublicSlots: #{});
     addBindingNamed: #LexicalScope with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler Semantic IdentifierLookupScope publicSlots: #{
     });
@@ -646,16 +665,14 @@ SysmelCompiler Semantic CleanUpScope definePublicSlots: #{
 ## The AST nodes.
 __BootstrapCompiler__
     enterTopLevelNamespace;
-    enterNamespaceNamed: #SysmelCompiler;
-    enterNamespaceNamed: #AST;
-    addBindingNamed: #SourceCollection with: (__TypeBuilder__ newGCClassWithSlots: #{});
-    addBindingNamed: #SourcePosition with: (__TypeBuilder__ newGCClassWithSlots: #{});
-    addBindingNamed: #SourceStringCollection with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST SourceCollection publicSlots: #{
+    enterNamespaceNamed: #Reflection;
+
+    addBindingNamed: #SourceStringCollection with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection SourceCollection publicSlots: #{
         sourceString: String.
         name: String.
     });
-    addBindingNamed: #SourceStringPosition with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST SourcePosition publicSlots: #{
-        sourceCollection: SysmelCompiler AST SourceCollection.
+    addBindingNamed: #SourceStringPosition with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection SourcePosition publicSlots: #{
+        sourceCollection: Reflection SourceCollection.
         startPosition: Size.
         endPosition: Size.
         startLine: Size.
@@ -663,153 +680,162 @@ __BootstrapCompiler__
         endLine: Size.
         endColumn: Size.
     });
-    addBindingNamed: #EmptySourcePosition with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST SourcePosition publicSlots: #{});
+    addBindingNamed: #EmptySourcePosition with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection SourcePosition publicSlots: #{});
 
+    enterNamespaceNamed: #AST;
+    
     addBindingNamed: #Node with: (__TypeBuilder__ newGCClassWithPublicSlots: #{
-        sourcePosition: SysmelCompiler AST SourcePosition.
+        sourcePosition: Reflection SourcePosition.
         analyzedType: Type optional
     });
-    addBindingNamed: #ArgumentDefinitionNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
-        name: SysmelCompiler AST Node.
-        type: SysmelCompiler AST Node.
+    addBindingNamed: #ArgumentDefinitionNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
+        name: Reflection AST Node.
+        type: Reflection AST Node.
     });
-    addBindingNamed: #BlockClosureNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
-        arguments: SysmelCompiler AST Node arraySlice.
-        body: SysmelCompiler AST Node.
+    addBindingNamed: #BlockClosureNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
+        arguments: Reflection AST Node arraySlice.
+        body: Reflection AST Node.
     });
-    addBindingNamed: #ChainedMessageNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
-        selector: SysmelCompiler AST Node.
-        arguments: SysmelCompiler AST Node arraySlice
+    addBindingNamed: #ChainedMessageNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
+        selector: Reflection AST Node.
+        arguments: Reflection AST Node arraySlice
     });
-    addBindingNamed: #CleanUpScopeNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
-        body: SysmelCompiler AST Node.
-        cleanUpAction: SysmelCompiler AST Node optional.
+    addBindingNamed: #CleanUpScopeNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
+        body: Reflection AST Node.
+        cleanUpAction: Reflection AST Node optional.
         analysisScope: SysmelCompiler Semantic CleanUpScope optional.
     });
-    addBindingNamed: #LexicalScopeNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
-        body: SysmelCompiler AST Node.
+    addBindingNamed: #LexicalScopeNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
+        body: Reflection AST Node.
         analysisScope: SysmelCompiler Semantic LexicalScope optional.
     });
-    addBindingNamed: #LiteralValueNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
+    addBindingNamed: #LiteralValueNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
         value: AnyValue
     });
-    addBindingNamed: #IdentifierReferenceNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
+    addBindingNamed: #IdentifierReferenceNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
         value: AnyValue.
-        binding: AnyValue.
+        binding: SysmelCompiler Semantic SymbolBinding optional.
     });
 
-    addBindingNamed: #MakeAssociationNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
-        key: SysmelCompiler AST Node.
-        value: SysmelCompiler AST Node.
+    addBindingNamed: #MakeAssociationNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
+        key: Reflection AST Node.
+        value: Reflection AST Node.
     });
-    addBindingNamed: #MakeTupleNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
-        elements: SysmelCompiler AST Node arraySlice.
+    addBindingNamed: #MakeTupleNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
+        elements: Reflection AST Node arraySlice.
     });
-    addBindingNamed: #MakeDictionaryNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
-        elements: SysmelCompiler AST Node arraySlice.
+    addBindingNamed: #MakeDictionaryNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
+        elements: Reflection AST Node arraySlice.
     });
 
-    addBindingNamed: #MessageSendNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
-        receiver: SysmelCompiler AST Node optional.
-        selector: SysmelCompiler AST Node.
-        arguments: SysmelCompiler AST Node arraySlice.
+    addBindingNamed: #MessageSendNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
+        receiver: Reflection AST Node optional.
+        selector: Reflection AST Node.
+        arguments: Reflection AST Node arraySlice.
         boundMethod: AnyValue optional.
         usesDynamicDispatch: Boolean.
     });
-    addBindingNamed: #MessageChainNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
-        receiver: SysmelCompiler AST Node.
-        chainedMessages: SysmelCompiler AST Node arraySlice
+    addBindingNamed: #MessageChainNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
+        receiver: Reflection AST Node.
+        chainedMessages: Reflection AST Node arraySlice
     });
-    addBindingNamed: #SequenceNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
-        expressions: SysmelCompiler AST Node arraySlice.
-        pragmas: SysmelCompiler AST Node arraySlice.
-    });
-
-    addBindingNamed: #SpliceNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
-        expression: SysmelCompiler AST Node.
-    });
-    addBindingNamed: #QuoteNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
-        expression: SysmelCompiler AST Node.
-    });
-    addBindingNamed: #QuasiQuoteNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
-        expression: SysmelCompiler AST Node.
-    });
-    addBindingNamed: #QuasiUnquoteNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
-        expression: SysmelCompiler AST Node.
+    addBindingNamed: #SequenceNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
+        expressions: Reflection AST Node arraySlice.
+        pragmas: Reflection AST Node arraySlice.
     });
 
-    addBindingNamed: #ErrorNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
+    addBindingNamed: #SpliceNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
+        expression: Reflection AST Node.
+    });
+    addBindingNamed: #QuoteNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
+        expression: Reflection AST Node.
+    });
+    addBindingNamed: #QuasiQuoteNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
+        expression: Reflection AST Node.
+    });
+    addBindingNamed: #QuasiUnquoteNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
+        expression: Reflection AST Node.
+    });
+
+    addBindingNamed: #ErrorNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
         message: String
     });
-    addBindingNamed: #ParseErrorNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST ErrorNode publicSlots: #{});
-    addBindingNamed: #SemanticErrorNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST ErrorNode publicSlots: #{
-        innerNode: SysmelCompiler AST Node optional
+    addBindingNamed: #ParseErrorNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST ErrorNode publicSlots: #{});
+    addBindingNamed: #SemanticErrorNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST ErrorNode publicSlots: #{
+        innerNode: Reflection AST Node optional
     });
 
-    addBindingNamed: #IfTrueIfFalseNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
-        condition: SysmelCompiler AST Node.
-        trueExpression: SysmelCompiler AST Node optional.
-        falseExpression: SysmelCompiler AST Node optional.
+    addBindingNamed: #IfTrueIfFalseNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
+        condition: Reflection AST Node.
+        trueExpression: Reflection AST Node optional.
+        falseExpression: Reflection AST Node optional.
     });
-    addBindingNamed: #WhileDoContinueNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
-        condition: SysmelCompiler AST Node.
-        bodyExpression: SysmelCompiler AST Node optional.
-        continueExpression: SysmelCompiler AST Node optional.
+    addBindingNamed: #WhileDoContinueNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
+        condition: Reflection AST Node.
+        bodyExpression: Reflection AST Node optional.
+        continueExpression: Reflection AST Node optional.
     });
-    addBindingNamed: #LocalVariableDefinitionNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
-        nameExpression: SysmelCompiler AST Node.
-        typeExpression: SysmelCompiler AST Node optional.
-        initialValueExpression: SysmelCompiler AST Node.
+    addBindingNamed: #LocalVariableDefinitionNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
+        nameExpression: Reflection AST Node.
+        typeExpression: Reflection AST Node optional.
+        initialValueExpression: Reflection AST Node optional.
+        isMutable: Boolean. 
 
         analyzedSymbol: AnyValue optional.
         analyzedExpectedValueType: Type optional.
+        analyzedVariable: Reflection LocalVariable optional.
     });
 
     ## Basic type conversion nodes
-    addBindingNamed: #TypeConversionNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST Node publicSlots: #{
-        expression: SysmelCompiler AST Node.
+    addBindingNamed: #TypeConversionNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
+        expression: Reflection AST Node.
     });
-    addBindingNamed: #ValueAsVoidNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST TypeConversionNode publicSlots: #{});
-    addBindingNamed: #WrapValueInSumTypeNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST TypeConversionNode publicSlots: #{
+    addBindingNamed: #ValueAsVoidNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST TypeConversionNode publicSlots: #{});
+    addBindingNamed: #WrapValueInSumTypeNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST TypeConversionNode publicSlots: #{
         typeSelector: Size.
     });
-    addBindingNamed: #WrapAnyValueNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST TypeConversionNode publicSlots: #{});
-    addBindingNamed: #UnwrapAnyValueNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST TypeConversionNode publicSlots: #{});
-    addBindingNamed: #UpcastConversionNode with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler AST TypeConversionNode publicSlots: #{});
+    addBindingNamed: #WrapAnyValueNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST TypeConversionNode publicSlots: #{});
+    addBindingNamed: #UnwrapAnyValueNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST TypeConversionNode publicSlots: #{});
+    addBindingNamed: #UpcastConversionNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST TypeConversionNode publicSlots: #{});
+
+    ## Variable references.
+    addBindingNamed: #LocalVariableReferenceNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
+        binding: Reflection LocalVariable.
+    });
 
     ## Stablish the basic ast node mapping that is required for converting a parse tree onto the actual AST object.
     setParseTreeASTMaping: #{
-        SourceCollection: SysmelCompiler AST SourceCollection.
-        SourcePosition: SysmelCompiler AST SourcePosition.
-        SourceStringCollection: SysmelCompiler AST SourceStringCollection.
-        SourceStringPosition: SysmelCompiler AST SourceStringPosition.
-        EmptySourcePosition: SysmelCompiler AST EmptySourcePosition.
+        SourceCollection: Reflection SourceCollection.
+        SourcePosition: Reflection SourcePosition.
+        SourceStringCollection: Reflection SourceStringCollection.
+        SourceStringPosition: Reflection SourceStringPosition.
+        EmptySourcePosition: Reflection EmptySourcePosition.
 
-        Node: SysmelCompiler AST Node.
-        NodeArrayList: SysmelCompiler AST Node arrayList.
-        NodeArraySlice: SysmelCompiler AST Node arraySlice.
+        Node: Reflection AST Node.
+        NodeArrayList: Reflection AST Node arrayList.
+        NodeArraySlice: Reflection AST Node arraySlice.
 
-        ArgumentDefinitionNode: SysmelCompiler AST ArgumentDefinitionNode.
-        BlockClosureNode: SysmelCompiler AST BlockClosureNode.
-        ChainedMessageNode: SysmelCompiler AST ChainedMessageNode.
-        CleanUpScopeNode: SysmelCompiler AST CleanUpScopeNode.
-        IdentifierReferenceNode: SysmelCompiler AST IdentifierReferenceNode.
-        LexicalScopeNode: SysmelCompiler AST LexicalScopeNode.
-        LiteralValueNode: SysmelCompiler AST LiteralValueNode.
-        MakeAssociationNode: SysmelCompiler AST MakeAssociationNode.
-        MakeDictionaryNode: SysmelCompiler AST MakeDictionaryNode.
-        MakeTupleNode: SysmelCompiler AST MakeTupleNode.
-        MessageSendNode: SysmelCompiler AST MessageSendNode.
-        MessageChainNode: SysmelCompiler AST MessageChainNode.
-        QuoteNode: SysmelCompiler AST QuoteNode.
-        QuasiQuoteNode: SysmelCompiler AST QuasiQuoteNode.
-        QuasiUnquoteNode: SysmelCompiler AST QuasiUnquoteNode.
-        SequenceNode: SysmelCompiler AST SequenceNode.
-        SpliceNode: SysmelCompiler AST SpliceNode.
+        ArgumentDefinitionNode: Reflection AST ArgumentDefinitionNode.
+        BlockClosureNode: Reflection AST BlockClosureNode.
+        ChainedMessageNode: Reflection AST ChainedMessageNode.
+        CleanUpScopeNode: Reflection AST CleanUpScopeNode.
+        IdentifierReferenceNode: Reflection AST IdentifierReferenceNode.
+        LexicalScopeNode: Reflection AST LexicalScopeNode.
+        LiteralValueNode: Reflection AST LiteralValueNode.
+        MakeAssociationNode: Reflection AST MakeAssociationNode.
+        MakeDictionaryNode: Reflection AST MakeDictionaryNode.
+        MakeTupleNode: Reflection AST MakeTupleNode.
+        MessageSendNode: Reflection AST MessageSendNode.
+        MessageChainNode: Reflection AST MessageChainNode.
+        QuoteNode: Reflection AST QuoteNode.
+        QuasiQuoteNode: Reflection AST QuasiQuoteNode.
+        QuasiUnquoteNode: Reflection AST QuasiUnquoteNode.
+        SequenceNode: Reflection AST SequenceNode.
+        SpliceNode: Reflection AST SpliceNode.
 
-        ErrorNode: SysmelCompiler AST ErrorNode.
-        ParseErrorNode: SysmelCompiler AST ParseErrorNode.
-        SemanticErrorNode: SysmelCompiler AST SemanticErrorNode.
+        ErrorNode: Reflection AST ErrorNode.
+        ParseErrorNode: Reflection AST ParseErrorNode.
+        SemanticErrorNode: Reflection AST SemanticErrorNode.
     }.
 
 ## Semantic analysis types.
@@ -817,11 +843,14 @@ __BootstrapCompiler__
     enterTopLevelNamespace;
     enterNamespaceNamed: #SysmelCompiler;
     enterNamespaceNamed: #Semantic;
+
     addBindingNamed: #FunctionSignatureAnalyzer with: (__TypeBuilder__ newGCClassWithPublicSlots: #{});
-    addBindingNamed: #SymbolBinding with: (__TypeBuilder__ newGCClassWithPublicSlots: #{});
     addBindingNamed: #SymbolValueBinding with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler Semantic SymbolBinding publicSlots: #{
         name: AnyValue.
         value: AnyValue
+    });
+    addBindingNamed: #SymbolVariableBinding with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler Semantic SymbolBinding publicSlots: #{
+        variable: Reflection Variable
     });
     addBindingNamed: #ForAllPlaceholderBinding with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler Semantic SymbolBinding publicSlots: #{
         name: AnyValue.
@@ -861,70 +890,70 @@ __BootstrapCompiler__
 __BootstrapCompiler__
     enterTopLevelNamespace;
     addBindingNamed: #MacroInvocationContext with: (__TypeBuilder__ newGCClassWithPublicSlots: #{
-        sourcePosition: SysmelCompiler AST SourcePosition.
-        selfNode: SysmelCompiler AST Node optional.
+        sourcePosition: Reflection SourcePosition.
+        selfNode: Reflection AST Node optional.
         selfType: Type.
         astAnalyzer: SysmelCompiler Semantic ASTAnalyzer.
     }).
 
-SysmelCompiler AST Node
-    withSelector: #analyzeNodeIfNeededWith: addMethod: {:(SysmelCompiler AST Node)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
+Reflection AST Node
+    withSelector: #analyzeNodeIfNeededWith: addMethod: {:(Reflection AST Node)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
         if: self analyzedType isNil then: {
             self analyzeNodeWith: analyzer
         } else: {
             self
         }
     };
-    withSelector: #analyzeAndEvaluateNodeWith: addMethod: {:(SysmelCompiler AST Node)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: AnyValue |
+    withSelector: #analyzeAndEvaluateNodeWith: addMethod: {:(Reflection AST Node)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: AnyValue |
         (self analyzeNodeIfNeededWith: analyzer) evaluateNodeWith: analyzer environment
     };
-    withSelector: #analyzeNodeWith: addMethod: {:(SysmelCompiler AST Node)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
+    withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST Node)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
         __BootstrapCompiler__ subclassResponsibility
     };
-    withSelector: #evaluateNodeWith: addMethod: {:(SysmelCompiler AST Node)self :(SysmelCompiler Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+    withSelector: #evaluateNodeWith: addMethod: {:(Reflection AST Node)self :(SysmelCompiler Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         __BootstrapCompiler__ subclassResponsibility
     };
-    withSelector: #isLiteralValueNode addMethod: {:(SysmelCompiler AST Node)self :: Boolean |
+    withSelector: #isLiteralValueNode addMethod: {:(Reflection AST Node)self :: Boolean |
         false
     };
-    withSelector: #evaluateLiteralValue addMethod: {:(SysmelCompiler AST Node)self :: AnyValue |
+    withSelector: #evaluateLiteralValue addMethod: {:(Reflection AST Node)self :: AnyValue |
         __BootstrapCompiler__ error: "Not a literal value node."
     };
-    withSelector: #analyzeAndEvaluateNodeWithScriptEvaluationScope: addMethod: {:(SysmelCompiler AST Node)self :(SysmelCompiler Semantic ScriptEvaluationScope)scope :: AnyValue |
+    withSelector: #analyzeAndEvaluateNodeWithScriptEvaluationScope: addMethod: {:(Reflection AST Node)self :(SysmelCompiler Semantic ScriptEvaluationScope)scope :: AnyValue |
         self analyzeAndEvaluateNodeWith: (SysmelCompiler Semantic ASTAnalyzer forScriptEvaluationScope: scope)
     }.
 
-SysmelCompiler AST SourceStringCollection
-    withSelector: #printString addMethod: {:(SysmelCompiler AST SourceStringCollection)self :: String |
+Reflection SourceStringCollection
+    withSelector: #printString addMethod: {:(Reflection AST SourceStringCollection)self :: String |
         self name
     }.
 
-SysmelCompiler AST SourceStringPosition
-    withSelector: #printString addMethod: {:(SysmelCompiler AST SourceStringCollection)self :: String |
+Reflection SourceStringPosition
+    withSelector: #printString addMethod: {:(Reflection AST SourceStringCollection)self :: String |
         "{0}:{1}.{2}-{3}.{4}" format: (self sourceCollection printString,
             self startLine printString, self startColumn printString,
             self endLine printString, self endColumn printString,
         )
     }.
 
-SysmelCompiler AST LiteralValueNode
-    withSelector: #analyzeNodeWith: addMethod: {:(SysmelCompiler AST LiteralValueNode)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
+Reflection AST LiteralValueNode
+    withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST LiteralValueNode)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
         self shallowCopy
             analyzedType: self value __type__;
             yourself
     };
-    withSelector: #evaluateNodeWith: addMethod: {:(SysmelCompiler AST LiteralValueNode)self :(SysmelCompiler Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+    withSelector: #evaluateNodeWith: addMethod: {:(Reflection AST LiteralValueNode)self :(SysmelCompiler Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         self value
     };
-    withSelector: #isLiteralValueNode addMethod: {:(SysmelCompiler AST LiteralValueNode)self :: Boolean |
+    withSelector: #isLiteralValueNode addMethod: {:(Reflection AST LiteralValueNode)self :: Boolean |
         true
     };
-    withSelector: #evaluateLiteralValue addMethod: {:(SysmelCompiler AST LiteralValueNode)self :: AnyValue |
+    withSelector: #evaluateLiteralValue addMethod: {:(Reflection AST LiteralValueNode)self :: AnyValue |
         self value
     }.
 
-SysmelCompiler AST CleanUpScopeNode
-    withSelector: #analyzeNodeWith: addMethod: {:(SysmelCompiler AST CleanUpScopeNode)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
+Reflection AST CleanUpScopeNode
+    withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST CleanUpScopeNode)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
         let: #cleanUpScope with: (analyzer environment cleanUpScope makeChildCleanUpScope).
         let: #childEnvironment with: (analyzer environment copyWithCleanUpScope: cleanUpScope).
 
@@ -955,8 +984,8 @@ SysmelCompiler AST CleanUpScopeNode
         result
     }.
 
-SysmelCompiler AST LexicalScopeNode
-    withSelector: #analyzeNodeWith: addMethod: {:(SysmelCompiler AST LexicalScopeNode)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
+Reflection AST LexicalScopeNode
+    withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST LexicalScopeNode)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
         let: #lexicalScope with: (analyzer environment lexicalScope makeChildLexicalScope).
         let: #childEnvironment with: (analyzer environment copyWithLexicalScope: lexicalScope).
 
@@ -971,12 +1000,12 @@ SysmelCompiler AST LexicalScopeNode
         self body evaluateNodeWith: evaluationEnvironment
     }.
 
-SysmelCompiler AST SequenceNode
-    withSelector: #analyzeNodeWith: addMethod: {:(SysmelCompiler AST SequenceNode)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
-        let: #analyzedPragmas with: (self pragmas collect: {:(SysmelCompiler AST Node)node :: SysmelCompiler AST Node |
+Reflection AST SequenceNode
+    withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST SequenceNode)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+        let: #analyzedPragmas with: (self pragmas collect: {:(Reflection AST Node)node :: Reflection AST Node |
                 analyzer analyzedNodeIfNeeded: node withExpectedType: Pragma
         }).
-        let: #analyzedExpressions with: (self expressions collectWithIndex: {:(SysmelCompiler AST Node)node :(Size)index :: SysmelCompiler AST Node |
+        let: #analyzedExpressions with: (self expressions collectWithIndex: {:(Reflection AST Node)node :(Size)index :: Reflection AST Node |
                 if: index + 1sz < self expressions size then: {
                     analyzer analyzeNodeIfNeeded: node withExpectedType: Void.
                 } else: {
@@ -991,13 +1020,13 @@ SysmelCompiler AST SequenceNode
             yourself
     };
     withSelector: #evaluateNodeWith: addMethod: {:(Type)self :(SysmelCompiler Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
-        self expressions do: {:(SysmelCompiler AST Node)node :: AnyValue |
+        self expressions do: {:(Reflection AST Node)node :: AnyValue |
             node evaluateNodeWith: evaluationEnvironment
         }
     }.
 
-SysmelCompiler AST IdentifierReferenceNode
-    withSelector: #analyzeNodeWith: addMethod: {:(SysmelCompiler AST IdentifierReferenceNode)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
+Reflection AST IdentifierReferenceNode
+    withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST IdentifierReferenceNode)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
         let: #binding with: (analyzer environment lexicalScope lookupSymbolRecursively: self value).
         
         if: binding isNil then: {
@@ -1010,8 +1039,8 @@ SysmelCompiler AST IdentifierReferenceNode
         self binding evaluateBindingWithEnvironment: evaluationEnvironment
     }.
 
-SysmelCompiler AST MessageSendNode
-    withSelector: #analyzeNodeWith: addMethod: {:(SysmelCompiler AST MessageSendNode)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
+Reflection AST MessageSendNode
+    withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST MessageSendNode)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
         let: #analyzedSelector with: (analyzer analyzeNodeIfNeededWithAutoType: self selector).
         if: self receiver isNil then: {
             if: analyzedSelector isLiteralValueNode then: {
@@ -1035,15 +1064,15 @@ SysmelCompiler AST MessageSendNode
                 yourself) with: analyzer
         }.
     };
-    withSelector: #evaluateNodeWith: addMethod: {:(SysmelCompiler AST MessageSendNode)self :(SysmelCompiler Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+    withSelector: #evaluateNodeWith: addMethod: {:(Reflection AST MessageSendNode)self :(SysmelCompiler Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         if: self receiver isNil then: {
-            self boundMethod run: (self selector evaluateNodeWith: evaluationEnvironment) with: (self arguments collect: {:(SysmelCompiler AST Node)arg :: AnyValue |
+            self boundMethod run: (self selector evaluateNodeWith: evaluationEnvironment) with: (self arguments collect: {:(Reflection AST Node)arg :: AnyValue |
                 arg evaluateNodeWith: evaluationEnvironment
             }) in: nil
         } else: {
             let: #receiver with: (self receiver _ evaluateNodeWith: evaluationEnvironment).
             let: #selector with: (self selector evaluateNodeWith: evaluationEnvironment).
-            let: #arguments with: (self arguments collect: {:(SysmelCompiler AST Node)arg :: AnyValue |
+            let: #arguments with: (self arguments collect: {:(Reflection AST Node)arg :: AnyValue |
                     arg evaluateNodeWith: evaluationEnvironment
             }).
 
@@ -1055,8 +1084,8 @@ SysmelCompiler AST MessageSendNode
         }
     }.
 
-SysmelCompiler AST ParseErrorNode
-    withSelector: #analyzeNodeWith: addMethod: {:(SysmelCompiler AST ParseErrorNode)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
+Reflection AST ParseErrorNode
+    withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST ParseErrorNode)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
         self shallowCopy
             analyzedType: CompilationError;
             yourself
@@ -1065,13 +1094,13 @@ SysmelCompiler AST ParseErrorNode
         __BootstrapCompiler__ parseError: self message at: self sourcePosition
     }.
 
-SysmelCompiler AST SemanticErrorNode
-    withSelector: #analyzeNodeWith: addMethod: {:(SysmelCompiler AST SemanticErrorNode)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
+Reflection AST SemanticErrorNode
+    withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST SemanticErrorNode)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
         self shallowCopy
             analyzedType: CompilationError;
             yourself
     };
-    withSelector: #evaluateNodeWith: addMethod: {:(SysmelCompiler AST SemanticErrorNode)self :(SysmelCompiler Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+    withSelector: #evaluateNodeWith: addMethod: {:(Reflection AST SemanticErrorNode)self :(SysmelCompiler Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         if: self innerNode isNotNil then: {
             self innerNode evaluateNodeWith: evaluationEnvironment
         } else: {void}.
@@ -1079,8 +1108,8 @@ SysmelCompiler AST SemanticErrorNode
         __BootstrapCompiler__ semanticAnalysisError: self message at: self sourcePosition
     }.
 
-SysmelCompiler AST IfTrueIfFalseNode
-    withSelector: #analyzeNodeWith: addMethod: {:(SysmelCompiler AST IfTrueIfFalseNode)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
+Reflection AST IfTrueIfFalseNode
+    withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST IfTrueIfFalseNode)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
         let: #analyzedNode with: self shallowCopy.
 
         analyzedNode condition: (analyzer analyzeNodeIfNeeded: self condition withExpectedType: Boolean).
@@ -1118,7 +1147,7 @@ SysmelCompiler AST IfTrueIfFalseNode
 
         analyzedNode
     };
-    withSelector: #evaluateNodeWith: addMethod: {:(SysmelCompiler AST IfTrueIfFalseNode)self :(SysmelCompiler Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+    withSelector: #evaluateNodeWith: addMethod: {:(Reflection AST IfTrueIfFalseNode)self :(SysmelCompiler Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         if: (self condition evaluateNodeWith: evaluationEnvironment) then: {
             if: self trueExpression isNil then: {
                 void
@@ -1134,8 +1163,8 @@ SysmelCompiler AST IfTrueIfFalseNode
         }
     }.
 
-SysmelCompiler AST WhileDoContinueNode
-withSelector: #analyzeNodeWith: addMethod: {:(SysmelCompiler AST WhileDoContinueNode)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
+Reflection AST WhileDoContinueNode
+    withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST WhileDoContinueNode)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
         let: #analyzedNode with: self shallowCopy.
 
         analyzedNode
@@ -1158,7 +1187,7 @@ withSelector: #analyzeNodeWith: addMethod: {:(SysmelCompiler AST WhileDoContinue
 
         analyzedNode
     };
-    withSelector: #evaluateNodeWith: addMethod: {:(SysmelCompiler AST WhileDoContinueNode)self :(SysmelCompiler Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+    withSelector: #evaluateNodeWith: addMethod: {:(Reflection AST WhileDoContinueNode)self :(SysmelCompiler Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         while: (self condition evaluateNodeWith: evaluationEnvironment) do: {
             if: self bodyExpression isNil then: {
                 void
@@ -1174,30 +1203,108 @@ withSelector: #analyzeNodeWith: addMethod: {:(SysmelCompiler AST WhileDoContinue
         }
     }.
 
-SysmelCompiler AST ValueAsVoidNode
-    withSelector: #evaluateNodeWith: addMethod: {:(SysmelCompiler AST ValueAsVoidNode)self :(SysmelCompiler Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+Reflection AST LocalVariableDefinitionNode
+    withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST LocalVariableDefinitionNode)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+        if: self initialValueExpression isNil & self isMutable not then: {
+            analyzer makeSemanticAnalysisError: "Immutable local variable definition requires an initial value." atNode: self
+        } else: {
+            let: #analyzedNode with: self shallowCopy.
+            let: #name with: (self nameExpression analyzeAndEvaluateNodeWith: analyzer).
+            let: #sanitizedName with: name.
+            let: #hasError with: (ValueBox(Boolean) with: false).
+
+            ## Type expression evaluation, and type checking.
+            if: analyzedNode typeExpression isNil then: {
+                if: analyzedNode initialValueExpression isNil then: {
+                    analyzedNode analyzedExpectedValueType: AnyValue.
+                } else: {
+                    analyzedNode
+                        initialValueExpression: (analyzer analyzeNodeIfNeededWithAutoType: self initialValueExpression _);
+                        analyzedExpectedValueType: analyzedNode initialValueExpression _ analyzedType.
+                }.
+            } else: {
+                analyzedNode typeExpression: (analyzer analyzeNodeIfNeeded: self typeExpression _ withExpectedType: Type)
+                let: #typeExpressionValue with: (self typeExpression _ evaluateNodeWith: analyzer environment).
+                if: (typeExpressionValue __type__ isSubtypeOf: Type) then: {
+                    analyzedNode analyzedExpectedValueType: typeExpressionValue.
+                } else: {
+                    hasError _: true.
+
+                    analyzedNode
+                        typeExpression: (analyzer makeSemanticAnalysisError: "Expected a type expression." atNode: self typeExpression _);
+                        analyzedExpectedValueType: CompilationError
+                }.
+            }.
+
+            ## Make the variable.
+            let: #valueType with: analyzedNode analyzedExpectedValueType _.
+
+            ## TODO: Add support for mutability.
+            let: #variableReferenceType with: (if: hasError _ then: CompilationError else: valueType).
+            let: #variable with: (Reflection LocalVariable basicNewWithNamedSlots: #{
+                name: sanitizedName.
+                valueType: analyzedNode analyzedExpectedValueType _.
+                referenceType: variableReferenceType.
+            }).
+
+            ## Set the variable binding.
+            analyzer environment lexicalScope setSymbol: sanitizedName variableBinding: variable.
+
+            ## Analyze the initial value expression.
+            if: analyzedNode initialValueExpression isNil then: {
+                analyzedNode initialValueExpression: (typeExpressionValue makeInitialValueNodeWith: analyzer at: analyzedNode sourcePosition)
+            } else: {
+                analyzedNode initialValueExpression: (analyzer analyzeNodeIfNeeded: analyzedNode initialValueExpression _ withExpectedType: analyzedNode analyzedExpectedValueType _)
+            }.
+
+            analyzedNode
+                analyzedType: variableReferenceType;
+                analyzedVariable: variable.
+
+            analyzedNode
+        }
+    };
+    withSelector: #evaluateNodeWith: addMethod: {:(Reflection AST LocalVariableDefinitionNode)self :(SysmelCompiler Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+        ## TODO: Add support for mutability.
+        
+        let: #initialValue with: (self initialValueExpression _ evaluateNodeWith: evaluationEnvironment).
+        let: #bindingValue with: initialValue.
+
+        evaluationEnvironment lexicalScope setSymbol: self analyzedVariable _ immutableValue: bindingValue.
+        
+        bindingValue
+    }.
+
+Reflection AST LocalVariableReferenceNode
+    withSelector: #evaluateNodeWith: addMethod: {:(Reflection AST LocalVariableReferenceNode)self :(SysmelCompiler Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+        (evaluationEnvironment lexicalScope lookupSymbolRecursively: self binding) _ 
+            evaluateBindingWithEnvironment: evaluationEnvironment
+    }.
+
+Reflection AST ValueAsVoidNode
+    withSelector: #evaluateNodeWith: addMethod: {:(Reflection AST ValueAsVoidNode)self :(SysmelCompiler Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         self expression evaluateNodeWith: evaluationEnvironment.
         void
     }.
 
-SysmelCompiler AST WrapValueInSumTypeNode
-    withSelector: #evaluateNodeWith: addMethod: {:(SysmelCompiler AST WrapValueInSumTypeNode)self :(SysmelCompiler Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+Reflection AST WrapValueInSumTypeNode
+    withSelector: #evaluateNodeWith: addMethod: {:(Reflection AST WrapValueInSumTypeNode)self :(SysmelCompiler Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         self analyzedType _ basicNew: (self expression evaluateNodeWith: evaluationEnvironment) typeSelector: self typeSelector
     }.
 
-SysmelCompiler AST UpcastConversionNode
-    withSelector: #evaluateNodeWith: addMethod: {:(SysmelCompiler AST WrapValueInSumTypeNode)self :(SysmelCompiler Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+Reflection AST UpcastConversionNode
+    withSelector: #evaluateNodeWith: addMethod: {:(Reflection AST WrapValueInSumTypeNode)self :(SysmelCompiler Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         ## This is a nop in the evaluator.
         self expression evaluateNodeWith: evaluationEnvironment
     }.
 
-SysmelCompiler AST WrapAnyValueNode
-    withSelector: #evaluateNodeWith: addMethod: {:(SysmelCompiler AST WrapValueInSumTypeNode)self :(SysmelCompiler Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+Reflection AST WrapAnyValueNode
+    withSelector: #evaluateNodeWith: addMethod: {:(Reflection AST WrapValueInSumTypeNode)self :(SysmelCompiler Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         ## This is a nop in the evaluator.
         self expression evaluateNodeWith: evaluationEnvironment
     }.
-SysmelCompiler AST UnwrapAnyValueNode
-    withSelector: #evaluateNodeWith: addMethod: {:(SysmelCompiler AST WrapValueInSumTypeNode)self :(SysmelCompiler Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+Reflection AST UnwrapAnyValueNode
+    withSelector: #evaluateNodeWith: addMethod: {:(Reflection AST WrapValueInSumTypeNode)self :(SysmelCompiler Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         ## This is a nop in the evaluator.
         self expression evaluateNodeWith: evaluationEnvironment
     }.
@@ -1216,6 +1323,21 @@ SysmelCompiler Semantic IdentifierLookupScope
         __BootstrapCompiler__ primitiveFailed
     }.
 
+SysmelCompiler Semantic LexicalScope
+    withSelector: #setSymbol:binding: addMethod: {:(SysmelCompiler Semantic LexicalScope)self :(AnyValue)symbol :(SysmelCompiler Semantic SymbolBinding)binding :: Void |
+        <primitive: #"lexicalScope.setSymbolBinding">
+        __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #setSymbol:immutableValue: addMethod: {:(SysmelCompiler Semantic LexicalScope)self :(AnyValue)symbol :(AnyValue)immutableValue :: Void |
+        <primitive: #"lexicalScope.setSymbolImmutableValue">
+        __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #setSymbol:variableBinding: addMethod: {:(SysmelCompiler Semantic LexicalScope)self :(AnyValue)symbol :(Reflection Variable)variable :: Void |
+        self setSymbol: symbol binding: (SysmelCompiler Semantic SymbolVariableBinding basicNewWithNamedSlots: #{
+            variable: variable
+        })
+    }.
+
 SysmelCompiler Semantic CleanUpScope
     withSelector: #makeChildCleanUpScope addMethod: {:(SysmelCompiler Semantic CleanUpScope)self :: SysmelCompiler Semantic CleanUpScope |
         SysmelCompiler Semantic CleanUpScope basicNewWithNamedSlots: #{
@@ -1224,19 +1346,49 @@ SysmelCompiler Semantic CleanUpScope
     }.
 
 SysmelCompiler Semantic SymbolBinding
-    withSelector: #analyzeMessageSendNode:with: addMethod: {:(Type)self :(SysmelCompiler AST MessageSendNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
+    withSelector: #evaluateBindingWithEnvironment: addMethod: {:(Type)self :(SysmelCompiler Semantic EvaluationEnvironment)environment :: AnyValue |
         __BootstrapCompiler__ subclassResponsibility
     };
-    withSelector: #analyzeIdentifierReferenceNode:with: addMethod: {:(SysmelCompiler Semantic SymbolBinding)self :(SysmelCompiler AST IdentifierReferenceNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
+    withSelector: #analyzeMessageSendNode:with: addMethod: {:(Type)self :(Reflection AST MessageSendNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+        __BootstrapCompiler__ subclassResponsibility
+    };
+    withSelector: #analyzeIdentifierReferenceNode:with: addMethod: {:(SysmelCompiler Semantic SymbolBinding)self :(Reflection AST IdentifierReferenceNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
         __BootstrapCompiler__ subclassResponsibility
     }.
 
 SysmelCompiler Semantic SymbolValueBinding
-    withSelector: #analyzeMessageSendNode:with: addMethod: {:(Type)self :(SysmelCompiler AST MessageSendNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
+    withSelector: #evaluateBindingWithEnvironment: addMethod: {:(Type)self :(SysmelCompiler Semantic EvaluationEnvironment)environment :: AnyValue |
+        self value
+    };
+    withSelector: #analyzeMessageSendNode:with: addMethod: {:(Type)self :(Reflection AST MessageSendNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
         self value __type__ analyzeMessageSendNode: node with: analyzer valueBinding: self
     };
-    withSelector: #analyzeIdentifierReferenceNode:with: addMethod: {:(SysmelCompiler Semantic SymbolValueBinding)self :(SysmelCompiler AST IdentifierReferenceNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
+    withSelector: #analyzeIdentifierReferenceNode:with: addMethod: {:(SysmelCompiler Semantic SymbolValueBinding)self :(Reflection AST IdentifierReferenceNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
         self value __type__ analyzeIdentifierReferenceNode: node with: analyzer valueBinding: self
+    }.
+
+SysmelCompiler Semantic SymbolVariableBinding
+    withSelector: #analyzeMessageSendNode:with: addMethod: {:(Type)self :(Reflection AST MessageSendNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+        self variable analyzeMessageSendNode: node with: analyzer
+    };
+    withSelector: #analyzeIdentifierReferenceNode:with: addMethod: {:(SysmelCompiler Semantic SymbolValueBinding)self :(Reflection AST IdentifierReferenceNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+        self variable analyzeIdentifierReferenceNode: node with: analyzer
+    }.
+
+Reflection Variable
+    withSelector: #analyzeMessageSendNode:with: addMethod: {:(Type)self :(Reflection AST MessageSendNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+        __BootstrapCompiler__ subclassResponsibility
+    };
+    withSelector: #analyzeIdentifierReferenceNode:with: addMethod: {:(SysmelCompiler Semantic SymbolBinding)self :(Reflection AST IdentifierReferenceNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+        __BootstrapCompiler__ subclassResponsibility
+    }.
+
+Reflection LocalVariable
+    withSelector: #analyzeIdentifierReferenceNode:with: addMethod: {:(SysmelCompiler Semantic SymbolBinding)self :(Reflection AST IdentifierReferenceNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+        Reflection AST LocalVariableReferenceNode basicNewWithNamedSlots: #{
+            binding: self.
+            analyzedType: self referenceType
+        }
     }.
 
 SysmelCompiler Semantic EvaluationEnvironment __type__
@@ -1280,35 +1432,35 @@ SysmelCompiler Semantic ASTAnalyzer __type__
     }.
 
 SysmelCompiler Semantic TypeInferenceEnvironment
-    withSelector: #solveAnalyzedNodeType:with: addMethod: {:(SysmelCompiler Semantic TypeInferenceEnvironment)self :(SysmelCompiler AST Node)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer |
+    withSelector: #solveAnalyzedNodeType:with: addMethod: {:(SysmelCompiler Semantic TypeInferenceEnvironment)self :(Reflection AST Node)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer |
         __BootstrapCompiler__ subclassResponsibility
     }.
 
 SysmelCompiler Semantic DirectAutoTypeInferenceEnvironment
-    withSelector: #solveAnalyzedNodeType:with: addMethod: {:(SysmelCompiler Semantic TypeInferenceEnvironment)self :(SysmelCompiler AST Node)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
+    withSelector: #solveAnalyzedNodeType:with: addMethod: {:(SysmelCompiler Semantic TypeInferenceEnvironment)self :(Reflection AST Node)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
         node
     }.
 
 SysmelCompiler Semantic AutoTypeInferenceEnvironment
-    withSelector: #solveAnalyzedNodeType:with: addMethod: {:(SysmelCompiler Semantic TypeInferenceEnvironment)self :(SysmelCompiler AST Node)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node  |
+    withSelector: #solveAnalyzedNodeType:with: addMethod: {:(SysmelCompiler Semantic TypeInferenceEnvironment)self :(Reflection AST Node)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Reflection AST Node  |
         analyzer addImplicitCoercionTo: node analyzedType _ asDecayedType node: node
     }.
 
 SysmelCompiler Semantic ExpectedTypeInferenceEnvironment
-    withSelector: #solveAnalyzedNodeType:with: addMethod: {:(SysmelCompiler Semantic TypeInferenceEnvironment)self :(SysmelCompiler AST Node)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node  |
+    withSelector: #solveAnalyzedNodeType:with: addMethod: {:(SysmelCompiler Semantic TypeInferenceEnvironment)self :(Reflection AST Node)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Reflection AST Node  |
         analyzer addImplicitCoercionTo: self expectedType node: node
     }.
 
 SysmelCompiler Semantic ASTAnalyzer
-    withSelector: #makeSemanticAnalysisError:at: addMethod: {:(SysmelCompiler Semantic ASTAnalyzer)self :(String)errorMessage :(SysmelCompiler AST SourcePosition)sourcePosition :: SysmelCompiler AST SemanticErrorNode |
-        SysmelCompiler AST SemanticErrorNode basicNewWithNamedSlots: #{
+    withSelector: #makeSemanticAnalysisError:at: addMethod: {:(SysmelCompiler Semantic ASTAnalyzer)self :(String)errorMessage :(Reflection SourcePosition)sourcePosition :: Reflection AST SemanticErrorNode |
+        Reflection AST SemanticErrorNode basicNewWithNamedSlots: #{
             analyzedType: CompilationError.
             sourcePosition: sourcePosition.
             message: errorMessage.
         }.
     };
-    withSelector: #makeSemanticAnalysisError:atNode: addMethod: {:(SysmelCompiler Semantic ASTAnalyzer)self :(String)errorMessage :(SysmelCompiler AST Node)node :: SysmelCompiler AST SemanticErrorNode |
-        SysmelCompiler AST SemanticErrorNode basicNewWithNamedSlots: #{
+    withSelector: #makeSemanticAnalysisError:atNode: addMethod: {:(SysmelCompiler Semantic ASTAnalyzer)self :(String)errorMessage :(Reflection AST Node)node :: Reflection AST SemanticErrorNode |
+        Reflection AST SemanticErrorNode basicNewWithNamedSlots: #{
             analyzedType: (if: node analyzedType isNil then: CompilationError else: node analyzedType _).
             sourcePosition: node sourcePosition.
             message: errorMessage.
@@ -1316,7 +1468,7 @@ SysmelCompiler Semantic ASTAnalyzer
         }.
     };
 
-    withSelector: #makeMacroInvocationContextForMessageSendNodeNode: addMethod: {:(SysmelCompiler Semantic ASTAnalyzer)self :(SysmelCompiler AST MessageSendNode)node :: MacroInvocationContext |
+    withSelector: #makeMacroInvocationContextForMessageSendNodeNode: addMethod: {:(SysmelCompiler Semantic ASTAnalyzer)self :(Reflection AST MessageSendNode)node :: MacroInvocationContext |
         MacroInvocationContext basicNewWithNamedSlots: #{
             sourcePosition: node sourcePosition.
             selfNode: node receiver.
@@ -1329,13 +1481,13 @@ SysmelCompiler Semantic ASTAnalyzer
         }
     };
 
-    withSelector: #analyzeNodeIfNeededWithDirectAutoType: addMethod: {:(SysmelCompiler Semantic ASTAnalyzer)self :(SysmelCompiler AST Node)node :: SysmelCompiler AST Node |
+    withSelector: #analyzeNodeIfNeededWithDirectAutoType: addMethod: {:(SysmelCompiler Semantic ASTAnalyzer)self :(Reflection AST Node)node :: Reflection AST Node |
         self analyzeNodeIfNeeded: node withTypeInferenceEnvironment: SysmelCompiler Semantic DirectAutoTypeInferenceEnvironment basicNew
     };
-    withSelector: #analyzeNodeIfNeededWithAutoType: addMethod: {:(SysmelCompiler Semantic ASTAnalyzer)self :(SysmelCompiler AST Node)node :: SysmelCompiler AST Node |
+    withSelector: #analyzeNodeIfNeededWithAutoType: addMethod: {:(SysmelCompiler Semantic ASTAnalyzer)self :(Reflection AST Node)node :: Reflection AST Node |
         self analyzeNodeIfNeeded: node withTypeInferenceEnvironment: SysmelCompiler Semantic AutoTypeInferenceEnvironment basicNew
     };
-    withSelector: #analyzeNodeIfNeeded:withEnvironment: addMethod: {:(SysmelCompiler Semantic ASTAnalyzer)self :(SysmelCompiler AST Node)node :(SysmelCompiler Semantic EvaluationEnvironment)environment :: SysmelCompiler AST Node |
+    withSelector: #analyzeNodeIfNeeded:withEnvironment: addMethod: {:(SysmelCompiler Semantic ASTAnalyzer)self :(Reflection AST Node)node :(SysmelCompiler Semantic EvaluationEnvironment)environment :: Reflection AST Node |
         let: #oldEnvironment with: self environment.
         self environment: environment.
 
@@ -1344,7 +1496,7 @@ SysmelCompiler Semantic ASTAnalyzer
 
         analyzedNode
     };
-    withSelector: #analyzeNodeIfNeeded:withTypeInferenceEnvironment: addMethod: {:(SysmelCompiler Semantic ASTAnalyzer)self :(SysmelCompiler AST Node)node :(SysmelCompiler Semantic TypeInferenceEnvironment)typeInferenceEnvironment :: SysmelCompiler AST Node |
+    withSelector: #analyzeNodeIfNeeded:withTypeInferenceEnvironment: addMethod: {:(SysmelCompiler Semantic ASTAnalyzer)self :(Reflection AST Node)node :(SysmelCompiler Semantic TypeInferenceEnvironment)typeInferenceEnvironment :: Reflection AST Node |
         let: #oldTypeInferenceEnvironment with: (self typeInferenceEnvironment).
         self typeInferenceEnvironment: typeInferenceEnvironment.
 
@@ -1353,12 +1505,12 @@ SysmelCompiler Semantic ASTAnalyzer
         analyzedNode
     };
     
-    withSelector: #analyzeNodeIfNeeded:withExpectedType: addMethod: {:(SysmelCompiler Semantic ASTAnalyzer)self :(SysmelCompiler AST Node)node :(Type)expectedType :: SysmelCompiler AST Node |
+    withSelector: #analyzeNodeIfNeeded:withExpectedType: addMethod: {:(SysmelCompiler Semantic ASTAnalyzer)self :(Reflection AST Node)node :(Type)expectedType :: Reflection AST Node |
         self analyzeNodeIfNeeded: node withTypeInferenceEnvironment: (SysmelCompiler Semantic ExpectedTypeInferenceEnvironment basicNewWithNamedSlots: #{
             expectedType: expectedType
         })
     };
-    withSelector: #analyzeNodeIfNeededWithCurrentExpectedType: addMethod: {:(SysmelCompiler Semantic ASTAnalyzer)self :(SysmelCompiler AST Node)node :: SysmelCompiler AST Node |
+    withSelector: #analyzeNodeIfNeededWithCurrentExpectedType: addMethod: {:(SysmelCompiler Semantic ASTAnalyzer)self :(Reflection AST Node)node :: Reflection AST Node |
         self typeInferenceEnvironment solveAnalyzedNodeType: (node analyzeNodeIfNeededWith: self) with: self
     };
     withSelector: #computeBranchResultTypeOf:with: addMethod: {:(SysmelCompiler Semantic ASTAnalyzer)self :(Type)leftType :(Type)rightType :: Type |
@@ -1368,7 +1520,7 @@ SysmelCompiler Semantic ASTAnalyzer
             Void
         }
     };
-    withSelector: #addImplicitCoercionTo:node: addMethod: {:(SysmelCompiler Semantic ASTAnalyzer)self :(Type)targetType :(SysmelCompiler AST Node)node :: SysmelCompiler AST Node |
+    withSelector: #addImplicitCoercionTo:node: addMethod: {:(SysmelCompiler Semantic ASTAnalyzer)self :(Type)targetType :(Reflection AST Node)node :: Reflection AST Node |
         node analyzedType _ addImplicitCoercionToNode: node targetType: targetType with: self
     }.
 
@@ -1387,7 +1539,7 @@ Type
         <primitive: #"type.lookupSelector">
         __BootstrapCompiler__ primitiveFailed
     };
-    withSelector: #analyzeMessageSendNode:with: addMethod: {:(Type)self :(SysmelCompiler AST MessageSendNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
+    withSelector: #analyzeMessageSendNode:with: addMethod: {:(Type)self :(Reflection AST MessageSendNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
         if: node selector isLiteralValueNode then: {
             let: #selector with: (node selector evaluateLiteralValue).
             let: #method with: (self lookupSelector: selector).
@@ -1401,10 +1553,10 @@ Type
             self analyzeUnboundOrDynamicMessageSendNode: node with: analyzer
         }
     };
-    withSelector: #analyzeUnboundMessageSendNode:with: addMethod: {:(Type)self :(SysmelCompiler AST MessageSendNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
+    withSelector: #analyzeUnboundMessageSendNode:with: addMethod: {:(Type)self :(Reflection AST MessageSendNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
         self analyzeUnboundOrDynamicMessageSendNode: node with: analyzer
     };
-    withSelector: #analyzeUnboundOrDynamicMessageSendNode:with: addMethod: {:(Type)self :(SysmelCompiler AST MessageSendNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
+    withSelector: #analyzeUnboundOrDynamicMessageSendNode:with: addMethod: {:(Type)self :(Reflection AST MessageSendNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
         if: self hasAnyValueFlag then: {
             self analyzeDynamicMessageSendNode: node with: analyzerx
         } else: {
@@ -1415,18 +1567,18 @@ Type
             analyzer makeSemanticAnalysisError: "Unsupported dynamic message send." at: node sourcePosition
         }
     };
-    withSelector: #analyzeDynamicMessageSendNode:with: addMethod: {:(Type)self :(SysmelCompiler AST MessageSendNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
+    withSelector: #analyzeDynamicMessageSendNode:with: addMethod: {:(Type)self :(Reflection AST MessageSendNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
         let: #analyzedNode with: node shallowCopy.
         analyzedNode
             selector: (analyzer analyzeNodeIfNeeded: analyzedNode selector withExpectedType: self);
-            arguments: (node arguments collect: {:(SysmelCompiler AST Node)argumentNode :: SysmelCompiler AST Node |
+            arguments: (node arguments collect: {:(Reflection AST Node)argumentNode :: Reflection AST Node |
                 analyzer analyzeNodeIfNeeded: argumentNode withExpectedType: AnyValue
             });
             usesDynamicDispatch: true;
             yourself
     };
-    withSelector: #analyzeIdentifierReferenceNode:with:valueBinding: addMethod: {:(SysmelCompiler Semantic SymbolValueBinding)self :(SysmelCompiler AST IdentifierReferenceNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :(SysmelCompiler Semantic SymbolValueBinding)binding :: SysmelCompiler AST Node |
-        SysmelCompiler AST LiteralValueNode basicNewWithNamedSlots: #{
+    withSelector: #analyzeIdentifierReferenceNode:with:valueBinding: addMethod: {:(SysmelCompiler Semantic SymbolValueBinding)self :(Reflection AST IdentifierReferenceNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :(SysmelCompiler Semantic SymbolValueBinding)binding :: Reflection AST Node |
+        Reflection AST LiteralValueNode basicNewWithNamedSlots: #{
             sourcePosition: node sourcePosition.
             analyzedType: self.
             value: binding value
@@ -1460,12 +1612,12 @@ Type
     };
 
     withSelector: #addImplicitCoercionToNode:targetType:with: addMethod: {:(Type)self
-        :(SysmelCompiler AST Node)node :(Type)targetType :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
+        :(Reflection AST Node)node :(Type)targetType :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
         if: self == targetType then: {
             node
         } else: {
             if: (self isSubtypeOf: targetType) then: {
-                SysmelCompiler AST UpcastConversionNode basicNewWithNamedSlots: #{
+                Reflection AST UpcastConversionNode basicNewWithNamedSlots: #{
                     sourcePosition: node sourcePosition.
                     expression: node.
                     analyzedType: targetType
@@ -1476,12 +1628,12 @@ Type
         }
     };
     withSelector: #addImplicitCoercionToNode:fromType:with: addMethod: {:(Type)self
-        :(SysmelCompiler AST Node)node :(Type)fromType :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
+        :(Reflection AST Node)node :(Type)fromType :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
         if: self == fromType then: {
             node
         } else: {
             if: self hasAnyValueFlag then: {
-                SysmelCompiler AST WrapAnyValueNode basicNewWithNamedSlots: #{
+                Reflection AST WrapAnyValueNode basicNewWithNamedSlots: #{
                     sourcePosition: node sourcePosition.
                     expression: node.
                     analyzedType: self
@@ -1496,15 +1648,15 @@ Type
         }
     }.
 
-TypeSchema 
+Reflection TypeSchema 
     withSelector: #canConstructWithValueOfType: addMethod: {:(TypeSchema)self :(Type)sourceType :: Boolean |
         false
     };
-    withSelector: #addConstructionNodeFor:valueType:into:with: addMethod: {:(TypeSchema)self :(SysmelCompiler AST Node)node :(Type)sourceType :(Type)targetType :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
+    withSelector: #addConstructionNodeFor:valueType:into:with: addMethod: {:(TypeSchema)self :(Reflection AST Node)node :(Type)sourceType :(Type)targetType :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
         __BootstrapCompiler__ subclassResponsibility
     }.
 
-SumTypeSchema 
+Reflection SumTypeSchema 
     withSelector: #containsType: addMethod: {:(SumTypeSchema)self :(Type)typeToCheck :: Boolean |
         <primitive: #"sumTypeSchema.containsType" >
         __BootstrapCompiler__ primitiveFailed
@@ -1516,8 +1668,8 @@ SumTypeSchema
     withSelector: #canConstructWithValueOfType: addMethod: {:(SumTypeSchema)self :(Type)sourceType :: Boolean |
         self containsType: sourceType
     };
-    withSelector: #addConstructionNodeFor:valueType:into:with: addMethod: {:(TypeSchema)self :(SysmelCompiler AST Node)node :(Type)sourceType :(Type)targetType :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
-        SysmelCompiler AST WrapValueInSumTypeNode basicNewWithNamedSlots: #{
+    withSelector: #addConstructionNodeFor:valueType:into:with: addMethod: {:(TypeSchema)self :(Reflection AST Node)node :(Type)sourceType :(Type)targetType :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+        Reflection AST WrapValueInSumTypeNode basicNewWithNamedSlots: #{
             sourcePosition: node sourcePosition.
             expression: node.
             typeSelector: (self getTypeSelectorIndexFor: sourceType).
@@ -1527,11 +1679,11 @@ SumTypeSchema
 
 Void __type__
     withSelector: #addImplicitCoercionToNode:fromType:with: addMethod: {:(Type)self
-        :(SysmelCompiler AST Node)node :(Type)fromType :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
+        :(Reflection AST Node)node :(Type)fromType :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
         if: self == fromType then: {
             node
         } else: {
-            SysmelCompiler AST ValueAsVoidNode basicNewWithNamedSlots: #{
+            Reflection AST ValueAsVoidNode basicNewWithNamedSlots: #{
                 sourcePosition: node sourcePosition.
                 expression: node.
                 analyzedType: self
@@ -1552,7 +1704,7 @@ Function __type__
         <primitive: #"functionType.makeFunctionSignatureAnalyzer">
         __BootstrapCompiler__ primitiveFailed
     };
-    withSelector: #analyzeMessageSendNode:with:valueBinding: addMethod: {:(Function __type__)self :(SysmelCompiler AST MessageSendNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :(SysmelCompiler Semantic SymbolValueBinding)binding :: SysmelCompiler AST Node |
+    withSelector: #analyzeMessageSendNode:with:valueBinding: addMethod: {:(Function __type__)self :(Reflection AST MessageSendNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :(SysmelCompiler Semantic SymbolValueBinding)binding :: Reflection AST Node |
         binding value analyzeMessageSendNode: node with: analyzer
     }.
 
@@ -1573,10 +1725,10 @@ SysmelCompiler Semantic FunctionSignatureAnalyzer
         <primitive: #"functionSignatureAnalyzer.advanceArgument">
         __BootstrapCompiler__ primitiveFailed
     };
-    withSelector: #analyzeReceiverArgumentNode:with: addMethod: {:(SysmelCompiler Semantic FunctionSignatureAnalyzer)self :(SysmelCompiler AST Node)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
+    withSelector: #analyzeReceiverArgumentNode:with: addMethod: {:(SysmelCompiler Semantic FunctionSignatureAnalyzer)self :(Reflection AST Node)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
         self analyzeArgumentNode: node with: analyzer
     };
-    withSelector: #analyzeArgumentNode:with: addMethod: {:(SysmelCompiler Semantic FunctionSignatureAnalyzer)self :(SysmelCompiler AST Node)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
+    withSelector: #analyzeArgumentNode:with: addMethod: {:(SysmelCompiler Semantic FunctionSignatureAnalyzer)self :(Reflection AST Node)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
         if: self hasPendingArguments then: {
             let: #signatureTypeOrPlaceholder with: self evaluateNextSignatureType.
             let: #analyzedNode with: (if: (signatureTypeOrPlaceholder is: SysmelCompiler Semantic ForAllPlaceholderBinding) then: {
@@ -1599,7 +1751,7 @@ SysmelCompiler Semantic FunctionSignatureAnalyzer
             analyzer makeSemanticAnalysisError: "Unexpected excessive argument." atNode: (analyzer analyzeNodeIfNeededWithAutoType: node)
         }
     };
-    withSelector: #annotateExtraSemanticAnalysisErrorsOn:with: addMethod: {:(SysmelCompiler Semantic FunctionSignatureAnalyzer)self :(SysmelCompiler AST Node)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
+    withSelector: #annotateExtraSemanticAnalysisErrorsOn:with: addMethod: {:(SysmelCompiler Semantic FunctionSignatureAnalyzer)self :(Reflection AST Node)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
         if: self hasPendingArguments then: {
             analyzer makeSemanticAnalysisError: "Missing required arguments." atNode: node
         } else: {
@@ -1608,7 +1760,7 @@ SysmelCompiler Semantic FunctionSignatureAnalyzer
     }.
 
 Function
-    withSelector: #analyzeMessageSendNode:with: addMethod: {:(Function)self :(SysmelCompiler AST MessageSendNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: SysmelCompiler AST Node |
+    withSelector: #analyzeMessageSendNode:with: addMethod: {:(Function)self :(Reflection AST MessageSendNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
         if: self hasMacroFlag then: {
             analyzer analyzeNodeIfNeededWithCurrentExpectedType: (self
                 run: (node selector analyzeAndEvaluateNodeWith: analyzer)
@@ -1624,7 +1776,7 @@ Function
             } else: {void}.
 
             analyzedNode
-                arguments: (node arguments collect: {:(SysmelCompiler AST Node)node :: SysmelCompiler AST Node |
+                arguments: (node arguments collect: {:(Reflection AST Node)node :: Reflection AST Node |
                     signatureAnalyzer analyzeArgumentNode: node with: analyzer
                 });
                 analyzedType: signatureAnalyzer computeResultType;
@@ -1686,51 +1838,51 @@ Function
 
 __BootstrapCompiler__
     enterTopLevelNamespace;
-    addBindingNamed: #if:then:else: with: {:(MacroInvocationContext)macroSelf :(SysmelCompiler AST Node)condition :(SysmelCompiler AST Node)trueExpression :(SysmelCompiler AST Node)falseExpression :: (SysmelCompiler AST IfTrueIfFalseNode) |
+    addBindingNamed: #if:then:else: with: {:(MacroInvocationContext)macroSelf :(Reflection AST Node)condition :(Reflection AST Node)trueExpression :(Reflection AST Node)falseExpression :: (Reflection AST IfTrueIfFalseNode) |
         <macro>
-        (SysmelCompiler AST IfTrueIfFalseNode basicNewWithNamedSlots: #{
+        (Reflection AST IfTrueIfFalseNode basicNewWithNamedSlots: #{
             sourcePosition: macroSelf sourcePosition.
             condition: condition.
             trueExpression: trueExpression.
             falseExpression: falseExpression.
         })
     };
-    addBindingNamed: #if:then: with: {:(MacroInvocationContext)macroSelf :(SysmelCompiler AST Node)condition :(SysmelCompiler AST Node)trueExpression :: (SysmelCompiler AST IfTrueIfFalseNode) |
+    addBindingNamed: #if:then: with: {:(MacroInvocationContext)macroSelf :(Reflection AST Node)condition :(Reflection AST Node)trueExpression :: (Reflection AST IfTrueIfFalseNode) |
         <macro>
-        (SysmelCompiler AST IfTrueIfFalseNode basicNewWithNamedSlots: #{
+        (Reflection AST IfTrueIfFalseNode basicNewWithNamedSlots: #{
             sourcePosition: macroSelf sourcePosition.
             condition: condition.
             trueExpression: trueExpression.
         })
     };
-    addBindingNamed: #while:do:continueWith: with: {:(MacroInvocationContext)macroSelf :(SysmelCompiler AST Node)condition :(SysmelCompiler AST Node)bodyExpression :(SysmelCompiler AST Node)continueExpression :: (SysmelCompiler AST WhileDoContinueNode) |
+    addBindingNamed: #while:do:continueWith: with: {:(MacroInvocationContext)macroSelf :(Reflection AST Node)condition :(Reflection AST Node)bodyExpression :(Reflection AST Node)continueExpression :: (Reflection AST WhileDoContinueNode) |
         <macro>
-        (SysmelCompiler AST WhileDoContinueNode basicNewWithNamedSlots: #{
+        (Reflection AST WhileDoContinueNode basicNewWithNamedSlots: #{
             sourcePosition: macroSelf sourcePosition.
             condition: condition.
             bodyExpression: bodyExpression.
             continueExpression: continueExpression
         })
     };
-    addBindingNamed: #while:do: with: {:(MacroInvocationContext)macroSelf :(SysmelCompiler AST Node)condition :(SysmelCompiler AST Node)bodyExpression :: (SysmelCompiler AST WhileDoContinueNode) |
+    addBindingNamed: #while:do: with: {:(MacroInvocationContext)macroSelf :(Reflection AST Node)condition :(Reflection AST Node)bodyExpression :: (Reflection AST WhileDoContinueNode) |
         <macro>
-        (SysmelCompiler AST WhileDoContinueNode basicNewWithNamedSlots: #{
+        (Reflection AST WhileDoContinueNode basicNewWithNamedSlots: #{
             sourcePosition: macroSelf sourcePosition.
             condition: condition.
             bodyExpression: bodyExpression.
         })
     };
-    addBindingNamed: #let:with: with: {:(MacroInvocationContext)macroSelf :(SysmelCompiler AST Node)nameExpression :(SysmelCompiler AST Node)initialValueExpression :: (SysmelCompiler AST LocalVariableDefinitionNode) |
+    addBindingNamed: #let:with: with: {:(MacroInvocationContext)macroSelf :(Reflection AST Node)nameExpression :(Reflection AST Node)initialValueExpression :: (Reflection AST LocalVariableDefinitionNode) |
         <macro>
-        (SysmelCompiler AST LocalVariableDefinitionNode basicNewWithNamedSlots: #{
+        (Reflection AST LocalVariableDefinitionNode basicNewWithNamedSlots: #{
             sourcePosition: macroSelf sourcePosition.
             nameExpression: nameExpression.
             initialValueExpression: initialValueExpression.
         })
     };
-    addBindingNamed: #let:type:with: with: {:(MacroInvocationContext)macroSelf :(SysmelCompiler AST Node)nameExpression :(SysmelCompiler AST Node)typeExpression :(SysmelCompiler AST Node)initialValueExpression :: (SysmelCompiler AST LocalVariableDefinitionNode) |
+    addBindingNamed: #let:type:with: with: {:(MacroInvocationContext)macroSelf :(Reflection AST Node)nameExpression :(Reflection AST Node)typeExpression :(Reflection AST Node)initialValueExpression :: (Reflection AST LocalVariableDefinitionNode) |
         <macro>
-        (SysmelCompiler AST LocalVariableDefinitionNode basicNewWithNamedSlots: #{
+        (Reflection AST LocalVariableDefinitionNode basicNewWithNamedSlots: #{
             sourcePosition: macroSelf sourcePosition.
             nameExpression: nameExpression.
             typeExpression: typeExpression;
@@ -1765,9 +1917,9 @@ __BootstrapCompiler__
         index
     });
 
-    print: SysmelCompiler AST SourcePosition basicNew;
-    print: (SysmelCompiler AST Node basicNewWithNamedSlots: #{
-        sourcePosition: SysmelCompiler AST SourcePosition basicNew
+    print: Reflection SourcePosition basicNew;
+    print: (Reflection AST Node basicNewWithNamedSlots: #{
+        sourcePosition: Reflection SourcePosition basicNew
     });
     print: Int32 basicNew;
     print: (Int32 basicNew: -42);
@@ -1793,6 +1945,10 @@ __BootstrapCompiler__
 
     print: (`'(if: true then: 1) analyzeNodeIfNeededWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
     print: (`'(if: false then: 1) analyzeAndEvaluateNodeWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
+
+    print: (`'{let: #testVar with: 1 . testVar} analyzeNodeIfNeededWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
+    print: (`'{let: #testVar with: 1 . testVar} analyzeAndEvaluateNodeWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
+    ##print: (`'(let: #testVar type: Int32 with: 1s32) analyzeNodeIfNeededWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
 
     print: nil isNil;
     print: nil isNotNil;

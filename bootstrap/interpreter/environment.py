@@ -45,6 +45,24 @@ class LexicalScope(IdentifierLookupScope):
     def setSymbolImmutableValue(self, symbol, value):
         self.symbolTable[symbol] = SymbolValueBinding(symbol, value)
 
+    def setSymbolBinding(self, symbol, binding):
+        self.symbolTable[symbol] = binding
+
+    @primitiveNamed('lexicalScope.setSymbolImmutableValue')
+    def primitiveSetSymbolImmutableValue(self, symbol, value):
+        self.setSymbolImmutableValue(symbol, value)
+        return getVoidValue()
+
+    @primitiveNamed('lexicalScope.setSymbolValueBinding')
+    def primitiveSetSymbolValueBinding(self, symbol, value):
+        self.setSymbolValueBinding(symbol, value)
+        return getVoidValue()
+
+    @primitiveNamed('lexicalScope.setSymbolBinding')
+    def primitiveSetSymbolBinding(self, symbol, binding):
+        self.setSymbolBinding(symbol, binding)
+        return getVoidValue()
+
     def lookupSymbol(self, symbol):
         return self.symbolTable.get(symbol, None)
 

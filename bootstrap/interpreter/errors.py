@@ -18,7 +18,7 @@ class InterpreterEvaluationError(InterpreterErrorWithSourcePosition):
 class InterpreterEvaluationCatchedError(InterpreterErrorWithSourcePosition):
     def __init__(self, sourcePosition, catchedError, strackTrace):
         self.catchedError = catchedError
-        super().__init__(sourcePosition, 'error catched during evaluation:\n%s.\n%s' % (str(catchedError), strackTrace))
+        super().__init__(sourcePosition, 'error catched during evaluation:\n%s\n%s' % (str(catchedError), strackTrace))
 
 class DoesNotUnderstand(InterpreterError):
     pass

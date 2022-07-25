@@ -16,6 +16,9 @@ __BootstrapCompiler__ print: (Int32 -- Int32) => Void.
 __BootstrapCompiler__ print: (Int32 -- Int32 -- Int32) => Void.
 __BootstrapCompiler__ print: Float32 -- Int32 -- Float64.
 
+let: #testVar with: 42.
+testVar.
+
 ##1 arcTan: 2.
 ##1 perform: #+ with: 2.
 
