@@ -205,7 +205,7 @@ class SymbolValueBinding(SymbolBinding):
     def getSlotWithIndexAndName(self, slotIndex, slotName):
         if slotName == 'value':
             return self.value
-        if slotName == 'name':
+        elif slotName == 'name':
             return self.name
         return super().getSlotWithIndexAndName(slotIndex, slotName)
 
@@ -239,14 +239,6 @@ class TypeInterface:
     @primitiveNamed('type.lookupSelector')
     def primitiveLookupSelector(self, selector):
         return self.lookupSelector(selector)
-
-    @primitiveNamed('type.getSchema')
-    def primitiveGetSchema(self):
-        return self.schema
-
-    @primitiveNamed('type.getSupertype')
-    def primitiveGetSupertype(self):
-        return self.supertype
 
     @primitiveNamed('type.lookupLocalSelector')
     def primitiveLookupLocalSelector(self, selector):
@@ -548,7 +540,7 @@ class RecordTypeAccessorPrimitiveMethod(PrimitiveMethod):
 
 class RecordTypeGetterPrimitiveMethod(RecordTypeAccessorPrimitiveMethod):
     def runWithIn(self, machine, selector, arguments, receiver):
-        return receiver.getSlotWithIndexAndName(self.slotIndex, self.slotName)
+        return self.slotType.coerceValue(coerceNoneToNil(receiver.getSlotWithIndexAndName(self.slotIndex, self.slotName)))
 
 class RecordTypeSetterPrimitiveMethod(RecordTypeAccessorPrimitiveMethod):
     def runWithIn(self, machine, selector, arguments, receiver):
@@ -1077,7 +1069,7 @@ class ProductTypeValue(TypedValue):
 
     def setSlotWithIndexAndName(self, slotIndex, slotName, value):
         expectedType = self.type.schema.elementTypes[slotIndex]
-        coercedValue = expectedType.coerceValue(value)
+        coercedValue = expectedType.coerceValue(coerceNoneToNil(value))
         self.elements[slotIndex] = coercedValue
         return coercedValue
 
@@ -1180,7 +1172,7 @@ class RecordTypeSchema(ProductTypeSchema):
         for assoc in namedSlots:
             slotIndex = self.slotNameDictionary[assoc.getKey()]
             expectedSlotType = self.elementTypes[slotIndex]
-            linearSlots[slotIndex] = expectedSlotType.coerceValue(assoc.getValue())
+            linearSlots[slotIndex] = expectedSlotType.coerceValue(coerceNoneToNil(assoc.getValue()))
 
         for i in range(len(linearSlots)):
             if linearSlots[i] is None:
@@ -1363,6 +1355,15 @@ class BehaviorType(TypedValue, TypeInterface):
             return self.schema.coerceValueOfTypeIntoType(value, valueType, self)
 
         return super().coerceValue(value)
+
+    def getSlotWithIndexAndName(self, slotIndex, slotName):
+        if slotName == 'supertype':
+            return self.supertype
+        elif slotName == 'schema':
+            return self.schema
+        elif slotName == 'name':
+            return self.name
+        return super().getSlotWithIndexAndName(slotIndex, slotName)
 
     def isSubtypeOf(self, expectedSuperType):
         if self is expectedSuperType:

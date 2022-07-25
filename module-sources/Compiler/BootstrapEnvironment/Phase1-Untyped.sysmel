@@ -619,6 +619,12 @@ Undefined
         false
     }.
 
+Type definePublicSlots: #{
+    name: String optional.
+    supertype: Type optional.
+    schema: TypeSchema.
+}.
+
 ## Semantic analysis types.
 __BootstrapCompiler__
     enterTopLevelNamespace;
@@ -1431,14 +1437,6 @@ Type
         __BootstrapCompiler__ primitiveFailed
     };
     withSelector: #asDecayedType addMethod: {:(Type)self :: Type |
-        self
-    };
-    withSelector: #schema addMethod: {:(Type)self :: TypeSchema |
-        <primitive: #"type.getSchema">
-        self
-    };
-    withSelector: #supertype addMethod: {:(Type)self :: Type optional |
-        <primitive: #"type.getSupertype">
         self
     };
     withSelector: #isSubtypeOf: addMethod: {:(Type)self :(Type)other :: Boolean |
