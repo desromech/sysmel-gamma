@@ -89,8 +89,11 @@ class ValueInterface:
     def isExplicitMethod(self):
         return False
 
-    def asCanonicalTypeForDependentType(self):
+    def asCanonicalTypeForDependentTypeArgument(self):
         raise SubclassResponsibility()
+
+    def asCanonicalTypeForDependentType(self):
+        raise InterpreterError('Expected a type instead of %s' % repr(self))
 
 class TypedValue(ValueInterface):
     def getType(self):
@@ -108,7 +111,7 @@ class TypedValue(ValueInterface):
 
         return self.shallowCopy()
 
-    def asCanonicalTypeForDependentType(self):
+    def asCanonicalTypeForDependentTypeArgument(self):
         return getBasicTypeNamed('AnyValue')
 
 class PrimitiveMethod(TypedValue):
@@ -255,6 +258,9 @@ class TypeInterface:
 
     def supportsDynamicDispatch(self):
         return False
+
+    def asCanonicalTypeForDependentType(self):
+        return self
 
 class Integer(int, TypedValue):
     def getType(self):
@@ -1529,6 +1535,9 @@ class BehaviorType(TypedValue, TypeInterface):
     def supportsDynamicDispatch(self):
         return self.schema.supportsDynamicDispatch()
 
+    def asCanonicalTypeForDependentType(self):
+        return self
+
 class BehaviorTypedObject(TypedValue):
     def __init__(self) -> None:
         super().__init__()
@@ -1547,10 +1556,10 @@ class MetaType(BehaviorType):
         super().__init__(name, supertype, traits, schema, methodDict)
         self.thisType = thisType
 
-    def asCanonicalTypeForDependentType(self):
+    def asCanonicalTypeForDependentTypeArgument(self):
         if self.thisType is not None:
             return self.thisType
-        return super().asCanonicalTypeForDependentType()
+        return super().asCanonicalTypeForDependentTypeArgument()
 
     def lookupLocalSelector(self, selector):
         found = self.methodDict.get(selector, None)
@@ -1595,7 +1604,7 @@ class AbstractFunctionTypeArgument:
             argumentType = self.typeExpression.evaluateWithEnvironment(EvaluationMachine.getActive(), environment)
 
         if self.name is not None:
-            environment.setSymbolImmutableValue(self.name, argumentType.asCanonicalTypeForDependentType())
+            environment.setSymbolImmutableValue(self.name, argumentType.asCanonicalTypeForDependentTypeArgument())
         return argumentType
 
     def isForAllArgumentExpression(self):
@@ -1626,7 +1635,7 @@ class FunctionTypeArgumentExpression(AbstractFunctionTypeArgument):
         return False
 
     def evaluateSignatureInEnvironmentWithAnalyzedType(self, evaluationEnvironment, argumentAnalyzedType):
-        canonicalType = argumentAnalyzedType.asCanonicalTypeForDependentType()
+        canonicalType = argumentAnalyzedType.asCanonicalTypeForDependentTypeArgument()
         if self.name is not None:
             evaluationEnvironment.setSymbolValueBinding(self.name, canonicalType)
         return canonicalType
@@ -1648,6 +1657,12 @@ class FunctionTypeResult:
         self.expression = expression
 
     def evaluateCanonicalFormInEnvironment(self, environment):
+        if self.expression is None:
+            return getBasicTypeNamed('AnyValue')
+        else:
+            return self.expression.evaluateWithEnvironment(EvaluationMachine.getActive(), environment).asCanonicalTypeForDependentType()
+
+    def evaluateInEnvironment(self, environment):
         if self.expression is None:
             return getBasicTypeNamed('AnyValue')
         else:
@@ -1717,7 +1732,7 @@ class DependentFunctionSignatureAnalyzer(FunctionSignatureAnalyzer):
         if self.functionType.dependentDefinitionResultType is None:
             return getBasicTypeNamed('AnyValue')
 
-        if self.hasPendingArguments():
+        if self.hasPendingArguments().asBooleanValue():
             return getBasicTypeNamed('CompilationError')
 
         return self.functionType.dependentDefinitionResultType.evaluateInEnvironment(self.evaluationEnvironment)
@@ -1737,6 +1752,8 @@ class SimpleFunctionSignatureAnalyzer(FunctionSignatureAnalyzer):
         self.currentArgumentIndex += 1
 
     def computeResultType(self):
+        if self.hasPendingArguments().asBooleanValue():
+            return getBasicTypeNamed('CompilationError')
         return self.functionType.canonicalResultType
 
 class FunctionType(SimpleType):

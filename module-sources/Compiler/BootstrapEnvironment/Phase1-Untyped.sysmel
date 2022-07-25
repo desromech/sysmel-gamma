@@ -1066,6 +1066,10 @@ SysmelCompiler AST SemanticErrorNode
             yourself
     };
     withSelector: #evaluateNodeWith: addMethod: {:(SysmelCompiler AST SemanticErrorNode)self :(SysmelCompiler Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+        if: self innerNode isNotNil then: {
+            self innerNode evaluateNodeWith: evaluationEnvironment
+        } else: {void}.
+
         __BootstrapCompiler__ semanticAnalysisError: self message at: self sourcePosition
     }.
 
@@ -1398,6 +1402,10 @@ Type
         if: self hasAnyValueFlag then: {
             self analyzeDynamicMessageSendNode: node with: analyzerx
         } else: {
+            __BootstrapCompiler__ print: "Selector node".
+            __BootstrapCompiler__ print: node selector.
+            __BootstrapCompiler__ print: "Receiver type".
+            __BootstrapCompiler__ print: node receiver _ analyzedType.
             analyzer makeSemanticAnalysisError: "Unsupported dynamic message send." at: node sourcePosition
         }
     };

@@ -10,6 +10,8 @@ __BootstrapCompiler__ print: "Test Phase 2 Typed".
 __BootstrapCompiler__ print: 1.
 __BootstrapCompiler__ print: Int32 => Void.
 __BootstrapCompiler__ print: Void => Void.
+__BootstrapCompiler__ print: Int32 -- Int32.
+__BootstrapCompiler__ print: Int32 -- Int32 -- Int32.
 __BootstrapCompiler__ print: (Int32 -- Int32) => Void.
 __BootstrapCompiler__ print: (Int32 -- Int32 -- Int32) => Void.
 __BootstrapCompiler__ print: Float32 -- Int32 -- Float64.
