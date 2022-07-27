@@ -5,6 +5,7 @@ void.
 
 1 negated.
 
+#*
 __BootstrapCompiler__ print: "Test Phase 2 Typed".
 
 __BootstrapCompiler__ print: 1.
@@ -15,6 +16,21 @@ __BootstrapCompiler__ print: Int32 -- Int32 -- Int32.
 __BootstrapCompiler__ print: (Int32 -- Int32) => Void.
 __BootstrapCompiler__ print: (Int32 -- Int32 -- Int32) => Void.
 __BootstrapCompiler__ print: Float32 -- Int32 -- Float64.
+
+*#
+
+
+__BootstrapCompiler__
+    print: "Test Phase 2 Typed";
+
+    print: 1;
+    print: Int32 => Void;
+    print: Void => Void;
+    print: Int32 -- Int32;
+    print: Int32 -- Int32 -- Int32;
+    print: (Int32 -- Int32) => Void;
+    print: (Int32 -- Int32 -- Int32) => Void;
+    print: Float32 -- Int32 -- Float64.
 
 let: #testVar with: 42.
 testVar.

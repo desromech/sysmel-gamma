@@ -352,6 +352,13 @@ class PTChainedMessage(PTNode):
         arguments = list(map(lambda arg: arg.evaluateWithEnvironment(machine, environment), self.arguments))
         return receiver.performWithArguments(machine, selector, arguments)
 
+    def convertIntoGenericASTWith(self, bootstrapCompiler):
+        return bootstrapCompiler.makeASTNodeWithSlots('ChainedMessageNode',
+            sourcePosition = bootstrapCompiler.convertASTSourcePosition(self.sourcePosition),
+            selector = self.selector.convertIntoGenericASTWith(bootstrapCompiler),
+            arguments = bootstrapCompiler.makeASTNodeArraySlice(map(lambda arg: arg.convertIntoGenericASTWith(bootstrapCompiler), self.arguments))
+        )
+
 class PTKeywordMessage(PTNode):
     def __init__(self, receiver, selector, arguments):
         PTNode.__init__(self)
@@ -439,6 +446,13 @@ class PTMessageChain(PTNode):
         for message in self.messages:
             result = message.evaluateWithReceiverAndEnvironment(machine, receiver, environment)
         return result
+
+    def convertIntoGenericASTWith(self, bootstrapCompiler):
+        return bootstrapCompiler.makeASTNodeWithSlots('MessageChainNode',
+            sourcePosition = bootstrapCompiler.convertASTSourcePosition(self.sourcePosition),
+            receiver = self.receiver.convertIntoGenericASTWith(bootstrapCompiler),
+            chainedMessages = bootstrapCompiler.makeASTNodeArraySlice(map(lambda message: message.convertIntoGenericASTWith(bootstrapCompiler), self.messages))
+        )
 
 class PTPrefixUnaryExpression(PTNode):
     def __init__(self, operation, operand):
