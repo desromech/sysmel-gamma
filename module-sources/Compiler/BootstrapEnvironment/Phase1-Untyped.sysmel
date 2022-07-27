@@ -86,6 +86,28 @@ AnyValue
         <pure>
         <primitive: #"object.comparison.identityNotEquals">
         __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #identityHash addMethod: {:(AnyValue)self :: Size |
+        <pure>
+        <primitive: #"object.comparison.identityHash">
+        __BootstrapCompiler__ primitiveFailed
+    }.
+
+Object
+    withSelector: #= addMethod: {:(Object)self :(AnyValue)other :: Boolean |
+        <pure>
+        <virtual>
+        self == other
+    };
+    withSelector: #~= addMethod: {:(Object)self :(AnyValue)other :: Boolean |
+        <pure>
+        <virtual>
+        self ~~ other
+    };
+    withSelector: #hash addMethod: {:(Object)self :: Size |
+        <pure>
+        <virtual>
+        self identityHash
     }.
 
 ## Boolean primitives
@@ -147,12 +169,12 @@ Integer
         __BootstrapCompiler__ primitiveFailed
     };
 
-    withSelector: #= addMethod: {:(Integer)self :(Integer)other :: Boolean |
+    withSelector: #= addMethod: {:(Integer)self :(Object)other :: Boolean |
         <pure>
         <primitive: #"integer.comparison.equals">
         __BootstrapCompiler__ primitiveFailed
     };
-    withSelector: #~= addMethod: {:(Integer)self :(Integer)other :: Boolean |
+    withSelector: #~= addMethod: {:(Integer)self :(Object)other :: Boolean |
         <pure>
         <primitive: #"integer.comparison.notEquals">
         __BootstrapCompiler__ primitiveFailed
