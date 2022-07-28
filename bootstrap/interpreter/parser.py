@@ -240,7 +240,7 @@ def p_chainedMessageKeyword(p):
         selectorPosition = selectorPosition.mergeWith(messageKeyword.asSourcePosition())
         arguments.append(messageKeywordArg)
 
-    selectorSymbol = PTLiteralSymbol(Symbol(selector), selectorPosition)
+    selectorSymbol = PTLiteralSymbol(Symbol.intern(selector), selectorPosition)
     p[0] = PTChainedMessage(selectorSymbol, arguments)
 
 def p_chainedMessage_keyword(p):

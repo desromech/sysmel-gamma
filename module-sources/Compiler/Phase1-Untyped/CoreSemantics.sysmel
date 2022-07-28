@@ -138,7 +138,10 @@ __BootstrapCompiler__
         expectedType: Type.
     });
     addBindingNamed: #TypeOrForAllPlaceholder with: (__TypeBuilder__ newSumTypeWith: (Type, Reflection Semantic ForAllPlaceholderBinding));
-    addBindingNamed: #NamespaceScope with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection Semantic LexicalScope publicSlots: #{});
+    addBindingNamed: #ProgramEntityLookupScope with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection Semantic IdentifierLookupScope publicSlots: #{
+        programEntity: Reflection ProgramEntity
+    });
+    addBindingNamed: #NamespaceLookupScope with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection Semantic ProgramEntityLookupScope publicSlots: #{});
     addBindingNamed: #ScriptEvaluationScope with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection Semantic LexicalScope publicSlots: #{});
     addBindingNamed: #EvaluationEnvironment with: (__TypeBuilder__ newGCClassWithSuperclass: Object publicSlots: #{
         lexicalScope: Reflection Semantic LexicalScope.

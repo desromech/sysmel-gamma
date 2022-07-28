@@ -1,0 +1,30 @@
+## Let meta builder.
+__BootstrapCompiler__
+    enterTopLevelNamespace;
+    enterNamespaceNamed: #MetaProgramming;
+    addBindingNamed: #NamespaceMetaBuilder with: (__TypeBuilder__ newGCClassWithSuperclass: MetaProgramming NamedMetaBuilder slots: #{
+        bodyExpression: Reflection AST Node optional.
+    }).
+
+MetaProgramming NamespaceMetaBuilder
+    withSelector: #"definition:" addMethod: {:(MetaProgramming NamespaceMetaBuilder)self :(Reflection AST Node)bodyExpression :: Void |
+        <metaBuilder>
+        self bodyExpression: bodyExpression.
+        self finish.
+        void
+    };
+    withSelector: #concretizeMetaBuilder addMethod: {:(MetaProgramming NamespaceMetaBuilder)self :: Reflection AST Node |
+        (Reflection AST NamespaceDefinitionNode basicNewWithNamedSlots: #{
+            sourcePosition: self metaContext sourcePosition.
+            nameExpression: self nameExpression.
+            bodyExpression: self bodyExpression.
+        })
+    }.
+
+__BootstrapCompiler__
+    enterTopLevelNamespace;
+    addBindingNamed: #namespace with: {:(MacroInvocationContext)macroSelf :: Reflection AST MetaBuilderInstanceNode |
+        <macro>
+        <messageMethod>
+        MetaProgramming NamespaceMetaBuilder nodeWithContext: macroSelf
+    }.

@@ -50,13 +50,13 @@ class ValueInterface:
         return self.printString()
 
     def toString(self):
-        selector = Symbol('toString')
+        selector = Symbol.intern('toString')
         if self.answersTo(selector):
             return self.performWithArguments(EvaluationMachine.getActive(), selector, [])
         return self.defaultToString()
 
     def printString(self):
-        selector = Symbol('printString')
+        selector = Symbol.intern('printString')
         if self.answersTo(selector):
             return self.performWithArguments(EvaluationMachine.getActive(), selector, [])
         return self.defaultPrintString()
@@ -91,10 +91,10 @@ class ValueInterface:
         pass
 
     def asArraySlice(self):
-        return self.performWithArguments(EvaluationMachine.getActive(), Symbol('asArraySlice'), ())
+        return self.performWithArguments(EvaluationMachine.getActive(), Symbol.intern('asArraySlice'), ())
 
     def asSharedArraySlice(self):
-        return self.performWithArguments(EvaluationMachine.getActive(), Symbol('asSharedArraySlice'), ())
+        return self.performWithArguments(EvaluationMachine.getActive(), Symbol.intern('asSharedArraySlice'), ())
 
     def isConversionMethod(self):
         return False
@@ -210,7 +210,7 @@ def coerceNoneToNil(value):
 
 class SymbolBinding(TypedValue):
     def getType(self):
-        return getSemanticAnalysisType(Symbol('SymbolBinding'))
+        return getSemanticAnalysisType(Symbol.intern('SymbolBinding'))
 
     def getSymbolBindingReferenceValue(self):
         raise NotImplementedError()
@@ -224,7 +224,7 @@ class SymbolValueBinding(SymbolBinding):
         self.value = value
 
     def getType(self):
-        return getSemanticAnalysisType(Symbol('SymbolValueBinding'))
+        return getSemanticAnalysisType(Symbol.intern('SymbolValueBinding'))
 
     def getSymbolBindingReferenceValue(self):
         return self.value
@@ -249,7 +249,7 @@ class ForAllPlaceholderBinding(SymbolBinding):
             return self.value
 
     def getType(self):
-        return getSemanticAnalysisType(Symbol('ForAllPlaceholderBinding'))
+        return getSemanticAnalysisType(Symbol.intern('ForAllPlaceholderBinding'))
 
 class TypeInterface:
     def canBeCoercedToType(self, targetType):
@@ -283,7 +283,7 @@ class TypeInterface:
 
 class Integer(int, TypedValue):
     def getType(self):
-        return getBasicTypeNamed(Symbol('Integer'))
+        return getBasicTypeNamed(Symbol.intern('Integer'))
 
     def defaultPrintString(self):
         return str(int(self))
@@ -351,7 +351,7 @@ class Integer(int, TypedValue):
         
 class Character(int, TypedValue):
     def getType(self):
-        return getBasicTypeNamed(Symbol('Character'))
+        return getBasicTypeNamed(Symbol.intern('Character'))
 
     def shallowCopy(self):
         return self
@@ -362,7 +362,7 @@ class Character(int, TypedValue):
 
 class Float(float, TypedValue):
     def getType(self):
-        return getBasicTypeNamed(Symbol('Float'))
+        return getBasicTypeNamed(Symbol.intern('Float'))
 
     def defaultPrintString(self):
         return str(float(self))
@@ -379,7 +379,7 @@ class Float(float, TypedValue):
 
 class String(str, TypedValue):
     def getType(self):
-        return getBasicTypeNamed(Symbol('String'))
+        return getBasicTypeNamed(Symbol.intern('String'))
 
     def defaultToString(self):
         return self
@@ -426,7 +426,7 @@ class String(str, TypedValue):
 
     @primitiveNamed('symbol.internString')
     def primitiveIntern(self):
-        return Symbol(self)
+        return Symbol.intern(self)
 
     def shallowCopy(self):
         return String(self)
@@ -435,16 +435,27 @@ class String(str, TypedValue):
     def asInteger(self):
         return Integer(self)
 
+InternedSymbolTable = {}
+
 class Symbol(str, TypedValue):
+
+    @classmethod
+    def intern(cls, string):
+        convertedSymbol = Symbol(string)
+        if convertedSymbol in InternedSymbolTable:
+            return InternedSymbolTable[convertedSymbol]
+        InternedSymbolTable[convertedSymbol] = convertedSymbol
+        return convertedSymbol
+
     def getType(self):
-        return getBasicTypeNamed(Symbol('Symbol'))
+        return getBasicTypeNamed(Symbol.intern('Symbol'))
 
     @primitiveNamed('symbol.conversion.toString')
     def defaultToString(self):
         return String(self)
 
     def shallowCopy(self):
-        return Symbol(self)
+        return self
 
     @primitiveNamed('symbol.conversion.printString')
     def defaultPrintString(self):
@@ -470,12 +481,12 @@ class Symbol(str, TypedValue):
 class Array(tuple, TypedValue):
     def getElementType(self):
         if not hasattr(self, 'elementType'):
-            self.elementType = getBasicTypeNamed(Symbol('AnyValue'))
+            self.elementType = getBasicTypeNamed(Symbol.intern('AnyValue'))
         return self.elementType
 
     def getType(self):
         if not hasattr(self, 'type'):
-            self.type = getBasicTypeNamed(Symbol('Array'))(self.getElementType(), getSizeValue(len(self)))
+            self.type = getBasicTypeNamed(Symbol.intern('Array'))(self.getElementType(), getSizeValue(len(self)))
         return self.type
 
     def shallowCopy(self):
@@ -489,7 +500,7 @@ class Association(TypedValue):
         self.value = value
 
     def getType(self):
-        return getBasicTypeNamed(Symbol('AnyAssociation'))
+        return getBasicTypeNamed(Symbol.intern('AnyAssociation'))
 
     def getKey(self):
         return self.key
@@ -516,7 +527,7 @@ class Dictionary(list, TypedValue):
         return cls(map(lambda pair: Association(pair[0], pair[1]), d.items()))
 
     def getType(self):
-        return getBasicTypeNamed(Symbol('AnyArrayDictionary'))
+        return getBasicTypeNamed(Symbol.intern('AnyArrayDictionary'))
 
     def getHashTable(self):
         if not hasattr(self, 'hashTable'):
@@ -543,8 +554,8 @@ SemanticAnalysisTypeMapping = Dictionary()
 
 def getTupleTypeWithElements(tupleElements):
     elementsArray = Array(tupleElements)
-    elementsArray.elementType = getBasicTypeNamed(Symbol('Type'))
-    return getBasicTypeNamed(Symbol('Tuple'))(elementsArray)
+    elementsArray.elementType = getBasicTypeNamed(Symbol.intern('Type'))
+    return getBasicTypeNamed(Symbol.intern('Tuple'))(elementsArray)
 
 class Tuple(tuple, TypedValue):
     def getType(self):
@@ -554,7 +565,7 @@ class Tuple(tuple, TypedValue):
 
 class TypeSchemaPrimitiveMethod(PrimitiveMethod):
     def getType(self):
-        return getBasicTypeNamed(Symbol('TypeSchemaPrimitiveMethod'))
+        return getBasicTypeNamed(Symbol.intern('TypeSchemaPrimitiveMethod'))
 
     def runWithIn(self, machine, selector, arguments, receiver):
         return self.method(receiver, *arguments)
@@ -616,7 +627,7 @@ class BlockClosure(TypedValue):
     def evaluateWithArguments(self, machine, arguments):
         if self.primitiveName is not None and self.primitiveName in PrimitiveMethodTable:
             rawResult = self.node.evaluateClosureResultCoercionWithEnvironmentAndArguments(machine, self.environment, arguments,
-                PrimitiveMethodTable[self.primitiveName].runWithIn(machine, Symbol('()'), arguments[1:], arguments[0]))
+                PrimitiveMethodTable[self.primitiveName].runWithIn(machine, Symbol.intern('()'), arguments[1:], arguments[0]))
         else:
             rawResult = self.node.evaluateClosureWithEnvironmentAndArguments(machine, self.environment, arguments)
         return self.applyResultTransform(machine, rawResult)
@@ -676,14 +687,14 @@ class TemplatedBlockClosure(AbstractMemoizedBlockClosure):
         return self
 
     def applyResultTransform(self, machine, result):
-        callSymbol = Symbol('()')
+        callSymbol = Symbol.intern('()')
         callArguments = (result,)
         for resultExtension in self.resultExtensionList:
             resultExtension.performWithArguments(machine, callSymbol, callArguments)
         return result
 
     def extendWith(self, machine, extension):
-        callSymbol = Symbol('()')
+        callSymbol = Symbol.intern('()')
         for arguments, result in self.memoizationTable.items():
             extension.performWithArguments(machine, callSymbol, (result,))
         self.resultExtensionList.append(extension)
@@ -706,7 +717,7 @@ class TemplatedBlockClosure(AbstractMemoizedBlockClosure):
             i += 1
         valueName += ')'
         result.setConstructionTemplateAndArguments(self, arguments)
-        result.onGlobalBindingWithSymbolAdded(Symbol(valueName))
+        result.onGlobalBindingWithSymbolAdded(Symbol.intern(valueName))
 
 class TypeSchema(TypedValue):
     def __init__(self):
@@ -727,9 +738,9 @@ class TypeSchema(TypedValue):
             method.installedInMetaTypeOf(type)
 
     def buildPrimitiveMethodDictionary(self):
-        self.methodDict[Symbol('shallowCopy')] = TypeSchemaPrimitiveMethod(self.primitiveShallowCopy, '(SelfType => SelfType)')
-        self.methodDict[Symbol('yourself')] = TypeSchemaPrimitiveMethod(self.primitiveYourself, '(SelfType => SelfType)')
-        self.methodDict[Symbol('__type__')] = TypeSchemaPrimitiveMethod(self.getTypeFromValue, '(SelfType => SelfType __type__)')
+        self.methodDict[Symbol.intern('shallowCopy')] = TypeSchemaPrimitiveMethod(self.primitiveShallowCopy, '(SelfType => SelfType)')
+        self.methodDict[Symbol.intern('yourself')] = TypeSchemaPrimitiveMethod(self.primitiveYourself, '(SelfType => SelfType)')
+        self.methodDict[Symbol.intern('__type__')] = TypeSchemaPrimitiveMethod(self.getTypeFromValue, '(SelfType => SelfType __type__)')
 
     def lookupPrimitiveWithSelector(self, selector):
         if selector in self.methodDict:
@@ -815,7 +826,7 @@ class EmptyTypeSchema(TypeSchema):
         return True
 
     def buildPrimitiveMethodDictionary(self):
-        self.metaTypeMethodDict[Symbol('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew, '{:(SelfType)self :: self}')
+        self.metaTypeMethodDict[Symbol.intern('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew, '{:(SelfType)self :: self}')
         return super().buildPrimitiveMethodDictionary()
 
     def basicNew(self, valueType):
@@ -927,8 +938,8 @@ class PrimitiveNumberTypeSchema(PrimitiveTypeSchema):
         return True
 
     def buildPrimitiveMethodDictionary(self):
-        self.metaTypeMethodDict[Symbol('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew, '{:(SelfType)self :: self}')
-        self.metaTypeMethodDict[Symbol('basicNew:')] = TypeSchemaPrimitiveMethod(self.basicNewWithValue, '{:(SelfType)self :(AnyValue)value :: self}')
+        self.metaTypeMethodDict[Symbol.intern('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew, '{:(SelfType)self :: self}')
+        self.metaTypeMethodDict[Symbol.intern('basicNew:')] = TypeSchemaPrimitiveMethod(self.basicNewWithValue, '{:(SelfType)self :(AnyValue)value :: self}')
         return super().buildPrimitiveMethodDictionary()
 
     def basicNew(self, valueType):
@@ -1020,12 +1031,12 @@ class SumTypeSchema(TypeSchema):
         return self.elementTypes[0].isDefaultConstructible()
 
     def buildPrimitiveMethodDictionary(self):
-        self.methodDict[Symbol('__typeSelector__')] = TypeSchemaPrimitiveMethod(self.getTypeSelector, '(SelfType) => Size')
-        self.methodDict[Symbol('get:')] = TypeSchemaPrimitiveMethod(self.getWithType, '{:(SelfType)self :(Type)expectedType :: expectedType}')
-        self.methodDict[Symbol('is:')] = TypeSchemaPrimitiveMethod(self.isWithType, '{:(SelfType)self :(Type)expectedType :: Boolean}')
-        self.metaTypeMethodDict[Symbol('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew, '{:(SelfType)self :: self}')
-        self.metaTypeMethodDict[Symbol('basicNew:')] = TypeSchemaPrimitiveMethod(self.basicNewWithValue, '{:(SelfType)self :(AnyValue)initialValue :: self}')
-        self.metaTypeMethodDict[Symbol('basicNew:typeSelector:')] = TypeSchemaPrimitiveMethod(self.basicNewWithValueTypeSelector, '{:(SelfType)self :(AnyValue)initialValue :(Size)typeSelector :: self}')
+        self.methodDict[Symbol.intern('__typeSelector__')] = TypeSchemaPrimitiveMethod(self.getTypeSelector, '(SelfType) => Size')
+        self.methodDict[Symbol.intern('get:')] = TypeSchemaPrimitiveMethod(self.getWithType, '{:(SelfType)self :(Type)expectedType :: expectedType}')
+        self.methodDict[Symbol.intern('is:')] = TypeSchemaPrimitiveMethod(self.isWithType, '{:(SelfType)self :(Type)expectedType :: Boolean}')
+        self.metaTypeMethodDict[Symbol.intern('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew, '{:(SelfType)self :: self}')
+        self.metaTypeMethodDict[Symbol.intern('basicNew:')] = TypeSchemaPrimitiveMethod(self.basicNewWithValue, '{:(SelfType)self :(AnyValue)initialValue :: self}')
+        self.metaTypeMethodDict[Symbol.intern('basicNew:typeSelector:')] = TypeSchemaPrimitiveMethod(self.basicNewWithValueTypeSelector, '{:(SelfType)self :(AnyValue)initialValue :(Size)typeSelector :: self}')
         return super().buildPrimitiveMethodDictionary()
 
     def getTypeSelector(self, sumValue):
@@ -1144,8 +1155,8 @@ class ProductTypeSchema(TypeSchema):
         return self.elementTypes[slotIndex]
 
     def buildPrimitiveMethodDictionary(self):
-        self.metaTypeMethodDict[Symbol('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew, '{:(SelfType)self :: self}')
-        self.metaTypeMethodDict[Symbol('basicNewWithSlots:')] = TypeSchemaPrimitiveMethod(self.basicNewWithSequentialSlots, '{:(SelfType)self :(AnyValue)sequentialSlots :: self}')
+        self.metaTypeMethodDict[Symbol.intern('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew, '{:(SelfType)self :: self}')
+        self.metaTypeMethodDict[Symbol.intern('basicNewWithSlots:')] = TypeSchemaPrimitiveMethod(self.basicNewWithSequentialSlots, '{:(SelfType)self :(AnyValue)sequentialSlots :: self}')
         return super().buildPrimitiveMethodDictionary()
 
     def basicNew(self, productType):
@@ -1198,14 +1209,14 @@ class RecordTypeSchema(ProductTypeSchema):
         return self.slotNameDictionary[slotName]
 
     def buildPrimitiveMethodDictionary(self):
-        self.metaTypeMethodDict[Symbol('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew, '{:(SelfType)self :: self}')
-        self.metaTypeMethodDict[Symbol('basicNewWithSlots:')] = TypeSchemaPrimitiveMethod(self.basicNewWithSequentialSlots, '{:(SelfType)self :(AnyValue)slots :: self}')
-        self.metaTypeMethodDict[Symbol('basicNewWithNamedSlots:')] = TypeSchemaPrimitiveMethod(self.basicNewWithNamedSlots, '{:(SelfType)self :(AnyValue)slots :: self}')
+        self.metaTypeMethodDict[Symbol.intern('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew, '{:(SelfType)self :: self}')
+        self.metaTypeMethodDict[Symbol.intern('basicNewWithSlots:')] = TypeSchemaPrimitiveMethod(self.basicNewWithSequentialSlots, '{:(SelfType)self :(AnyValue)slots :: self}')
+        self.metaTypeMethodDict[Symbol.intern('basicNewWithNamedSlots:')] = TypeSchemaPrimitiveMethod(self.basicNewWithNamedSlots, '{:(SelfType)self :(AnyValue)slots :: self}')
         for slotIndex in range(len(self.slots)):
             slotAssociation = self.slots[slotIndex]
             slotName = slotAssociation.key
-            getterName = Symbol(slotName)
-            setterName = Symbol(slotName + ':')
+            getterName = Symbol.intern(slotName)
+            setterName = Symbol.intern(slotName + ':')
             slotType = self.allSlots[slotIndex]
             self.methodDict[getterName] = RecordTypeGetterPrimitiveMethod(getterName, getterName, self.startSlotIndex + slotIndex, slotAssociation.value, (('SelfType'), slotType))
             self.methodDict[setterName] = RecordTypeSetterPrimitiveMethod(setterName, getterName, self.startSlotIndex + slotIndex, slotAssociation.value, (('SelfType', slotType), slotType))
@@ -1259,8 +1270,8 @@ class ArrayTypeSchema(TypeSchema):
         return self.elementType
 
     def buildPrimitiveMethodDictionary(self):
-        self.metaTypeMethodDict[Symbol('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew, '{:(SelfType)self :: self}')
-        self.metaTypeMethodDict[Symbol('basicNewWithSlots:')] = TypeSchemaPrimitiveMethod(self.basicNewWithSequentialSlots, '{:(SelfType)self :(AnyValue)slots :: self}')
+        self.metaTypeMethodDict[Symbol.intern('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew, '{:(SelfType)self :: self}')
+        self.metaTypeMethodDict[Symbol.intern('basicNewWithSlots:')] = TypeSchemaPrimitiveMethod(self.basicNewWithSequentialSlots, '{:(SelfType)self :(AnyValue)slots :: self}')
         return super().buildPrimitiveMethodDictionary()
 
     def basicNew(self, valueType):
@@ -1349,8 +1360,8 @@ class PointerTypeSchema(PointerLikeTypeSchema):
         return True
 
     def buildPrimitiveMethodDictionary(self):
-        self.metaTypeMethodDict[Symbol('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew, '{:(SelfType)self :: self}')
-        self.metaTypeMethodDict[Symbol('basicNew:')] = TypeSchemaPrimitiveMethod(self.basicNewWithValue, '{:(SelfType)self :(AnyValue)value :: self}')
+        self.metaTypeMethodDict[Symbol.intern('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew, '{:(SelfType)self :: self}')
+        self.metaTypeMethodDict[Symbol.intern('basicNew:')] = TypeSchemaPrimitiveMethod(self.basicNewWithValue, '{:(SelfType)self :(AnyValue)value :: self}')
         return super().buildPrimitiveMethodDictionary()
 
     def basicNew(self, valueType):
@@ -1412,9 +1423,96 @@ class GCClassTypeSchema(RecordTypeSchema):
     def supportsDynamicDispatch(self):
         return True
 
-class BehaviorType(TypedValue, TypeInterface):
-    def __init__(self, name = None, supertype = None, traits = [], schema = EmptyTypeSchema(), methodDict = {}):
+class MethodDictionary(TypedValue):
+    def getType(self):
+        return getBasicTypeNamed('MethodDictionary')
+
+class SymbolTable(TypedValue):
+    def __init__(self):
+        super().__init__()
+        self.table = {}
+
+    def getType(self):
+        return getBasicTypeNamed('SymbolTable')
+
+    def lookupSymbol(self, symbol):
+        return self.table.get(symbol, None)
+
+    def setSymbolValueBinding(self, symbol, value):
+        self.table[symbol] = value.asSymbolBindingWithName(symbol)
+
+    def setSymbolImmutableValue(self, symbol, value):
+        self.table[symbol] = SymbolValueBinding(symbol, value)
+
+    def setSymbolBinding(self, symbol, binding):
+        self.table[symbol] = binding
+
+    @primitiveNamed('symbolTable.setSymbolImmutableValue')
+    def primitiveSetSymbolImmutableValue(self, symbol, value):
+        self.setSymbolImmutableValue(symbol, value)
+        return getVoidValue()
+
+    @primitiveNamed('symbolTable.setSymbolValueBinding')
+    def primitiveSetSymbolValueBinding(self, symbol, value):
+        self.setSymbolValueBinding(symbol, value)
+        return getVoidValue()
+
+    @primitiveNamed('symbolTable.setSymbolBinding')
+    def primitiveSetSymbolBinding(self, symbol, binding):
+        self.setSymbolBinding(symbol, binding)
+        return getVoidValue()
+
+class ProgramEntity(TypedValue):
+    def __init__(self, parent = None, name = None):
+        self.parent = parent
         self.name = name
+
+    def getType(self):
+        return getBasicTypeNamed('ProgramEntity')
+
+    def lookupScopeSymbol(self, selector):
+        return None
+
+    def lookupPublicSymbol(self, selector):
+        return None
+
+    def performWithArguments(self, machine, selector, arguments):
+        if len(arguments) == 0:
+            boundSymbol = self.lookupPublicSymbol(selector)
+            if boundSymbol is not None:
+                return boundSymbol.getSymbolBindingReferenceValue()
+        return super().performWithArguments(machine, selector, arguments)
+
+class Namespace(ProgramEntity):
+    def __init__(self, parent = None, name = None):
+        super().__init__(parent = None, name = None)
+        self.symbolTable = SymbolTable()
+
+    def lookupScopeSymbol(self, selector):
+        return self.symbolTable.lookupSymbol(selector)
+
+    def lookupPublicSymbol(self, selector):
+        return self.symbolTable.lookupSymbol(selector)
+
+    def getType(self):
+        return getBasicTypeNamed('Namespace')
+
+    def setSymbolValueBinding(self, symbol, value):
+        self.symbolTable.setSymbolValueBinding(symbol, value)
+        value.onGlobalBindingWithSymbolAdded(symbol)
+
+    def getOrCreateChildNamespaceNamed(self, childName):
+        childNamespace = self.symbolTable.lookupSymbol(childName)
+        if childNamespace is None:
+            childNamespace = Namespace(parent = self, name = childName)
+            self.symbolTable.setSymbolValueBinding(childName, childNamespace)
+        else:
+            childNamespace = childNamespace.getSymbolBindingReferenceValue()
+        return childNamespace
+
+class BehaviorType(ProgramEntity, TypeInterface):
+    def __init__(self, name = None, supertype = None, traits = [], schema = EmptyTypeSchema(), methodDict = {}):
+        super().__init__(name = None)
         self.methodDict = dict(methodDict)
         self.implicitConversionMethods = []
         self.explicitConversionMethods = []
@@ -1475,9 +1573,6 @@ class BehaviorType(TypedValue, TypeInterface):
     def setConstructionTemplateAndArguments(self, template, arguments):
         self.constructionTemplate = template
         self.constructionTemplateArguments = arguments
-
-    def performWithArguments(self, machine, selector, arguments):
-        return super().performWithArguments(machine, selector, arguments)
 
     def directTraits(self):
         return self.traits
@@ -1547,11 +1642,11 @@ class BehaviorType(TypedValue, TypeInterface):
 
     def addMethodsWithSelectors(self, methodsWithSelector):
         for method, selector in methodsWithSelector:
-            self.addMethodWithSelector(method, Symbol(selector))
+            self.addMethodWithSelector(method, Symbol.intern(selector))
 
     def addPrimitiveMethodsWithSelectors(self, methodsWithSelector):
         for method, selector, functionTypeSpec in methodsWithSelector:
-            self.addMethodWithSelector(PrimitiveMethod(method, functionTypeSpec), Symbol(selector))
+            self.addMethodWithSelector(PrimitiveMethod(method, functionTypeSpec), Symbol.intern(selector))
 
     def getName(self):
         if self.name is not None:
@@ -1567,7 +1662,7 @@ class BehaviorType(TypedValue, TypeInterface):
         return self.type
 
     def getMetaTypeRoot(self):
-        return getBasicTypeNamed(Symbol('MetaType'))
+        return getBasicTypeNamed(Symbol.intern('MetaType'))
 
     def createMetaType(self):
         typeSupertype = None
@@ -1917,7 +2012,7 @@ class FunctionType(SimpleType):
         environment = ActiveBootstrapCompiler.getTopLevelEnvironment()
         if ownerType is not None:
             environment = environment.makeChildLexicalScope()
-            environment.setSymbolImmutableValue(Symbol('SelfType'), ownerType)
+            environment.setSymbolImmutableValue(Symbol.intern('SelfType'), ownerType)
         return environment
 
     def computeFunctionTypeClassification(self):
@@ -2119,7 +2214,7 @@ class ArraySlicePrimitives:
         size = arraySlice.getSlotNamed('size')
 
         resultElementType = aBlock.getType().getCanonicalResultType()
-        resultArrayType = getBasicTypeNamed(Symbol('Array'))(resultElementType, size)
+        resultArrayType = getBasicTypeNamed(Symbol.intern('Array'))(resultElementType, size)
 
         collectedElements = resultArrayType.basicNewWithSequentialSlots(list(map(lambda index: aBlock(elements[Integer(index)]), range(size.asInteger()))))
         return collectedElements.asSharedArraySlice()
@@ -2131,7 +2226,7 @@ class ArraySlicePrimitives:
 
         resultElementType = aBlock.getType().getCanonicalResultType()
         indexType = aBlock.getType().getCanonicalArgumentTypes()[1]
-        resultArrayType = getBasicTypeNamed(Symbol('Array'))(resultElementType, size)
+        resultArrayType = getBasicTypeNamed(Symbol.intern('Array'))(resultElementType, size)
 
         collectedElements = resultArrayType.basicNewWithSequentialSlots(list(map(lambda index: aBlock(elements[Integer(index)], indexType.basicNewWithValue(index)), range(size.asInteger()))))
         return collectedElements.asSharedArraySlice()

@@ -37,7 +37,7 @@ MetaProgramming LetMetaBuilder
         self finish.
         void
     };
-    withSelector: #concretizeMetaBuilder addMethod: {:(MetaProgramming LetMetaBuilder)self :: Reflection AST LocalVariableDefinitionNode |
+    withSelector: #concretizeMetaBuilder addMethod: {:(MetaProgramming LetMetaBuilder)self :: Reflection AST Node |
         (Reflection AST LocalVariableDefinitionNode basicNewWithNamedSlots: #{
             sourcePosition: self metaContext sourcePosition.
             nameExpression: self nameExpression.

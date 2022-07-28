@@ -7,7 +7,7 @@ import typesystem
 
 class IdentifierLookupScope(TypedValue):  
     def getType(self):
-        return getSemanticAnalysisType(Symbol('IdentifierLookupScope'))
+        return getSemanticAnalysisType(Symbol.intern('IdentifierLookupScope'))
 
     def __init__(self, parentScope):
         super().__init__()
@@ -33,20 +33,20 @@ class IdentifierLookupScope(TypedValue):
 
 class LexicalScope(IdentifierLookupScope):
     def getType(self):
-        return getSemanticAnalysisType(Symbol('LexicalScope'))
+        return getSemanticAnalysisType(Symbol.intern('LexicalScope'))
 
     def __init__(self, parentScope):
         super().__init__(parentScope)
-        self.symbolTable = {}
+        self.symbolTable = SymbolTable()
 
     def setSymbolValueBinding(self, symbol, value):
-        self.symbolTable[symbol] = value.asSymbolBindingWithName(symbol)
+        self.symbolTable.setSymbolValueBinding(symbol, value)
 
     def setSymbolImmutableValue(self, symbol, value):
-        self.symbolTable[symbol] = SymbolValueBinding(symbol, value)
+        self.symbolTable.setSymbolImmutableValue(symbol, value)
 
     def setSymbolBinding(self, symbol, binding):
-        self.symbolTable[symbol] = binding
+        self.symbolTable.setSymbolBinding(symbol, binding)
 
     @primitiveNamed('lexicalScope.setSymbolImmutableValue')
     def primitiveSetSymbolImmutableValue(self, symbol, value):
@@ -64,25 +64,22 @@ class LexicalScope(IdentifierLookupScope):
         return getVoidValue()
 
     def lookupSymbol(self, symbol):
-        return self.symbolTable.get(symbol, None)
+        return self.symbolTable.lookupSymbol(symbol)
 
-class NamespaceScope(LexicalScope):
-    def getType(self):
-        return getSemanticAnalysisType(Symbol('NamespaceScope'))
-
-    def __init__(self, parentScope = None):
+class ProgramEntityLookupScope(IdentifierLookupScope):
+    def __init__(self, programEntity, parentScope):
         super().__init__(parentScope)
+        self.programEntity = programEntity
 
-    def setSymbolValueBinding(self, symbol, value):
-        super().setSymbolValueBinding(symbol, value)
-        value.onGlobalBindingWithSymbolAdded(symbol)
+    def lookupSymbol(self, symbol):
+        return self.programEntity.lookupScopeSymbol(symbol)
 
-    def performWithArguments(self, machine, selector, arguments):
-        if len(arguments) == 0:
-            boundSymbol = self.lookupSymbol(selector)
-            if boundSymbol is not None:
-                return boundSymbol.getSymbolBindingReferenceValue()
-        return super().performWithArguments(machine, selector, arguments)
+    def getType(self):
+        return getSemanticAnalysisType(Symbol.intern('ProgramEntityLookupScope'))
+
+class NamespaceLookupScope(ProgramEntityLookupScope):
+    def getType(self):
+        return getSemanticAnalysisType(Symbol.intern('NamespaceLookupScope'))
 
 class ScriptEvaluationScope(LexicalScope):
     def __init__(self, parentScope, bootstrapCompiler):
@@ -90,16 +87,16 @@ class ScriptEvaluationScope(LexicalScope):
         self.bootstrapCompiler = bootstrapCompiler
 
     def getType(self):
-        return getSemanticAnalysisType(Symbol('ScriptEvaluationScope'))
+        return getSemanticAnalysisType(Symbol.intern('ScriptEvaluationScope'))
 
     def evaluateScriptFile(self, evaluationMachine, scriptFile, scriptFilename, scriptDirectory):
-        self.setSymbolValueBinding(Symbol('__CurrentScriptFilename__'), String(scriptFilename))
-        self.setSymbolValueBinding(Symbol('__CurrentScriptDirectory__'), String(scriptDirectory))
+        self.setSymbolValueBinding(Symbol.intern('__CurrentScriptFilename__'), String(scriptFilename))
+        self.setSymbolValueBinding(Symbol.intern('__CurrentScriptDirectory__'), String(scriptDirectory))
         scriptSource = scriptFile.read()
         parseTree = parseString(scriptSource, scriptFilename)
         if self.bootstrapCompiler.isTypeSystemEnabled:
             convertedASTNode = parseTree.convertIntoGenericASTWith(self.bootstrapCompiler)
-            resultValue = convertedASTNode.performWithArguments(evaluationMachine, Symbol('analyzeAndEvaluateNodeWithScriptEvaluationScope:'), [self])
+            resultValue = convertedASTNode.performWithArguments(evaluationMachine, Symbol.intern('analyzeAndEvaluateNodeWithScriptEvaluationScope:'), [self])
         else:
             resultValue = parseTree.evaluateWithEnvironment(evaluationMachine, self)
 
@@ -109,9 +106,12 @@ class ScriptEvaluationScope(LexicalScope):
 class BootstrapCompiler(BehaviorTypedObject):
     def __init__(self):
         super().__init__()
-        self.topLevelEnvironment = NamespaceScope()
+        self.topLevelNamespace = Namespace(parent = None, name = Symbol.intern('__global__'))
+
+        self.topLevelEnvironment = LexicalScope(NamespaceLookupScope(self.topLevelNamespace, None))
         self.topLevelEnvironment.setSymbolValueBinding('__BootstrapCompiler__', self)
         self.topLevelEnvironment.setSymbolValueBinding('__TypeBuilder__', TypeBuilder())
+
         self.basicTypeEnvironment = {}
         self.isTypeSystemEnabled = False
         self.parseTreeASTMapping = None
@@ -144,7 +144,8 @@ class BootstrapCompiler(BehaviorTypedObject):
             (cls.primitiveFailed, 'primitiveFailed', '(SelfType) => Void'),
             (cls.subclassResponsibility, 'subclassResponsibility', '(SelfType) => Void'),
 
-            (cls.getTopLevelEnvironment, 'getTopLevelEnvironment', '(SelfType) => Void'),
+            (cls.getTopLevelNamespace, 'getTopLevelEnvironment', '(SelfType) => Reflection Namespace'),
+            (cls.getTopLevelEnvironment, 'getTopLevelEnvironment', '(SelfType) => Reflection Semantic IdentifierLookupScoe'),
 
             (cls.parseErrorAt, 'parseError:at:', '(SelfType -- String -- AnyValue) => Void'),
             (cls.semanticAnalysisErrorAt, 'semanticAnalysisError:at:', '(SelfType -- String -- AnyValue) => Void'),
@@ -160,6 +161,9 @@ class BootstrapCompiler(BehaviorTypedObject):
         if self.emptySourcePosition is None:
             self.emptySourcePosition = self.makeASTNodeWithSlots('EmptySourcePosition')
         return self.emptySourcePosition
+
+    def getTopLevelNamespace(self):
+        return self.topLevelNamespace
 
     def getTopLevelEnvironment(self):
         return self.topLevelEnvironment
@@ -197,16 +201,10 @@ class BootstrapCompiler(BehaviorTypedObject):
         setActiveBasicTypeEnvironment(self.basicTypeEnvironment)
 
     def enterTopLevelNamespace(self):
-        self.activeNamespace = self.topLevelEnvironment
+        self.activeNamespace = self.topLevelNamespace
 
     def enterNamespaceNamed(self, namespaceName):
-        childNamespace = self.activeNamespace.lookupSymbol(namespaceName)
-        if childNamespace is None:
-            childNamespace = NamespaceScope(self.activeNamespace)
-            self.activeNamespace.setSymbolValueBinding(namespaceName, childNamespace)
-        else:
-            childNamespace = childNamespace.getSymbolBindingReferenceValue()
-        self.activeNamespace = childNamespace
+        self.activeNamespace = self.activeNamespace.getOrCreateChildNamespaceNamed(Symbol.intern(namespaceName))
 
     def addBindingNamedWith(self, bindingName, bindingValue):
         self.activeNamespace.setSymbolValueBinding(bindingName, bindingValue)
@@ -227,7 +225,7 @@ class BootstrapCompiler(BehaviorTypedObject):
             basicType.addMetaTypeRootMethods()
 
     def addPrimitiveTypeNamedWithSchema(self, typeName, schema):
-        typeNameSymbol = Symbol(typeName)
+        typeNameSymbol = Symbol.intern(typeName)
         type = SimpleType(name = typeNameSymbol, schema = schema)
         self.addBasicTypeWithName(type, typeNameSymbol)
 
@@ -250,7 +248,7 @@ class BootstrapCompiler(BehaviorTypedObject):
         self.addGCClassNamedWithSuperclassInstanceVariables(className, self.basicTypeEnvironment.get('Object', None), instanceVariables)
 
     def addGCClassNamedWithSuperclassInstanceVariables(self, className, superclass, instanceVariables):
-        typeNameSymbol = Symbol(className)
+        typeNameSymbol = Symbol.intern(className)
         type = SimpleType(name = typeNameSymbol, supertype = superclass, schema = GCClassTypeSchema(instanceVariables))
         self.addBasicTypeWithName(type, typeNameSymbol)
 

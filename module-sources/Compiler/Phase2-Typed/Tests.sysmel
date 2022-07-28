@@ -1,3 +1,9 @@
+#*
+namespace TestNamespace definition: {
+
+}.
+*#
+
 1 + 2.
 false.
 nil.

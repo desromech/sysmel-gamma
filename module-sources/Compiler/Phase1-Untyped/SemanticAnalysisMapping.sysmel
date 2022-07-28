@@ -4,7 +4,7 @@ __BootstrapCompiler__ setSemanticAnalysisMapping: #{
     SymbolValueBinding: Reflection Semantic SymbolValueBinding.
     IdentifierLookupScope: Reflection Semantic IdentifierLookupScope.
     LexicalScope: Reflection Semantic LexicalScope.
-    NamespaceScope: Reflection Semantic NamespaceScope.
+    NamespaceLookupScope: Reflection Semantic NamespaceLookupScope.
     ScriptEvaluationScope: Reflection Semantic ScriptEvaluationScope.
     EvaluationEnvironment: Reflection Semantic EvaluationEnvironment.
     ASTAnalyzer: Reflection Semantic ASTAnalyzer.

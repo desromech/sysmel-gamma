@@ -1,0 +1,15 @@
+__BootstrapCompiler__
+    enterTopLevelNamespace;
+    enterNamespaceNamed: #Reflection;
+    enterNamespaceNamed: #AST;
+    addBindingNamed: #NamespaceDefinitionNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST ProgramEntityDefinitionNode publicSlots: #{
+        nameExpression: Reflection AST Node optional.
+        bodyExpression: Reflection AST Node optional.
+    }).
+
+
+Reflection AST NamespaceDefinitionNode
+    withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST NamespaceDefinitionNode)self :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+        __BootstrapCompiler__ print: "TODO: Reflection AST NamespaceDefinitionNode analyzeNodeWith:".
+        __BootstrapCompiler__ primitiveFailed
+    }.

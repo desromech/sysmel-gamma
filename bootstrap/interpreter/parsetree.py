@@ -276,7 +276,7 @@ class PTAssignment(PTNode):
             sourcePosition = sourcePosition,
             selector = bootstrapCompiler.makeASTNodeWithSlots('LiteralValueNode',
                 sourcePosition = sourcePosition,
-                value = Symbol(':=')
+                value = Symbol.intern(':=')
             ),
             receiver = self.reference.convertIntoGenericASTWith(bootstrapCompiler),
             arguments = bootstrapCompiler.makeASTNodeArraySlice([self.value.convertIntoGenericASTWith(bootstrapCompiler)])
@@ -531,7 +531,7 @@ class PTCall(PTNode):
             arguments = self.arguments.evaluateWithEnvironment(machine, environment)
             if not isinstance(arguments, tuple):
                 arguments = (arguments,)
-        return functional.performWithArguments(machine, Symbol('()'), arguments)
+        return functional.performWithArguments(machine, Symbol.intern('()'), arguments)
 
 class PTSubscript(PTNode):
     def __init__(self, sequenceable, indices, tokens):
@@ -548,7 +548,7 @@ class PTSubscript(PTNode):
         indices = []
         if self.indices is not None:
             indices = [self.indices.evaluateWithEnvironment(machine, environment)]
-        return sequenceable.performWithArguments(machine, Symbol('[]'), indices)
+        return sequenceable.performWithArguments(machine, Symbol.intern('[]'), indices)
 
 class PTApplyBlock(PTNode):
     def __init__(self, entity, block):
@@ -564,12 +564,12 @@ class PTApplyBlock(PTNode):
         block = None
         if self.entity is not None:
             block = self.block.evaluateWithEnvironment(machine, block)
-        return entity.performWithArguments(Symbol('{}'), [block])
+        return entity.performWithArguments(Symbol.intern('{}'), [block])
 
 class PTIdentifierReference(PTNode):
     def __init__(self, identifier):
         PTNode.__init__(self)
-        self.value = Symbol(identifier.value)
+        self.value = Symbol.intern(identifier.value)
         self.sourcePosition = sourcePositionFromToken(identifier)
 
     def isIdentifierReference(self):
@@ -587,7 +587,7 @@ class PTIdentifierReference(PTNode):
     def convertIntoGenericASTWith(self, bootstrapCompiler):
         return bootstrapCompiler.makeASTNodeWithSlots('IdentifierReferenceNode',
             sourcePosition = bootstrapCompiler.convertASTSourcePosition(self.sourcePosition),
-            value = Symbol(self.value)
+            value = Symbol.intern(self.value)
         )
 
     def formatAST(self):
@@ -639,7 +639,7 @@ class PTBlockClosure(PTNode):
             if pragma.isPrimitivePragma():
                 self.primitiveName = pragma.getPrimitiveName()
             elif pragma.isMethodFlagPragma():
-                self.methodFlags.append(Symbol(pragma.getSelector()))
+                self.methodFlags.append(Symbol.intern(pragma.getSelector()))
 
     def isBlockClosure(self):
         return True
@@ -731,7 +731,7 @@ class PTQuote(PTNode):
         return True
 
     def doEvaluateWithEnvironment(self, machine, environment):
-        return self.expression.convertIntoGenericASTWith(environment.lookupSymbolRecursively(Symbol('__BootstrapCompiler__')).getSymbolBindingReferenceValue())
+        return self.expression.convertIntoGenericASTWith(environment.lookupSymbolRecursively(Symbol.intern('__BootstrapCompiler__')).getSymbolBindingReferenceValue())
 
 class PTQuasiQuote(PTNode):
     def __init__(self, expression, tokens):
@@ -770,7 +770,7 @@ class PTPragma(PTNode):
 class PTUnaryPragma(PTPragma):
     def __init__(self, identifier, tokens):
         PTNode.__init__(self)
-        self.identifier = Symbol(identifier.value)
+        self.identifier = Symbol.intern(identifier.value)
         self.sourcePosition = sourcePositionFromList([sourcePositionFromTokens(tokens), identifier])
 
     def isUnaryPragma(self):
@@ -866,11 +866,11 @@ class PTLiteralSymbol(PTLiteral):
 
     def parseLiteralString(self, value):
         if value.startswith('#"'):
-            return Symbol(parseCStringEscapeSequences(value[2:-1]))
+            return Symbol.intern(parseCStringEscapeSequences(value[2:-1]))
         elif value.startswith('#'):
-            return Symbol(value[1:])
+            return Symbol.intern(value[1:])
         else:
-            return Symbol(value)
+            return Symbol.intern(value)
 
     def formatASTSelector(self):
         return self.value

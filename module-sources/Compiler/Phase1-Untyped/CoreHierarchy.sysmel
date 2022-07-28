@@ -23,6 +23,7 @@ __BootstrapCompiler__
     enterTopLevelNamespace;
     enterNamespaceNamed: #Reflection;
     addBasicTypeNamed: #ProgramEntity with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
+    addBasicTypeNamed: #Namespace with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection ProgramEntity slots: #{});
 
     enterTopLevelNamespace;
     addBasicTypeNamed: #Type with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection ProgramEntity slots: #{});

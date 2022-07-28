@@ -13,11 +13,14 @@ python3 bootstrap/interpreter/sysmelbi.py \
     module-sources/Compiler/Phase1-Untyped/ASTAnalyzer.sysmel \
     module-sources/Compiler/Phase1-Untyped/ControlFlowNodes.sysmel \
     module-sources/Compiler/Phase1-Untyped/BasicConversionNodes.sysmel \
+    module-sources/Compiler/Phase1-Untyped/ProgramEntity.sysmel \
+    module-sources/Compiler/Phase1-Untyped/Namespace.sysmel \
     module-sources/Compiler/Phase1-Untyped/Variable.sysmel \
     module-sources/Compiler/Phase1-Untyped/LocalVariable.sysmel \
     module-sources/Compiler/Phase1-Untyped/Macros.sysmel \
     module-sources/Compiler/Phase1-Untyped/MetaBuilder.sysmel \
     module-sources/Compiler/Phase1-Untyped/LetMetaBuilder.sysmel \
+    module-sources/Compiler/Phase1-Untyped/NamespaceMetaBuilder.sysmel \
     module-sources/Compiler/Phase1-Untyped/Tests.sysmel \
     module-sources/Compiler/Phase1-Untyped/Finish.sysmel \
     \
