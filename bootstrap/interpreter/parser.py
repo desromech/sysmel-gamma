@@ -466,6 +466,8 @@ def p_anyKeyword(p):
 parser = yacc.yacc()
 
 def parseString(string, sourceName = ''):
+    import scanner
     global currentSourceCollection
+    scanner.scanner.lineno = 1
     currentSourceCollection = StringSourceCollection(string, sourceName)
     return parser.parse(string)

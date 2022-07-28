@@ -1,0 +1,59 @@
+__BootstrapCompiler__
+    enterTopLevelNamespace;
+    addBindingNamed: #if:then:else: with: {:(MacroInvocationContext)macroSelf :(Reflection AST Node)condition :(Reflection AST Node)trueExpression :(Reflection AST Node)falseExpression :: Reflection AST IfTrueIfFalseNode |
+        <macro>
+        <messageMethod>
+        (Reflection AST IfTrueIfFalseNode basicNewWithNamedSlots: #{
+            sourcePosition: macroSelf sourcePosition.
+            condition: condition.
+            trueExpression: trueExpression.
+            falseExpression: falseExpression.
+        })
+    };
+    addBindingNamed: #if:then: with: {:(MacroInvocationContext)macroSelf :(Reflection AST Node)condition :(Reflection AST Node)trueExpression :: Reflection AST IfTrueIfFalseNode |
+        <macro>
+        <messageMethod>
+        (Reflection AST IfTrueIfFalseNode basicNewWithNamedSlots: #{
+            sourcePosition: macroSelf sourcePosition.
+            condition: condition.
+            trueExpression: trueExpression.
+        })
+    };
+    addBindingNamed: #while:do:continueWith: with: {:(MacroInvocationContext)macroSelf :(Reflection AST Node)condition :(Reflection AST Node)bodyExpression :(Reflection AST Node)continueExpression :: Reflection AST WhileDoContinueNode |
+        <macro>
+        <messageMethod>
+        (Reflection AST WhileDoContinueNode basicNewWithNamedSlots: #{
+            sourcePosition: macroSelf sourcePosition.
+            condition: condition.
+            bodyExpression: bodyExpression.
+            continueExpression: continueExpression
+        })
+    };
+    addBindingNamed: #while:do: with: {:(MacroInvocationContext)macroSelf :(Reflection AST Node)condition :(Reflection AST Node)bodyExpression :: Reflection AST WhileDoContinueNode |
+        <macro>
+        <messageMethod>
+        (Reflection AST WhileDoContinueNode basicNewWithNamedSlots: #{
+            sourcePosition: macroSelf sourcePosition.
+            condition: condition.
+            bodyExpression: bodyExpression.
+        })
+    };
+    addBindingNamed: #let:with: with: {:(MacroInvocationContext)macroSelf :(Reflection AST Node)nameExpression :(Reflection AST Node)initialValueExpression :: Reflection AST LocalVariableDefinitionNode |
+        <macro>
+        <messageMethod>
+        (Reflection AST LocalVariableDefinitionNode basicNewWithNamedSlots: #{
+            sourcePosition: macroSelf sourcePosition.
+            nameExpression: nameExpression.
+            initialValueExpression: initialValueExpression.
+        })
+    };
+    addBindingNamed: #let:type:with: with: {:(MacroInvocationContext)macroSelf :(Reflection AST Node)nameExpression :(Reflection AST Node)typeExpression :(Reflection AST Node)initialValueExpression :: Reflection AST LocalVariableDefinitionNode |
+        <macro>
+        <messageMethod>
+        (Reflection AST LocalVariableDefinitionNode basicNewWithNamedSlots: #{
+            sourcePosition: macroSelf sourcePosition.
+            nameExpression: nameExpression.
+            typeExpression: typeExpression;
+            initialValueExpression: initialValueExpression.
+        })
+    }.

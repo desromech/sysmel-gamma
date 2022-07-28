@@ -187,11 +187,7 @@ class BootstrapCompiler(BehaviorTypedObject):
 
     def makeASTNodeArraySlice(self, elements):
         arraySliceType = self.parseTreeASTMapping.at('NodeSharedArraySlice')
-        return arraySliceType.basicNewWithArraySliceElements(list(elements))
-
-    def makeASTNodeArrayList(self, elements):
-        arrayListType = self.parseTreeASTMapping.at('NodeArrayList')
-        return arrayListType.basicNewWithArrayListElements(list(elements))
+        return arraySliceType.basicNewWithArraySliceElements(ListValueMock(elements))
 
     def makeASTNodeWithSlots(self, nodeName, **namedSlots):
         nodeType = self.parseTreeASTMapping.at(nodeName)

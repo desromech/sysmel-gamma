@@ -1,778 +1,3 @@
-## This is the Phase1, where the core basic type system is defined along with the global bindings.
-## In this stage the compiler environment itself is completely empty,
-## except for a single reference to the bootstrap compiler itself.
-
-__BootstrapCompiler__
-    enterTopLevelNamespace;
-
-    ## Type theory fundamentals
-    addBasicTypeNamed: #Absurd with: __TypeBuilder__ newAbsurdType;
-    addBasicTypeNamed: #Trivial with: __TypeBuilder__ newTrivialType;
-
-    addBasicTypeNamed: #False with: __TypeBuilder__ newTrivialType;
-    addBasicTypeNamed: #True with: __TypeBuilder__ newTrivialType;
-    addBasicTypeNamed: #Boolean with: (__TypeBuilder__ newSumTypeWith: (False, True));
-    addBasicTypeNamed: #Undefined with: __TypeBuilder__ newTrivialType;
-    addBasicTypeNamed: #Void with: __TypeBuilder__ newTrivialType;
-
-    ## Base type system
-    addBasicTypeNamed: #AnyValue with: (__TypeBuilder__ newGCClassWithSlots: #{});
-
-    addBasicTypeNamed: #Object with: (__TypeBuilder__ newGCClassWithSuperclass: AnyValue slots: #{});
-
-    enterTopLevelNamespace;
-    enterNamespaceNamed: #Reflection;
-    addBasicTypeNamed: #ProgramEntity with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
-
-    enterTopLevelNamespace;
-    addBasicTypeNamed: #Type with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection ProgramEntity slots: #{});
-    addBasicTypeNamed: #SimpleType with: (__TypeBuilder__ newGCClassWithSuperclass: Type slots: #{});
-    addBasicTypeNamed: #MetaType with: (__TypeBuilder__ newGCClassWithSuperclass: Type slots: #{});
-
-    addBasicTypeNamed: #Tuple with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
-    addBasicTypeNamed: #Function with: (__TypeBuilder__ newGCClassWithSuperclass: SimpleType slots: #{});
-
-    addBasicTypeNamed: #String with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
-    addBasicTypeNamed: #Symbol with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
-    addBasicTypeNamed: #Integer with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
-    addBasicTypeNamed: #Float with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
-    
-    addBasicTypeNamed: #CompilationError with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
-
-    enterTopLevelNamespace;
-    enterNamespaceNamed: #Reflection;
-    addBasicTypeNamed: #TypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
-    addBasicTypeNamed: #TrivialTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection TypeSchema slots: #{});
-    addBasicTypeNamed: #AbsurdTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection TypeSchema slots: #{});
-    addBasicTypeNamed: #SumTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection TypeSchema slots: #{});
-    addBasicTypeNamed: #PrimitiveTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection TypeSchema slots: #{});
-    addBasicTypeNamed: #ProductTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection TypeSchema slots: #{});
-    addBasicTypeNamed: #RecordTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection ProductTypeSchema slots: #{});
-    addBasicTypeNamed: #GCClassTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection RecordTypeSchema slots: #{});
-    addBasicTypeNamed: #ArrayTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection TypeSchema slots: #{});
-    addBasicTypeNamed: #PointerTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection TypeSchema slots: #{});
-    addBasicTypeNamed: #ReferenceTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection TypeSchema slots: #{});
-
-    addBasicTypeNamed: #FunctionImplementation with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
-    addBasicTypeNamed: #BlockClosure with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection FunctionImplementation slots: #{});
-    addBasicTypeNamed: #AbstractPrimitiveMethod with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection FunctionImplementation slots: #{});
-    addBasicTypeNamed: #PrimitiveMethod with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AbstractPrimitiveMethod slots: #{});
-    addBasicTypeNamed: #TypeSchemaPrimitiveMethod with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AbstractPrimitiveMethod slots: #{});
-    addBasicTypeNamed: #RecordTypeAccessorPrimitiveMethod with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AbstractPrimitiveMethod slots: #{});
-    addBasicTypeNamed: #RecordTypeGetterPrimitiveMethod with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection RecordTypeAccessorPrimitiveMethod slots: #{});
-    addBasicTypeNamed: #RecordTypeSetterPrimitiveMethod with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection RecordTypeAccessorPrimitiveMethod slots: #{});
-
-    addBindingNamed: #SourceCollection with: (__TypeBuilder__ newGCClassWithSlots: #{});
-    addBindingNamed: #SourcePosition with: (__TypeBuilder__ newGCClassWithSlots: #{});
-
-    addBindingNamed: #Variable with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection ProgramEntity publicSlots: #{
-        name: AnyValue.
-        valueType: Type.
-        referenceType: Type.
-    });
-    addBindingNamed: #LocalVariable with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection Variable publicSlots: #{}).
-
-AnyValue addTypeFlag: #anyValue.
-
-
-## Object primitives.
-AnyValue
-    withSelector: #== addMethod: {:(AnyValue)self :(AnyValue)other :: Boolean |
-        <pure>
-        <primitive: #"object.comparison.identityEquals">
-        __BootstrapCompiler__ primitiveFailed
-    };
-    withSelector: #~~ addMethod: {:(AnyValue)self :(AnyValue)other :: Boolean |
-        <pure>
-        <primitive: #"object.comparison.identityNotEquals">
-        __BootstrapCompiler__ primitiveFailed
-    };
-    withSelector: #identityHash addMethod: {:(AnyValue)self :: Size |
-        <pure>
-        <primitive: #"object.comparison.identityHash">
-        __BootstrapCompiler__ primitiveFailed
-    }.
-
-Object
-    withSelector: #= addMethod: {:(Object)self :(AnyValue)other :: Boolean |
-        <pure>
-        <virtual>
-        self == other
-    };
-    withSelector: #~= addMethod: {:(Object)self :(AnyValue)other :: Boolean |
-        <pure>
-        <virtual>
-        self ~~ other
-    };
-    withSelector: #hash addMethod: {:(Object)self :: Size |
-        <pure>
-        <virtual>
-        self identityHash
-    }.
-
-## Boolean primitives
-Boolean
-    withSelector: #| addMethod: {:(Boolean)self :(Boolean)other :: Boolean |
-        <pure>
-        if: self then: {
-            true
-        } else: {
-            other
-        }
-    };
-    withSelector: #& addMethod: {:(Boolean)self :(Boolean)other :: Boolean |
-        <pure>
-        if: self then: {
-            other
-        } else: {
-            false
-        }
-    };
-    withSelector: #not addMethod: {:(Boolean)self :: Boolean |
-        if: self then: {
-            false
-        } else: {
-            true
-        }
-    }.
-
-## Integer arithmetics primitive methods
-Integer
-    withSelector: #negated addMethod: {:(Integer)self :: Integer |
-        <pure>
-        <primitive: #"integer.arithmetic.neg">
-        __BootstrapCompiler__ primitiveFailed
-    };
-    withSelector: #+ addMethod: {:(Integer)self :(Integer)other :: Integer |
-        <pure>
-        <primitive: #"integer.arithmetic.add">
-        __BootstrapCompiler__ primitiveFailed
-    };
-    withSelector: #- addMethod: {:(Integer)self :(Integer)other :: Integer |
-        <pure>
-        <primitive: #"integer.arithmetic.sub">
-        __BootstrapCompiler__ primitiveFailed
-    };
-    withSelector: #"*" addMethod: {:(Integer)self :(Integer)other :: Integer |
-        <pure>
-        <primitive: #"integer.arithmetic.mul">
-        __BootstrapCompiler__ primitiveFailed
-    };
-    withSelector: #// addMethod: {:(Integer)self :(Integer)other :: Integer |
-        <pure>
-        <primitive: #"integer.arithmetic.div">
-        __BootstrapCompiler__ primitiveFailed
-    };
-    withSelector: #% addMethod: {:(Integer)self :(Integer)other :: Integer |
-        <pure>
-        <primitive: #"integer.arithmetic.rem">
-        __BootstrapCompiler__ primitiveFailed
-    };
-
-    withSelector: #= addMethod: {:(Integer)self :(Object)other :: Boolean |
-        <pure>
-        <primitive: #"integer.comparison.equals">
-        __BootstrapCompiler__ primitiveFailed
-    };
-    withSelector: #~= addMethod: {:(Integer)self :(Object)other :: Boolean |
-        <pure>
-        <primitive: #"integer.comparison.notEquals">
-        __BootstrapCompiler__ primitiveFailed
-    };
-    
-    withSelector: #< addMethod: {:(Integer)self :(Integer)other :: Boolean |
-        <pure>
-        <primitive: #"integer.comparison.lessThan">
-        __BootstrapCompiler__ primitiveFailed
-    };
-    withSelector: #<= addMethod: {:(Integer)self :(Integer)other :: Boolean |
-        <pure>
-        <primitive: #"integer.comparison.lessOrEqual">
-        __BootstrapCompiler__ primitiveFailed
-    };
-    withSelector: #> addMethod: {:(Integer)self :(Integer)other :: Boolean |
-        <pure>
-        <primitive: #"integer.comparison.greaterThan">
-        __BootstrapCompiler__ primitiveFailed
-    };
-    withSelector: #>= addMethod: {:(Integer)self :(Integer)other :: Boolean |
-        <pure>
-        <primitive: #"integer.comparison.greaterOrEqual">
-        __BootstrapCompiler__ primitiveFailed
-    };
-
-    withSelector: #asString addMethod: {:(Integer)self :: String |
-        <pure>
-        <primitive: #"integer.conversion.toString">
-        __BootstrapCompiler__ primitiveFailed
-    };
-    withSelector: #printString addMethod: {:(Integer)self :: String |
-        <pure>
-        <primitive: #"integer.conversion.toString">
-        __BootstrapCompiler__ primitiveFailed
-    }.
-
-__BootstrapCompiler__
-    enterTopLevelNamespace;
-
-    ## Important keywords
-    addKeywordBindingNamed: #false with: False basicNew;
-    addKeywordBindingNamed: #true with: True basicNew;
-    addKeywordBindingNamed: #nil with: Undefined basicNew;
-    addKeywordBindingNamed: #void with: Void basicNew;
-
-    ## The primitive types
-    addBasicTypeNamed: #Boolean8 with: (__TypeBuilder__ newBooleanTypeWithSize: 1 alignment: 1);
-    addBasicTypeNamed: #Boolean16 with: (__TypeBuilder__ newBooleanTypeWithSize: 2 alignment: 2);
-    addBasicTypeNamed: #Boolean32 with: (__TypeBuilder__ newBooleanTypeWithSize: 4 alignment: 4);
-
-    addBasicTypeNamed: #UInt8 with: (__TypeBuilder__ newUnsignedIntegerTypeWithSize: 1 alignment: 1);
-    addBasicTypeNamed: #UInt16 with: (__TypeBuilder__ newUnsignedIntegerTypeWithSize: 2 alignment: 2);
-    addBasicTypeNamed: #UInt32 with: (__TypeBuilder__ newUnsignedIntegerTypeWithSize: 4 alignment: 4);
-    addBasicTypeNamed: #UInt64 with: (__TypeBuilder__ newUnsignedIntegerTypeWithSize: 8 alignment: 8);
-
-    addBasicTypeNamed: #Int8 with: (__TypeBuilder__ newSignedIntegerTypeWithSize: 1 alignment: 1);
-    addBasicTypeNamed: #Int16 with: (__TypeBuilder__ newSignedIntegerTypeWithSize: 2 alignment: 2);
-    addBasicTypeNamed: #Int32 with: (__TypeBuilder__ newSignedIntegerTypeWithSize: 4 alignment: 4);
-    addBasicTypeNamed: #Int64 with: (__TypeBuilder__ newSignedIntegerTypeWithSize: 8 alignment: 8);
-
-    addBasicTypeNamed: #Char8 with: (__TypeBuilder__ newCharacterTypeWithSize: 1 alignment: 1);
-    addBasicTypeNamed: #Char16 with: (__TypeBuilder__ newCharacterTypeWithSize: 2 alignment: 2);
-    addBasicTypeNamed: #Char32 with: (__TypeBuilder__ newCharacterTypeWithSize: 4 alignment: 4);
-
-    addBasicTypeNamed: #Float16 with: (__TypeBuilder__ newFloatTypeWithSize: 2 alignment: 2);
-    addBasicTypeNamed: #Float32 with: (__TypeBuilder__ newFloatTypeWithSize: 4 alignment: 4);
-    addBasicTypeNamed: #Float64 with: (__TypeBuilder__ newFloatTypeWithSize: 8 alignment: 8);
-
-    addBasicTypeNamed: #UIntPointer with: (if: __BootstrapCompiler__ getPointerSize = 4 then: UInt32 else: UInt64);
-    addBasicTypeNamed: #IntPointer with: (if: __BootstrapCompiler__ getPointerSize = 4 then: Int32 else: Int64);
-    addBasicTypeNamed: #Size with: UIntPointer.
-
-## Integer conversion primitives
-Integer
-    withSelector: #u8 addMethod: {:(Integer)self :: UInt8 |
-        <pure>
-        <primitive: #"integer.conversion.toUInt8">
-        UInt8 basicNew: self
-    };
-    withSelector: #s8 addMethod: {:(Integer)self :: Int8 |
-        <pure>
-        <primitive: #"integer.conversion.toInt8">
-        Int8 basicNew: self
-    };
-    withSelector: #u16 addMethod: {:(Integer)self :: UInt16 |
-        <pure>
-        <primitive: #"integer.conversion.toUInt16">
-        UInt16 basicNew: self
-    };
-    withSelector: #s16 addMethod: {:(Integer)self :: Int16 |
-        <pure>
-        <primitive: #"integer.conversion.toInt16">
-        Int16 basicNew: self
-    };
-    withSelector: #u32 addMethod: {:(Integer)self :: UInt32 |
-        <pure>
-        <primitive: #"integer.conversion.toUInt32">
-        UInt32 basicNew: self
-    };
-    withSelector: #s32 addMethod: {:(Integer)self :: Int32 |
-        <pure>
-        <primitive: #"integer.conversion.toInt32">
-        Int32 basicNew: self
-    };
-    withSelector: #u64 addMethod: {:(Integer)self :: UInt64 |
-        <pure>
-        <primitive: #"integer.conversion.toUInt64">
-        UInt64 basicNew: self
-    };
-    withSelector: #s64 addMethod: {:(Integer)self :: Int64 |
-        <pure>
-        <primitive: #"integer.conversion.toInt64">
-        Int64 basicNew: self
-    };
-
-    withSelector: #sz addMethod: {:(Integer)self :: Size |
-        <pure>
-        <primitive: #"integer.conversion.toSize">
-        Size basicNew: self
-    };
-    withSelector: #uptr addMethod: {:(Integer)self :: UIntPointer |
-        <pure>
-        <primitive: #"integer.conversion.toUIntPointer">
-        UIntPointer basicNew: self
-    };
-    withSelector: #uptr addMethod: {:(Integer)self :: IntPointer |
-        <pure>
-        <primitive: #"integer.conversion.toIntPointer">
-        IntPointer basicNew: self
-    }.
-
-{:addPrimitivesBlock |
-    addPrimitivesBlock(UInt8).
-    addPrimitivesBlock(Int8).
-    addPrimitivesBlock(UInt16).
-    addPrimitivesBlock(Int16).
-    addPrimitivesBlock(UInt32).
-    addPrimitivesBlock(Int32).
-    addPrimitivesBlock(UInt64).
-    addPrimitivesBlock(Int64).
-}({:(Type)primitiveIntegerType |
-    primitiveIntegerType
-        withSelector: #negated addMethod: {:(primitiveIntegerType)self :: primitiveIntegerType |
-            <pure>
-            <primitive: #"primitiveInteger.arithmetic.neg">
-            __BootstrapCompiler__ primitiveFailed
-        };
-        withSelector: #+ addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: primitiveIntegerType |
-            <pure>
-            <primitive: #"primitiveInteger.arithmetic.add">
-            __BootstrapCompiler__ primitiveFailed
-        };
-        withSelector: #- addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: primitiveIntegerType |
-            <pure>
-            <primitive: #"primitiveInteger.arithmetic.sub">
-            __BootstrapCompiler__ primitiveFailed
-        };
-        withSelector: #"*" addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: primitiveIntegerType |
-            <pure>
-            <primitive: #"primitiveInteger.arithmetic.mul">
-            __BootstrapCompiler__ primitiveFailed
-        };
-        withSelector: #// addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: primitiveIntegerType |
-            <pure>
-            <primitive: #"primitiveInteger.arithmetic.div">
-            __BootstrapCompiler__ primitiveFailed
-        };
-        withSelector: #% addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: primitiveIntegerType |
-            <pure>
-            <primitive: #"primitiveInteger.arithmetic.rem">
-            __BootstrapCompiler__ primitiveFailed
-        };
-
-        withSelector: #= addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: Boolean |
-            <pure>
-            <primitive: #"primitiveInteger.comparison.equals">
-            __BootstrapCompiler__ primitiveFailed
-        };
-        withSelector: #~= addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: Boolean |
-            <pure>
-            <primitive: #"primitiveInteger.comparison.notEquals">
-            __BootstrapCompiler__ primitiveFailed
-        };
-        
-        withSelector: #< addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: Boolean |
-            <pure>
-            <primitive: #"primitiveInteger.comparison.lessThan">
-            __BootstrapCompiler__ primitiveFailed
-        };
-        withSelector: #<= addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: Boolean |
-            <pure>
-            <primitive: #"primitiveInteger.comparison.lessOrEqual">
-            __BootstrapCompiler__ primitiveFailed
-        };
-        withSelector: #> addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: Boolean |
-            <pure>
-            <primitive: #"primitiveInteger.comparison.greaterThan">
-            __BootstrapCompiler__ primitiveFailed
-        };
-        withSelector: #>= addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: Boolean |
-            <pure>
-            <primitive: #"primitiveInteger.comparison.greaterOrEqual">
-            __BootstrapCompiler__ primitiveFailed
-        };
-
-        withSelector: #asString addMethod: {:(Integer)self :: String |
-            <pure>
-            <primitive: #"primitiveInteger.conversion.toString">
-            __BootstrapCompiler__ primitiveFailed
-        };
-        withSelector: #printString addMethod: {:(Integer)self :: String |
-            <pure>
-            <primitive: #"primitiveInteger.conversion.toString">
-            __BootstrapCompiler__ primitiveFailed
-        }.
-}).
-
-__BootstrapCompiler__
-    enterTopLevelNamespace;
-    
-    ## The polymorphic types
-    addBasicTypeNamed: #Optional with: {:(Type)optionalType :: Type |
-        let: #sumType with: (__TypeBuilder__ newSumTypeWith: (Undefined, optionalType)).
-
-        sumType
-            withSelector: #isNil addMethod: {:(sumType)self :: Boolean |
-                <pure>
-                self __typeSelector__ = 0sz
-            };
-            withSelector: #isNotNil addMethod: {:(sumType)self :: Boolean |
-                <pure>
-                self __typeSelector__ ~= 0sz
-            };
-            withSelector: #_ addMethod: {:(sumType)self :: optionalType |
-                <pure>
-                self get: optionalType
-            };
-            withSelector: #value addMethod: {:(sumType)self :: optionalType |
-                <pure>
-                self get: optionalType
-            }.
-        sumType
-    } templated;
-
-    addBasicTypeNamed: #Array with: {:(Type)elementType :(Size)bounds :: Type |
-        let: #arrayType with: (__TypeBuilder__ newArrayTypeFor: elementType withBounds: bounds).
-        arrayType
-            withSelector: #asArraySlice addMethod: {:(arrayType)self :: ArraySlice(elementType) |
-                <pure>
-                ArraySlice(elementType) basicNewWithNamedSlots: #{
-                    elements: self.
-                    size: bounds
-                }
-            };
-            withSelector: #asSharedArraySlice addMethod: {:(arrayType)self :: SharedArraySlice(elementType) |
-                <pure>
-                ## TODO: Make a shared copy if needed.
-                SharedArraySlice(elementType) basicNewWithNamedSlots: #{
-                    elements: self.
-                    size: bounds.
-                    storage: self
-                }
-            };
-            withSelector: #basicAt: addMethod: {:(arrayType)self :(Size)index :: elementType |
-                <pure>
-                <primitive: #"array.basicAt">
-                __BootstrapCompiler__ primitiveFailed
-            };
-            withSelector: #basicAt:put: addMethod: {:(arrayType)self :(Size)index :(elementType)value :: elementType |
-                <primitive: #"array.basicAtPut">
-                __BootstrapCompiler__ primitiveFailed
-            };
-            withSelector: #size addMethod: {:(arrayType)self :: Size |
-                <pure>
-                bounds
-            }.
-        arrayType
-    } templated;
-
-    addBasicTypeNamed: #Pointer with: {:(Type)elementType :(Symbol)addressSpace :: Type |
-        let: #pointerType with: (__TypeBuilder__ newPointerTypeFor: elementType addressSpace: addressSpace).
-
-        pointerType __type__
-            withSelector: #allocate: addMethod: {:(pointerType __type__)self :(Size)count :: pointerType |
-                <pure>
-                <primitive: #"pointer.allocateWithCount">
-                __BootstrapCompiler__ primitiveFailed
-            };
-            withSelector: #allocate addMethod: {:(pointerType __type__)self :: pointerType |
-                <pure>
-                self allocate: 1
-            }.
-
-        pointerType
-            withSelector: #basicAt: addMethod: {:(pointerType)self :(Size)index :: elementType |
-                <pure>
-                <primitive: #"pointer.basicAt">
-                __BootstrapCompiler__ primitiveFailed
-            };
-            withSelector: #basicAt:put: addMethod: {:(pointerType)self :(Size)index :(elementType)value :: elementType |
-                <primitive: #"pointer.basicAtPut">
-                __BootstrapCompiler__ primitiveFailed
-            }.
-
-        pointerType
-    } templated;
-    addBasicTypeNamed: #SharedPointer with: {:(Type)elementType :: Type |
-        Pointer(elementType, #shared)
-    };
-
-    addBasicTypeNamed: #ArraySlice with: {:(Type)elementType :: Type |
-        let: #arraySliceType with: (__TypeBuilder__ newRecordTypeWith: #{
-            elements: Pointer(elementType, #generic).
-            size: Size.
-        }).
-
-        arraySliceType
-            addTypeFlag: #arraySlice;
-            withSelector: #isEmpty addMethod: {:(arraySliceType)self :: Boolean |
-                <pure>
-                self size = 0sz
-            };
-            withSelector: #isNotEmpty addMethod: {:(arraySliceType)self :: Boolean |
-                <pure>
-                self size ~= 0sz
-            };
-            withSelector: #basicAt: addMethod: {:(arraySliceType)self :(Size)index :: elementType |
-                <pure>
-                self elements basicAt: index
-            };
-            withSelector: #basicAt:put: addMethod: {:(arraySliceType)self :(Size)index :(elementType)element :: elementType |
-                self elements basicAt: index put: element
-            };
-            withSelector: #first addMethod: {:(arraySliceType)self :: elementType |
-                <pure>
-                self basicAt: 0sz
-            };
-            withSelector: #last addMethod: {:(arraySliceType)self :: elementType |
-                <pure>
-                self basicAt: self size - 1sz
-            };
-            withSelector: #collect: addMethod: {:(arraySliceType)self :*(Type)ResultType :(elementType => ResultType)block :: SharedArraySlice(ResultType) |
-                <pure>
-                <primitive: #"arraySlice.collect">
-                __BootstrapCompiler__ primitiveFailed
-            };
-            withSelector: #collectWithIndex: addMethod: {:(arraySliceType)self :*(Type)ResultType :((elementType -- Size) => ResultType)block :: SharedArraySlice(ResultType) |
-                <pure>
-                <primitive: #"arraySlice.collectWithIndex">
-                __BootstrapCompiler__ primitiveFailed
-            };
-            withSelector: #do: addMethod: {:(arraySliceType)self :((elementType) => Void)block :: Void |
-                <pure>
-                let: #index with: (Size valueBox with: 0sz).                
-                while: index _ < self size do: {
-                    block(self basicAt: index _).
-                } continueWith: (index _: index _ + 1sz).
-                void
-            }.
-        arraySliceType
-    } templated;
-    addBasicTypeNamed: #AnyArraySlice with: ArraySlice(AnyValue);
-
-    addBasicTypeNamed: #SharedArraySlice with: {:(Type)elementType :: Type |
-        let: #storagePointerType with: SharedPointer(elementType).
-        let: #sharedArraySliceType with: (__TypeBuilder__ newRecordTypeWithSupertype: ArraySlice(elementType) with: #{
-            storage: storagePointerType
-        }).
-
-        sharedArraySliceType addTypeFlag: #arraySlice.
-        sharedArraySliceType __type__
-            withSelector: #allocate: addMethod: {:(sharedArraySliceType)self :(Size)size :: sharedArraySliceType |
-                <pure>
-                let: #storage with: (storagePointerType allocate: size).
-                sharedArraySliceType basicNewWithNamedSlots: #{
-                    elements: storage.
-                    size: size.
-                    storage: storage
-                }.
-            };
-            withSelector: #with: addMethod: {:(sharedArraySliceType)self :(elementType)first :: sharedArraySliceType |
-                <pure>
-                let: #result with: (storagePointerType allocate: 1sz).
-                result
-                    at: 0sz put: first;
-                    yourself
-            };
-            withSelector: #with:with: addMethod: {:(sharedArraySliceType)self :(elementType)first :(elementType)second :: sharedArraySliceType |
-                <pure>
-                let: #result with: (self allocate: 2sz).
-                result
-                    basicAt: 0sz put: first;
-                    basicAt: 1sz put: second;
-                    yourself
-            }.
-
-        sharedArraySliceType
-    } templated;
-    addBasicTypeNamed: #AnySharedArraySlice with: SharedArraySlice(AnyValue);
-
-    addBasicTypeNamed: #Association with: {:(Type)key :(Type)value :: Type |
-        __TypeBuilder__ newRecordTypeWith: #{
-            key: key.
-            value: value.
-        }
-    } templated;
-    addBasicTypeNamed: #AnyAssociation with: Association(AnyValue, AnyValue);
-
-    addBasicTypeNamed: #ArrayDictionary with: {:(Type)keyType :(Type)valueType :: Type |
-        __TypeBuilder__ newRecordTypeWith: #{
-            associationList: ArraySlice(Association(keyType, valueType)).
-            hashTable: ArraySlice(UInt32).
-        }
-    } templated;
-    addBasicTypeNamed: #AnyArrayDictionary with: ArrayDictionary(AnyValue, AnyValue);
-
-    addBasicTypeNamed: #ArrayList with: {:(Type)elementType :: Type |
-        __TypeBuilder__ newGCClassWithSlots: #{
-            size: Size.
-            storage: ArraySlice(elementType)
-        }
-    } templated;
-    addBasicTypeNamed: #AnyArrayList with: ArrayList(AnyValue);
-
-    addBasicTypeNamed: #Tuple with: {:*(Size)N :(Type array: N)elementTypes :: Type |
-        let: #tupleSize with: elementTypes size.
-        let: #tupleType with: (__TypeBuilder__ newProductTypeWith: elementTypes).
-        tupleType __type__
-            withSelector: #-- addMethod: {:(Type)self :(Type)nextType :: Type |
-                <override>
-                __TypeBuilder__ extendTupleType: self with: nextType
-            };
-            withSelector: #=> addMethod: {:(Type)self :(Type)resultType :: Type |
-                <override>
-                __TypeBuilder__ newSimpleFunctionTypeWithArguments: self resultType: resultType
-            }.
-
-        tupleType
-            withSelector: #at: addMethod: {:(tupleType)self :(Size)elementIndex :: (elementTypes at: elementIndex) |
-                <pure>
-                <primitive: #"tuple.accessing.at">
-                __BootstrapCompiler__ primitiveFailed
-            };
-            withSelector: #at:put: addMethod: {:(tupleType)self :(Size)elementIndex :(elementTypes at: elementIndex)element :: (elementTypes at: elementIndex) |
-                <pure>
-                <primitive: #"tuple.accessing.atPut">
-                __BootstrapCompiler__ primitiveFailed
-            };
-            withSelector: #size addMethod: {:(tupleType)self :: Size |
-                <pure>
-                tupleSize
-            }.
-        tupleType
-    } templated;
-
-    addBasicTypeNamed: #ValueBox with: {:(Type)elementType :: Type |
-        let: #valueBoxType with: (__TypeBuilder__ newRecordTypeWith: #{
-            _: elementType
-        }).
-        valueBoxType __type__
-            withSelector: #with: addMethod: {:(valueBoxType __type__)self :(elementType)value :: self |
-                self basicNewWithNamedSlots: #{
-                    _: value
-                }
-            }.
-        valueBoxType
-    } templated;
-    addBasicTypeNamed: #AnyValueBox with: ArrayList(AnyValue).
-
-## String primitive methods
-String
-    withSelector: #-- addMethod: {:(String)self :(String)other :: String |
-        <pure>
-        <primitive: #"string.concat">
-        __BootstrapCompiler__ primitiveFailed
-    };
-    withSelector: #format: addMethod: {:(String)self :(String arraySlice)parameters :: String |
-        <pure>
-        <primitive: #"string.format">
-        __BootstrapCompiler__ primitiveFailed
-    };
-    withSelector: #asSymbol addMethod: {:(String)self :: Symbol |
-        <pure>
-        <primitive: #"symbol.internString">
-        __BootstrapCompiler__ primitiveFailed
-    };
-    withSelector: #asString addMethod: {:(String)self :: String |
-        <pure>
-        self
-    };
-    withSelector: #printString addMethod: {:(String)self :: String |
-        <pure>
-        <primitive: #"string.conversion.printString">
-        self
-    }.
-
-Symbol
-    withSelector: #asString addMethod: {:(Integer)self :: String |
-        <pure>
-        <primitive: #"symbol.conversion.toString">
-        __BootstrapCompiler__ primitiveFailed
-    };
-    withSelector: #printString addMethod: {:(Integer)self :: String |
-        <pure>
-        <primitive: #"symbol.conversion.printString">
-        __BootstrapCompiler__ primitiveFailed
-    }.
-
-## Basic type system methods.
-Type
-    withSelector: #-- addMethod: {:(Type)self :(Type)second :: Type |
-        <pure>
-        <virtual>
-        __TypeBuilder__ newPairType: self with: second
-    };
-    withSelector: #=> addMethod: {:(Type)self :(Type) resultType :: Type |
-        <pure>
-        <virtual>
-        __TypeBuilder__ newSimpleFunctionTypeWithArgument: self resultType: resultType
-    }.
-
-Void __type__
-    withSelector: #=> addMethod: {:(Type)self :(Type) resultType :: Type |
-        <pure>
-        <override>
-        __TypeBuilder__ newSimpleFunctionTypeWithResultType: resultType
-    }.
-
-## Basic type system methods.
-MetaType
-    withSelector: #"[]" addMethod: {:(Type)self :: Type |
-        <pure>
-        Array(self, 0)
-    };
-    withSelector: #"[]" addMethod: {:(Type)self :(Size)bounds :: Type |
-        <pure>
-        Array(self, bounds)
-    };
-    withSelector: #optional addMethod: {:(Type)self :: Type |
-        <pure>
-        Optional(self)
-    };
-    withSelector: #array addMethod: {:(Type)self :: Type |
-        <pure>
-        Array(self, 0)
-    };
-    withSelector: #array: addMethod: {:(Type)self :(Size)bounds :: Type |
-        <pure>
-        Array(self, bounds)
-    };
-    withSelector: #arraySlice addMethod: {:(Type)self :: Type |
-        <pure>
-        ArraySlice(self)
-    };
-    withSelector: #sharedArraySlice addMethod: {:(Type)self :: Type |
-        <pure>
-        SharedArraySlice(self)
-    };
-    withSelector: #arrayList addMethod: {:(Type)self :: Type |
-        <pure>
-        ArrayList(self)
-    };
-    withSelector: #valueBox addMethod: {:(Type)self :: Type |
-        <pure>
-        ValueBox(self)
-    }.
-
-## Basic methods.
-AnyValue
-    withSelector: #isNil addMethod: {:(Undefined)self :: Boolean |
-        <pure>
-        <virtual>
-        false
-    };
-    withSelector: #isNotNil addMethod: {:(Undefined)self :: Boolean |
-        <pure>
-        <virtual>
-        true
-    }.
-
-Undefined
-    withSelector: #isNil addMethod: {:(Undefined)self :: Boolean |
-        <pure>
-        <override>
-        true
-    };
-    withSelector: #isNotNil addMethod: {:(Undefined)self :: Boolean |
-        <pure>
-        <override>
-        false
-    }.
-
-Type definePublicSlots: #{
-    name: String optional.
-    supertype: Type optional.
-    schema: Reflection TypeSchema.
-}.
 
 ## Semantic analysis types.
 __BootstrapCompiler__
@@ -814,7 +39,7 @@ __BootstrapCompiler__
     addBindingNamed: #EmptySourcePosition with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection SourcePosition publicSlots: #{});
 
     enterNamespaceNamed: #AST;
-    
+
     addBindingNamed: #Node with: (__TypeBuilder__ newGCClassWithSuperclass: Object publicSlots: #{
         sourcePosition: Reflection SourcePosition.
         analyzedType: Type optional
@@ -844,7 +69,7 @@ __BootstrapCompiler__
         value: AnyValue
     });
     addBindingNamed: #IdentifierReferenceNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
-        value: AnyValue.
+        value: Object.
         binding: SysmelCompiler Semantic SymbolBinding optional.
     });
 
@@ -863,7 +88,7 @@ __BootstrapCompiler__
         receiver: Reflection AST Node optional.
         selector: Reflection AST Node.
         arguments: Reflection AST Node sharedArraySlice.
-        boundMethod: AnyValue optional.
+        boundMethod: Object optional.
         usesDynamicDispatch: Boolean.
     });
     addBindingNamed: #MessageChainNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
@@ -907,14 +132,14 @@ __BootstrapCompiler__
         continueExpression: Reflection AST Node optional.
     });
     addBindingNamed: #VariableDefinitionNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
-        nameExpression: Reflection AST Node.
+        nameExpression: Reflection AST Node optional.
         typeExpression: Reflection AST Node optional.
         initialValueExpression: Reflection AST Node optional.
         isMutable: Boolean.
         hasReferenceTypeInference: Boolean.
         hasDirectTypeInference: Boolean.
 
-        analyzedSymbol: AnyValue optional.
+        analyzedSymbol: Object optional.
         analyzedExpectedValueType: Type optional.
         analyzedVariable: Reflection LocalVariable optional.
     });
@@ -987,14 +212,14 @@ __BootstrapCompiler__
 
     addBindingNamed: #FunctionSignatureAnalyzer with: (__TypeBuilder__ newGCClassWithSuperclass: Object publicSlots: #{});
     addBindingNamed: #SymbolValueBinding with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler Semantic SymbolBinding publicSlots: #{
-        name: AnyValue.
+        name: Object.
         value: AnyValue
     });
     addBindingNamed: #SymbolVariableBinding with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler Semantic SymbolBinding publicSlots: #{
         variable: Reflection Variable
     });
     addBindingNamed: #ForAllPlaceholderBinding with: (__TypeBuilder__ newGCClassWithSuperclass: SysmelCompiler Semantic SymbolBinding publicSlots: #{
-        name: AnyValue.
+        name: Object.
         value: AnyValue.
         expectedType: Type.
     });
@@ -1051,6 +276,9 @@ Reflection AST Node
     };
     withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST Node)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
         __BootstrapCompiler__ subclassResponsibility
+    };
+    withSelector: #asCollapsedNodeWith: addMethod: {:(Reflection AST Node)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+        self
     };
     withSelector: #evaluateNodeWith: addMethod: {:(Reflection AST Node)self :(SysmelCompiler Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         __BootstrapCompiler__ subclassResponsibility
@@ -1415,7 +643,12 @@ Reflection AST LocalVariableDefinitionNode
             analyzer makeSemanticAnalysisError: "Immutable local variable definition requires an initial value." atNode: self
         } else: {
             let: #analyzedNode with: self shallowCopy.
-            let: #name with: (self nameExpression analyzeAndEvaluateNodeWith: analyzer).
+            let: #name with: (if: self nameExpression isNotNil
+                then: (self nameExpression _ analyzeAndEvaluateNodeWith: analyzer)
+                else: (AnonymousSymbol basicNewWithNamedSlots: #{
+                    sourcePosition: self sourcePosition
+                })
+            ).
             let: #sanitizedName with: name.
             let: #hasError with: (ValueBox(Boolean) with: false).
 
@@ -1465,7 +698,8 @@ Reflection AST LocalVariableDefinitionNode
 
             analyzedNode
                 analyzedType: variableReferenceType;
-                analyzedVariable: variable.
+                analyzedVariable: variable;
+                analyzedSymbol: sanitizedName.
 
             analyzedNode
         }
@@ -1516,11 +750,11 @@ Reflection AST UnwrapAnyValueNode
     }.
 
 SysmelCompiler Semantic IdentifierLookupScope
-    withSelector: #lookupSymbol: addMethod: {:(SysmelCompiler Semantic IdentifierLookupScope)self :(AnyValue)symbol :: SysmelCompiler Semantic SymbolBinding optional |
+    withSelector: #lookupSymbol: addMethod: {:(SysmelCompiler Semantic IdentifierLookupScope)self :(Object)symbol :: SysmelCompiler Semantic SymbolBinding optional |
         <primitive: #"identifierLookupScope.lookupSymbol">
         __BootstrapCompiler__ primitiveFailed
     };
-    withSelector: #lookupSymbolRecursively: addMethod: {:(SysmelCompiler Semantic IdentifierLookupScope)self :(AnyValue)symbol :: SysmelCompiler Semantic SymbolBinding optional |
+    withSelector: #lookupSymbolRecursively: addMethod: {:(SysmelCompiler Semantic IdentifierLookupScope)self :(Object)symbol :: SysmelCompiler Semantic SymbolBinding optional |
         <primitive: #"identifierLookupScope.lookupSymbolRecursively">
         __BootstrapCompiler__ primitiveFailed
     };
@@ -1530,15 +764,15 @@ SysmelCompiler Semantic IdentifierLookupScope
     }.
 
 SysmelCompiler Semantic LexicalScope
-    withSelector: #setSymbol:binding: addMethod: {:(SysmelCompiler Semantic LexicalScope)self :(AnyValue)symbol :(SysmelCompiler Semantic SymbolBinding)binding :: Void |
+    withSelector: #setSymbol:binding: addMethod: {:(SysmelCompiler Semantic LexicalScope)self :(Object)symbol :(SysmelCompiler Semantic SymbolBinding)binding :: Void |
         <primitive: #"lexicalScope.setSymbolBinding">
         __BootstrapCompiler__ primitiveFailed
     };
-    withSelector: #setSymbol:immutableValue: addMethod: {:(SysmelCompiler Semantic LexicalScope)self :(AnyValue)symbol :(AnyValue)immutableValue :: Void |
+    withSelector: #setSymbol:immutableValue: addMethod: {:(SysmelCompiler Semantic LexicalScope)self :(Object)symbol :(AnyValue)immutableValue :: Void |
         <primitive: #"lexicalScope.setSymbolImmutableValue">
         __BootstrapCompiler__ primitiveFailed
     };
-    withSelector: #setSymbol:variableBinding: addMethod: {:(SysmelCompiler Semantic LexicalScope)self :(AnyValue)symbol :(Reflection Variable)variable :: Void |
+    withSelector: #setSymbol:variableBinding: addMethod: {:(SysmelCompiler Semantic LexicalScope)self :(Object)symbol :(Reflection Variable)variable :: Void |
         self setSymbol: symbol binding: (SysmelCompiler Semantic SymbolVariableBinding basicNewWithNamedSlots: #{
             variable: variable
         })
@@ -1649,17 +883,19 @@ SysmelCompiler Semantic DirectAutoTypeInferenceEnvironment
 
 SysmelCompiler Semantic ReferenceAutoTypeInferenceEnvironment
     withSelector: #solveAnalyzedNodeType:with: addMethod: {:(SysmelCompiler Semantic TypeInferenceEnvironment)self :(Reflection AST Node)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
-        analyzer addImplicitCoercionTo: node analyzedType _ asReferenceDecayedType node: node
+        let: #collapsedNode with: (node asCollapsedNodeWith: analyzer).
+        analyzer addImplicitCoercionTo: collapsedNode analyzedType _ asReferenceDecayedType node: collapsedNode
     }.
 
 SysmelCompiler Semantic AutoTypeInferenceEnvironment
     withSelector: #solveAnalyzedNodeType:with: addMethod: {:(SysmelCompiler Semantic TypeInferenceEnvironment)self :(Reflection AST Node)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Reflection AST Node  |
-        analyzer addImplicitCoercionTo: node analyzedType _ asDecayedType node: node
+        let: #collapsedNode with: (node asCollapsedNodeWith: analyzer).
+        analyzer addImplicitCoercionTo: collapsedNode analyzedType _ asDecayedType node: collapsedNode
     }.
 
 SysmelCompiler Semantic ExpectedTypeInferenceEnvironment
     withSelector: #solveAnalyzedNodeType:with: addMethod: {:(SysmelCompiler Semantic TypeInferenceEnvironment)self :(Reflection AST Node)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Reflection AST Node  |
-        analyzer addImplicitCoercionTo: self expectedType node: node
+        analyzer addImplicitCoercionTo: self expectedType node: (node asCollapsedNodeWith: analyzer).
     }.
 
 SysmelCompiler Semantic ASTAnalyzer
@@ -1679,7 +915,14 @@ SysmelCompiler Semantic ASTAnalyzer
         }.
     };
 
-    withSelector: #makeMacroInvocationContextForMessageSendNodeNode: addMethod: {:(SysmelCompiler Semantic ASTAnalyzer)self :(Reflection AST MessageSendNode)node :: MacroInvocationContext |
+    withSelector: #makeMacroInvocationContextForIdentifierReferenceNode: addMethod: {:(SysmelCompiler Semantic ASTAnalyzer)self :(Reflection AST IdentifierReferenceNode)node :: MacroInvocationContext |
+        MacroInvocationContext basicNewWithNamedSlots: #{
+            sourcePosition: node sourcePosition.
+            selfType: Void.
+            astAnalyzer: self
+        }
+    };
+    withSelector: #makeMacroInvocationContextForMessageSendNode: addMethod: {:(SysmelCompiler Semantic ASTAnalyzer)self :(Reflection AST MessageSendNode)node :: MacroInvocationContext |
         MacroInvocationContext basicNewWithNamedSlots: #{
             sourcePosition: node sourcePosition.
             selfNode: node receiver.
@@ -1754,6 +997,9 @@ Type
         __BootstrapCompiler__ primitiveFailed
     };
     withSelector: #analyzeMessageSendNode:with: addMethod: {:(Type)self :(Reflection AST MessageSendNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+        self analyzeNormalMessageSendNode: node with: analyzer
+    };
+    withSelector: #analyzeNormalMessageSendNode:with: addMethod: {:(Type)self :(Reflection AST MessageSendNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
         if: node selector isLiteralValueNode then: {
             let: #selector with: (node selector evaluateLiteralValue).
             let: #method with: (self lookupSelector: selector).
@@ -1791,7 +1037,7 @@ Type
             usesDynamicDispatch: true;
             yourself
     };
-    withSelector: #analyzeIdentifierReferenceNode:with:valueBinding: addMethod: {:(SysmelCompiler Semantic SymbolValueBinding)self :(Reflection AST IdentifierReferenceNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :(SysmelCompiler Semantic SymbolValueBinding)binding :: Reflection AST Node |
+    withSelector: #analyzeIdentifierReferenceNode:with:valueBinding: addMethod: {:(Type)self :(Reflection AST IdentifierReferenceNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :(SysmelCompiler Semantic SymbolValueBinding)binding :: Reflection AST Node |
         Reflection AST LiteralValueNode basicNewWithNamedSlots: #{
             sourcePosition: node sourcePosition.
             analyzedType: self.
@@ -1923,6 +1169,21 @@ Function __type__
     };
     withSelector: #analyzeMessageSendNode:with:valueBinding: addMethod: {:(Function __type__)self :(Reflection AST MessageSendNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :(SysmelCompiler Semantic SymbolValueBinding)binding :: Reflection AST Node |
         binding value analyzeMessageSendNode: node with: analyzer
+    };
+    withSelector: #analyzeIdentifierReferenceNode:with:valueBinding: addMethod: {:(Function __type__)self :(Reflection AST IdentifierReferenceNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :(SysmelCompiler Semantic SymbolValueBinding)binding :: Reflection AST Node |
+        if: binding value hasMacroFlag & binding value hasMessageMethodFlag then: {
+            analyzer analyzeNodeIfNeededWithCurrentExpectedType: (binding value
+                run: node value
+                with: AnyValue arraySlice basicNew
+                in: (analyzer makeMacroInvocationContextForIdentifierReferenceNode: node)
+            )
+        } else: {
+            Reflection AST LiteralValueNode basicNewWithNamedSlots: #{
+                sourcePosition: node sourcePosition.
+                analyzedType: self.
+                value: binding value
+            }
+        }
     }.
 
 SysmelCompiler Semantic FunctionSignatureAnalyzer
@@ -1982,7 +1243,7 @@ Function
             analyzer analyzeNodeIfNeededWithCurrentExpectedType: (self
                 run: (node selector analyzeAndEvaluateNodeWith: analyzer)
                 with: node arguments
-                in: (analyzer makeMacroInvocationContextForMessageSendNodeNode: node)
+                in: (analyzer makeMacroInvocationContextForMessageSendNode: node)
             )
         } else: {
             let: #signatureAnalyzer with: self __type__ makeFunctionSignatureAnalyzer.
@@ -2052,138 +1313,3 @@ Function
     withSelector: #usesDynamicDispatch addMethod: {:(Function)self :: Boolean |
         self hasDynamicDispatchFlag & self hasFinalFlag not 
     }.
-
-__BootstrapCompiler__
-    enterTopLevelNamespace;
-    addBindingNamed: #if:then:else: with: {:(MacroInvocationContext)macroSelf :(Reflection AST Node)condition :(Reflection AST Node)trueExpression :(Reflection AST Node)falseExpression :: (Reflection AST IfTrueIfFalseNode) |
-        <macro>
-        (Reflection AST IfTrueIfFalseNode basicNewWithNamedSlots: #{
-            sourcePosition: macroSelf sourcePosition.
-            condition: condition.
-            trueExpression: trueExpression.
-            falseExpression: falseExpression.
-        })
-    };
-    addBindingNamed: #if:then: with: {:(MacroInvocationContext)macroSelf :(Reflection AST Node)condition :(Reflection AST Node)trueExpression :: (Reflection AST IfTrueIfFalseNode) |
-        <macro>
-        (Reflection AST IfTrueIfFalseNode basicNewWithNamedSlots: #{
-            sourcePosition: macroSelf sourcePosition.
-            condition: condition.
-            trueExpression: trueExpression.
-        })
-    };
-    addBindingNamed: #while:do:continueWith: with: {:(MacroInvocationContext)macroSelf :(Reflection AST Node)condition :(Reflection AST Node)bodyExpression :(Reflection AST Node)continueExpression :: (Reflection AST WhileDoContinueNode) |
-        <macro>
-        (Reflection AST WhileDoContinueNode basicNewWithNamedSlots: #{
-            sourcePosition: macroSelf sourcePosition.
-            condition: condition.
-            bodyExpression: bodyExpression.
-            continueExpression: continueExpression
-        })
-    };
-    addBindingNamed: #while:do: with: {:(MacroInvocationContext)macroSelf :(Reflection AST Node)condition :(Reflection AST Node)bodyExpression :: (Reflection AST WhileDoContinueNode) |
-        <macro>
-        (Reflection AST WhileDoContinueNode basicNewWithNamedSlots: #{
-            sourcePosition: macroSelf sourcePosition.
-            condition: condition.
-            bodyExpression: bodyExpression.
-        })
-    };
-    addBindingNamed: #let:with: with: {:(MacroInvocationContext)macroSelf :(Reflection AST Node)nameExpression :(Reflection AST Node)initialValueExpression :: (Reflection AST LocalVariableDefinitionNode) |
-        <macro>
-        (Reflection AST LocalVariableDefinitionNode basicNewWithNamedSlots: #{
-            sourcePosition: macroSelf sourcePosition.
-            nameExpression: nameExpression.
-            initialValueExpression: initialValueExpression.
-        })
-    };
-    addBindingNamed: #let:type:with: with: {:(MacroInvocationContext)macroSelf :(Reflection AST Node)nameExpression :(Reflection AST Node)typeExpression :(Reflection AST Node)initialValueExpression :: (Reflection AST LocalVariableDefinitionNode) |
-        <macro>
-        (Reflection AST LocalVariableDefinitionNode basicNewWithNamedSlots: #{
-            sourcePosition: macroSelf sourcePosition.
-            nameExpression: nameExpression.
-            typeExpression: typeExpression;
-            initialValueExpression: initialValueExpression.
-        })
-    }.
-
-
-if: true then: {
-__BootstrapCompiler__
-    print: false;
-    print: true;
-    print: nil;
-    print: Boolean basicNew;
-    print: (Boolean basicNew: false);
-    print: (Boolean basicNew: true);
-
-    print: 1 + 1;
-    print: 2 * 3;
-    print: 6 // 3;
-
-    print: 2 = 2;
-
-    print: "Some number: " -- 1 asString;
-    print: ("Some number: {0} " format: (1 asString,));
-
-    print: ((Integer array: 3sz) basicNewWithSlots: (1, 2, 3)) asArraySlice;
-    print: (((Integer array: 3sz) basicNewWithSlots: (1, 2, 3)) asArraySlice collect: {:(Integer)x :: Size |
-        x sz
-    });
-    print: (((Integer array: 3sz) basicNewWithSlots: (1, 2, 3)) asArraySlice collectWithIndex: {:(Integer)x :(Size)index :: Size |
-        index
-    });
-
-    print: Reflection SourcePosition basicNew;
-    print: (Reflection AST Node basicNewWithNamedSlots: #{
-        sourcePosition: Reflection SourcePosition basicNew
-    });
-    print: Int32 basicNew;
-    print: (Int32 basicNew: -42);
-    print: SysmelCompiler Semantic ASTAnalyzer __type__;
-
-    print: (`'1 analyzeNodeIfNeededWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
-    print: (`'1 analyzeAndEvaluateNodeWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
-
-    print: (`'(1 + 1) analyzeNodeIfNeededWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
-    print: (`'(1 + 1) analyzeAndEvaluateNodeWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
-
-    print: (`'{} analyzeNodeIfNeededWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
-    print: (`'{} analyzeAndEvaluateNodeWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
-
-    print: (`'{1 . 1 + 1} analyzeNodeIfNeededWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
-    print: (`'{1 . 1 + 1} analyzeAndEvaluateNodeWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
-
-    print: (`'(1 negated) analyzeNodeIfNeededWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
-
-    print: (`'(if: true then: 1 else: 2) analyzeNodeIfNeededWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
-    print: (`'(if: true then: 1 else: 2) analyzeAndEvaluateNodeWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
-    print: (`'(if: false then: 1 else: 2) analyzeAndEvaluateNodeWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
-
-    print: (`'(if: true then: 1) analyzeNodeIfNeededWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
-    print: (`'(if: false then: 1) analyzeAndEvaluateNodeWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
-
-    print: (`'{let: #testVar with: 1 . testVar} analyzeNodeIfNeededWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
-    print: (`'{let: #testVar with: 1 . testVar} analyzeAndEvaluateNodeWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
-    ##print: (`'(let: #testVar type: Int32 with: 1s32) analyzeNodeIfNeededWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
-
-    print: nil isNil;
-    print: nil isNotNil;
-
-    print: Int32 -- Int32;
-    print: Int32 -- Int32 -- Int32;
-    print: Void => Void;
-    print: (Int32 -- Int32) => Void;
-    print: (Int32 -- Int32 -- Int32) => Void;
-    print: Float32 -- Int32 -- Float64.
-
-if: true then: {
-    __BootstrapCompiler__ print: "then branch"
-} else: {
-    __BootstrapCompiler__ print: "else branch"
-}.
-} else: {}.
-
-## At the end of this phase we can enable the actual type system.
-__BootstrapCompiler__
-    enableTypeSystem

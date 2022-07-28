@@ -27,6 +27,7 @@ MethodFlagPragmas = [
     'macro',
     'messageMethod',
     'fallback',
+    'metabuilder',
 
     ## Side effects
     'const',
@@ -268,6 +269,18 @@ class PTAssignment(PTNode):
 
     def isAssignment(self):
         return True
+
+    def convertIntoGenericASTWith(self, bootstrapCompiler):
+        sourcePosition = bootstrapCompiler.convertASTSourcePosition(self.sourcePosition)
+        return bootstrapCompiler.makeASTNodeWithSlots('MessageSendNode',
+            sourcePosition = sourcePosition,
+            selector = bootstrapCompiler.makeASTNodeWithSlots('LiteralValueNode',
+                sourcePosition = sourcePosition,
+                value = Symbol(':=')
+            ),
+            receiver = self.reference.convertIntoGenericASTWith(bootstrapCompiler),
+            arguments = bootstrapCompiler.makeASTNodeArraySlice([self.value.convertIntoGenericASTWith(bootstrapCompiler)])
+        )
 
 class PTBinaryExpression(PTNode):
     def __init__(self, operation, left, right):

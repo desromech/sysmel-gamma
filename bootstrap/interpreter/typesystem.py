@@ -506,6 +506,9 @@ class Association(TypedValue):
     def shallowCopy(self):
         return Association(self.key.shallowCopy, self.value.shallowCopy)
 
+class ListValueMock(list, TypedValue):
+    pass
+
 class Dictionary(list, TypedValue):
 
     @classmethod
