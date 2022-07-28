@@ -404,7 +404,7 @@ class PTKeywordMessage(PTNode):
             boundMessage = environment.lookupSymbolRecursively(selector)
             if boundMessage is None:
                 self.raiseEvaluationError('Failed to lookup message without receiver and selector %s.' % selector)
-            boundMessage = boundMessage.lookupgetSymbolBindingReferenceValue()
+            boundMessage = boundMessage.getSymbolBindingReferenceValue()
             arguments = list(map(lambda arg: arg.evaluateWithEnvironment(machine, environment), self.arguments))
             return boundMessage.runWithIn(machine, selector, arguments, environment)
 

@@ -529,8 +529,11 @@ __BootstrapCompiler__
             };
             withSelector: #do: addMethod: {:(arraySliceType)self :((elementType) => Void)block :: Void |
                 <pure>
-                <primitive: #"arraySlice.do">
-                __BootstrapCompiler__ primitiveFailed
+                let: #index with: (Size valueBox with: 0sz).                
+                while: index _ < self size do: {
+                    block(self basicAt: index _).
+                } continueWith: (index _: index _ + 1sz).
+                void
             }.
         arraySliceType
     } templated;
@@ -629,7 +632,7 @@ __BootstrapCompiler__
     } templated;
 
     addBasicTypeNamed: #ValueBox with: {:(Type)elementType :: Type |
-        let: #valueBoxType with: (__TypeBuilder__ newGCClassWithSuperclass: Object publicSlots: #{
+        let: #valueBoxType with: (__TypeBuilder__ newRecordTypeWith: #{
             _: elementType
         }).
         valueBoxType __type__

@@ -2077,16 +2077,6 @@ class ArraySlicePrimitives:
         collectedElements = resultArrayType.basicNewWithSequentialSlots(list(map(lambda index: aBlock(elements[Integer(index)], indexType.basicNewWithValue(index)), range(size.asInteger()))))
         return collectedElements.asSharedArraySlice()
 
-    @primitiveNamed('arraySlice.do')
-    def do(arraySlice, aBlock):
-        elements = arraySlice.getSlotNamed('elements')
-        size = arraySlice.getSlotNamed('size')
-
-        result = getBasicTypeNamed(Symbol('Void')).basicNew()
-        for i in range(size.asInteger()):
-            result = aBlock(elements[Integer(i)])
-        return result
-
 def extractArraySliceElements(arraySlice):
     elements = arraySlice.getSlotNamed('elements')
     size = arraySlice.getSlotNamed('size')
