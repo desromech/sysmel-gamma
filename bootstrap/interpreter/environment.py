@@ -9,21 +9,24 @@ class IdentifierLookupScope(TypedValue):
     def getType(self):
         return getSemanticAnalysisType(Symbol.intern('IdentifierLookupScope'))
 
-    def __init__(self, parentScope):
+    def __init__(self, parent):
         super().__init__()
-        self.parentScope = parentScope
+        self.parent = parent
 
-    @primitiveNamed('identifierLookupScope.lookupSymbol')
+    def getSlotWithIndexAndName(self, slotIndex, slotName):
+        if slotName == 'parent':
+            return self.parent
+        return super().getSlotWithIndexAndName(slotIndex, slotName)
+
     def lookupSymbol(self, symbol):
         return None
 
-    @primitiveNamed('identifierLookupScope.lookupSymbolRecursively')
     def lookupSymbolRecursively(self, symbol):
         result = self.lookupSymbol(symbol)
         if result is not None:
             return result
-        elif self.parentScope is not None:
-            return self.parentScope.lookupSymbolRecursively(symbol)
+        elif self.parent is not None:
+            return self.parent.lookupSymbolRecursively(symbol)
         else:
             return None
 
@@ -35,9 +38,14 @@ class LexicalScope(IdentifierLookupScope):
     def getType(self):
         return getSemanticAnalysisType(Symbol.intern('LexicalScope'))
 
-    def __init__(self, parentScope):
-        super().__init__(parentScope)
+    def __init__(self, parent):
+        super().__init__(parent)
         self.symbolTable = SymbolTable()
+
+    def getSlotWithIndexAndName(self, slotIndex, slotName):
+        if slotName == 'symbolTable':
+            return self.symbolTable
+        return super().getSlotWithIndexAndName(slotIndex, slotName)
 
     def setSymbolValueBinding(self, symbol, value):
         self.symbolTable.setSymbolValueBinding(symbol, value)
@@ -48,29 +56,23 @@ class LexicalScope(IdentifierLookupScope):
     def setSymbolBinding(self, symbol, binding):
         self.symbolTable.setSymbolBinding(symbol, binding)
 
-    @primitiveNamed('lexicalScope.setSymbolImmutableValue')
-    def primitiveSetSymbolImmutableValue(self, symbol, value):
-        self.setSymbolImmutableValue(symbol, value)
-        return getVoidValue()
-
-    @primitiveNamed('lexicalScope.setSymbolValueBinding')
-    def primitiveSetSymbolValueBinding(self, symbol, value):
-        self.setSymbolValueBinding(symbol, value)
-        return getVoidValue()
-
-    @primitiveNamed('lexicalScope.setSymbolBinding')
-    def primitiveSetSymbolBinding(self, symbol, binding):
-        self.setSymbolBinding(symbol, binding)
-        return getVoidValue()
-
     def lookupSymbol(self, symbol):
         return self.symbolTable.lookupSymbol(symbol)
 
 class ProgramEntityLookupScope(IdentifierLookupScope):
-    def __init__(self, programEntity, parentScope):
-        super().__init__(parentScope)
+    def __init__(self, programEntity, parent):
+        super().__init__(parent)
         self.programEntity = programEntity
 
+    def getSlotWithIndexAndName(self, slotIndex, slotName):
+        if slotName == 'programEntity':
+            return self.programEntity
+        return super().getSlotWithIndexAndName(slotIndex, slotName)
+
+    @primitiveNamed('programEntityLookupScope.lookupSymbol')
+    def primitiveLookupSymbol(self, symbol):
+        return self.lookupSymbol(symbol)
+        
     def lookupSymbol(self, symbol):
         return self.programEntity.lookupScopeSymbol(symbol)
 
@@ -82,8 +84,8 @@ class NamespaceLookupScope(ProgramEntityLookupScope):
         return getSemanticAnalysisType(Symbol.intern('NamespaceLookupScope'))
 
 class ScriptEvaluationScope(LexicalScope):
-    def __init__(self, parentScope, bootstrapCompiler):
-        super().__init__(parentScope)
+    def __init__(self, parent, bootstrapCompiler):
+        super().__init__(parent)
         self.bootstrapCompiler = bootstrapCompiler
 
     def getType(self):

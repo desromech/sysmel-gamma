@@ -4,10 +4,7 @@ __BootstrapCompiler__
     enterTopLevelNamespace;
     enterNamespaceNamed: #Reflection;
     enterNamespaceNamed: #Semantic;
-    addBindingNamed: #SymbolBinding with: (__TypeBuilder__ newGCClassWithSuperclass: Object publicSlots: #{});
     addBindingNamed: #IdentifierLookupScope with: (__TypeBuilder__ newGCClassWithSuperclass: Object publicSlots: #{});
-    addBindingNamed: #LexicalScope with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection Semantic IdentifierLookupScope publicSlots: #{
-    });
     addBindingNamed: #CleanUpScope with: (__TypeBuilder__ newGCClassWithSuperclass: Object publicSlots: #{}).
 
 Reflection Semantic IdentifierLookupScope definePublicSlots: #{
@@ -17,6 +14,15 @@ Reflection Semantic IdentifierLookupScope definePublicSlots: #{
 Reflection Semantic CleanUpScope definePublicSlots: #{
     parent: Reflection Semantic CleanUpScope optional
 }.
+    
+__BootstrapCompiler__
+    enterTopLevelNamespace;
+    enterNamespaceNamed: #Reflection;
+    enterNamespaceNamed: #Semantic;
+    addBindingNamed: #LexicalScope with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection Semantic IdentifierLookupScope publicSlots: #{
+        symbolTable: Reflection SymbolTable
+    }).
+
 
 ## The AST nodes.
 __BootstrapCompiler__
@@ -70,7 +76,7 @@ __BootstrapCompiler__
     });
     addBindingNamed: #IdentifierReferenceNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
         value: Object.
-        binding: Reflection Semantic SymbolBinding optional.
+        binding: Reflection SymbolBinding optional.
     });
 
     addBindingNamed: #MakeAssociationNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
@@ -128,11 +134,11 @@ __BootstrapCompiler__
     enterNamespaceNamed: #Semantic;
 
     addBindingNamed: #FunctionSignatureAnalyzer with: (__TypeBuilder__ newGCClassWithSuperclass: Object publicSlots: #{});
-    addBindingNamed: #SymbolValueBinding with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection Semantic SymbolBinding publicSlots: #{
+    addBindingNamed: #SymbolValueBinding with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection SymbolBinding publicSlots: #{
         name: Object.
         value: AnyValue
     });
-    addBindingNamed: #ForAllPlaceholderBinding with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection Semantic SymbolBinding publicSlots: #{
+    addBindingNamed: #ForAllPlaceholderBinding with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection SymbolBinding publicSlots: #{
         name: Object.
         value: AnyValue.
         expectedType: Type.

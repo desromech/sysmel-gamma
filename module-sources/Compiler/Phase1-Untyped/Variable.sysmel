@@ -24,7 +24,7 @@ __BootstrapCompiler__
     enterTopLevelNamespace;
     enterNamespaceNamed: #Reflection;
     enterNamespaceNamed: #Semantic;
-    addBindingNamed: #SymbolVariableBinding with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection Semantic SymbolBinding publicSlots: #{
+    addBindingNamed: #SymbolVariableBinding with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection SymbolBinding publicSlots: #{
         variable: Reflection Variable
     }).
 
@@ -32,7 +32,7 @@ Reflection Variable
     withSelector: #analyzeMessageSendNode:with: addMethod: {:(Type)self :(Reflection AST MessageSendNode)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
         __BootstrapCompiler__ subclassResponsibility
     };
-    withSelector: #analyzeIdentifierReferenceNode:with: addMethod: {:(Reflection Semantic SymbolBinding)self :(Reflection AST IdentifierReferenceNode)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+    withSelector: #analyzeIdentifierReferenceNode:with: addMethod: {:(Reflection SymbolBinding)self :(Reflection AST IdentifierReferenceNode)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
         __BootstrapCompiler__ subclassResponsibility
     }.
 

@@ -77,7 +77,7 @@ class ValueInterface:
         return self.shalowCopy()
 
     def asSymbolBindingWithName(self, name):
-        if 'SymbolBinding' in SemanticAnalysisTypeMapping and self.getType().isSubtypeOf(getSemanticAnalysisType('SymbolBinding')):
+        if 'SymbolBinding' in BasicTypeEnvironment and 'MetaType' in BasicTypeEnvironment and self.getType().isSubtypeOf(getBasicTypeNamed('SymbolBinding')):
             return self
         return SymbolValueBinding(name, self)
 
@@ -210,7 +210,7 @@ def coerceNoneToNil(value):
 
 class SymbolBinding(TypedValue):
     def getType(self):
-        return getSemanticAnalysisType(Symbol.intern('SymbolBinding'))
+        return getBasicTypeNamed(Symbol.intern('SymbolBinding'))
 
     def getSymbolBindingReferenceValue(self):
         raise NotImplementedError()
@@ -1447,6 +1447,10 @@ class SymbolTable(TypedValue):
     def setSymbolBinding(self, symbol, binding):
         self.table[symbol] = binding
 
+    @primitiveNamed('symbolTable.lookupSymbol')
+    def primitiveLookupSymbol(self, symbol):
+        return self.lookupSymbol(symbol)
+
     @primitiveNamed('symbolTable.setSymbolImmutableValue')
     def primitiveSetSymbolImmutableValue(self, symbol, value):
         self.setSymbolImmutableValue(symbol, value)
@@ -1487,6 +1491,11 @@ class Namespace(ProgramEntity):
     def __init__(self, parent = None, name = None):
         super().__init__(parent = None, name = None)
         self.symbolTable = SymbolTable()
+
+    def getSlotWithIndexAndName(self, slotIndex, slotName):
+        if slotName == 'symbolTable':
+            return self.symbolTable
+        return super().getSlotWithIndexAndName(slotIndex, slotName)
 
     def lookupScopeSymbol(self, selector):
         return self.symbolTable.lookupSymbol(selector)

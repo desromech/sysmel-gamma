@@ -8,6 +8,14 @@ __BootstrapCompiler__
     }).
 
 
+Reflection Namespace
+    withSelector: #lookupPublicSymbol: addMethod: {:(Reflection Namespace)self :(Object)symbol :: Reflection SymbolBinding optional |
+        self symbolTable lookupSymbol: symbol
+    };
+    withSelector: #lookupScopeSymbol: addMethod: {:(Reflection Namespace)self :(Object)symbol :: Reflection SymbolBinding optional |
+        self symbolTable lookupSymbol: symbol
+    }.
+
 Reflection AST NamespaceDefinitionNode
     withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST NamespaceDefinitionNode)self :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
         __BootstrapCompiler__ print: "TODO: Reflection AST NamespaceDefinitionNode analyzeNodeWith:".

@@ -11,7 +11,7 @@ __BootstrapCompiler__
     }).
 
 Reflection LocalVariable
-    withSelector: #analyzeIdentifierReferenceNode:with: addMethod: {:(Reflection Semantic SymbolBinding)self :(Reflection AST IdentifierReferenceNode)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+    withSelector: #analyzeIdentifierReferenceNode:with: addMethod: {:(Reflection SymbolBinding)self :(Reflection AST IdentifierReferenceNode)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
         Reflection AST LocalVariableReferenceNode basicNewWithNamedSlots: #{
             binding: self.
             analyzedType: self referenceType

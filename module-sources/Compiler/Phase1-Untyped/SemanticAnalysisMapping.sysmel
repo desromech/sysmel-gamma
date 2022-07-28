@@ -1,6 +1,5 @@
 __BootstrapCompiler__ setSemanticAnalysisMapping: #{
     FunctionSignatureAnalyzer: Reflection Semantic FunctionSignatureAnalyzer.
-    SymbolBinding: Reflection Semantic SymbolBinding.
     SymbolValueBinding: Reflection Semantic SymbolValueBinding.
     IdentifierLookupScope: Reflection Semantic IdentifierLookupScope.
     LexicalScope: Reflection Semantic LexicalScope.

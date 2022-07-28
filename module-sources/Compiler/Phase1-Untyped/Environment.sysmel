@@ -1,25 +1,55 @@
-Reflection Semantic IdentifierLookupScope
-    withSelector: #lookupSymbol: addMethod: {:(Reflection Semantic IdentifierLookupScope)self :(Object)symbol :: Reflection Semantic SymbolBinding optional |
-        <primitive: #"identifierLookupScope.lookupSymbol">
+Reflection SymbolTable
+    withSelector: #lookupSymbol: addMethod: {:(Reflection SymbolTable)self :(Object)symbol :: Reflection SymbolBinding optional |
+        <primitive: #"symbolTable.lookupSymbol">
         __BootstrapCompiler__ primitiveFailed
     };
-    withSelector: #lookupSymbolRecursively: addMethod: {:(Reflection Semantic IdentifierLookupScope)self :(Object)symbol :: Reflection Semantic SymbolBinding optional |
-        <primitive: #"identifierLookupScope.lookupSymbolRecursively">
+    withSelector: #setSymbol:binding: addMethod: {:(Reflection SymbolTable)self :(Object)symbol :(Reflection SymbolBinding)binding :: Void |
+        <primitive: #"symbolTable.setSymbolBinding">
         __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #setSymbol:immutableValue: addMethod: {:(Reflection SymbolTable)self :(Object)symbol :(AnyValue)immutableValue :: Void |
+        <primitive: #"symbolTable.setSymbolImmutableValue">
+        __BootstrapCompiler__ primitiveFailed
+    }.
+
+Reflection Semantic IdentifierLookupScope
+    withSelector: #lookupSymbol: addMethod: {:(Reflection Semantic IdentifierLookupScope)self :(Object)symbol :: Reflection SymbolBinding optional |
+        <virtual>
+        __BootstrapCompiler__ subclassResponsibility
+    };
+    withSelector: #lookupSymbolRecursively: addMethod: {:(Reflection Semantic IdentifierLookupScope)self :(Object)symbol :: Reflection SymbolBinding optional |
+        let: #localLookupResult with: (self lookupSymbol: symbol).
+        if: localLookupResult isNotNil then: {
+            localLookupResult
+        } else: {
+            if: self parent isNotNil then: {
+                self parent _ lookupSymbolRecursively: symbol
+            } else: {
+                nil
+            }
+        }
     };
     withSelector: #makeChildLexicalScope addMethod: {:(Reflection Semantic IdentifierLookupScope)self :: Reflection Semantic LexicalScope |
         <primitive: #"identifierLookupScope.makeChildLexicalScope">
         __BootstrapCompiler__ primitiveFailed
     }.
 
+Reflection Semantic ProgramEntityLookupScope
+    withSelector: #lookupSymbol: addMethod: {:(Reflection Semantic ProgramEntityLookupScope)self :(Object)symbol :: Reflection SymbolBinding optional |
+        self programEntity lookupScopeSymbol: symbol.
+        ##<primitive: #"programEntityLookupScope.lookupSymbol">
+        ##__BootstrapCompiler__ primitiveFailed
+    }.
+
 Reflection Semantic LexicalScope
-    withSelector: #setSymbol:binding: addMethod: {:(Reflection Semantic LexicalScope)self :(Object)symbol :(Reflection Semantic SymbolBinding)binding :: Void |
-        <primitive: #"lexicalScope.setSymbolBinding">
-        __BootstrapCompiler__ primitiveFailed
+    withSelector: #lookupSymbol: addMethod: {:(Reflection Semantic LexicalScope)self :(Object)symbol :: Reflection SymbolBinding optional |
+        self symbolTable lookupSymbol: symbol
+    };
+    withSelector: #setSymbol:binding: addMethod: {:(Reflection Semantic LexicalScope)self :(Object)symbol :(Reflection SymbolBinding)binding :: Void |
+        self symbolTable setSymbol: symbol binding: binding
     };
     withSelector: #setSymbol:immutableValue: addMethod: {:(Reflection Semantic LexicalScope)self :(Object)symbol :(AnyValue)immutableValue :: Void |
-        <primitive: #"lexicalScope.setSymbolImmutableValue">
-        __BootstrapCompiler__ primitiveFailed
+        self symbolTable setSymbol: symbol immutableValue: immutableValue
     }.
 
 Reflection Semantic CleanUpScope
@@ -29,14 +59,14 @@ Reflection Semantic CleanUpScope
         }
     }.
 
-Reflection Semantic SymbolBinding
+Reflection SymbolBinding
     withSelector: #evaluateBindingWithEnvironment: addMethod: {:(Type)self :(Reflection Semantic EvaluationEnvironment)environment :: AnyValue |
         __BootstrapCompiler__ subclassResponsibility
     };
     withSelector: #analyzeMessageSendNode:with: addMethod: {:(Type)self :(Reflection AST MessageSendNode)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
         __BootstrapCompiler__ subclassResponsibility
     };
-    withSelector: #analyzeIdentifierReferenceNode:with: addMethod: {:(Reflection Semantic SymbolBinding)self :(Reflection AST IdentifierReferenceNode)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+    withSelector: #analyzeIdentifierReferenceNode:with: addMethod: {:(Reflection SymbolBinding)self :(Reflection AST IdentifierReferenceNode)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
         __BootstrapCompiler__ subclassResponsibility
     }.
 

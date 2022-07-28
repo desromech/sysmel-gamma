@@ -22,8 +22,10 @@ __BootstrapCompiler__
 
     enterTopLevelNamespace;
     enterNamespaceNamed: #Reflection;
+    addBasicTypeNamed: #SymbolBinding with: (__TypeBuilder__ newGCClassWithSuperclass: Object publicSlots: #{});
+    addBasicTypeNamed: #SymbolTable with: (__TypeBuilder__ newGCClassWithSuperclass: Object publicSlots: #{});
+    addBasicTypeNamed: #MethodDictionary with: (__TypeBuilder__ newGCClassWithSuperclass: Object publicSlots: #{});
     addBasicTypeNamed: #ProgramEntity with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
-    addBasicTypeNamed: #Namespace with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection ProgramEntity slots: #{});
 
     enterTopLevelNamespace;
     addBasicTypeNamed: #Type with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection ProgramEntity slots: #{});
@@ -762,8 +764,19 @@ Undefined
         false
     }.
 
-Type definePublicSlots: #{
+Reflection ProgramEntity definePublicSlots: #{
+    parent: Reflection ProgramEntity optional.
     name: String optional.
+}.
+
+Type definePublicSlots: #{
     supertype: Type optional.
     schema: Reflection TypeSchema.
 }.
+
+__BootstrapCompiler__
+    enterTopLevelNamespace;
+    enterNamespaceNamed: #Reflection;
+    addBasicTypeNamed: #Namespace with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection ProgramEntity slots: #{
+        symbolTable: Reflection SymbolTable
+    }).

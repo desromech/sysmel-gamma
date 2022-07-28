@@ -4,3 +4,11 @@ __BootstrapCompiler__
     enterNamespaceNamed: #AST;
     addBindingNamed: #ProgramEntityDefinitionNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
     }).
+
+Reflection Namespace
+    withSelector: #lookupPublicSymbol: addMethod: {:(Reflection Namespace)self :(Object)symbol :: Reflection SymbolBinding optional |
+        nil
+    };
+    withSelector: #lookupScopeSymbol: addMethod: {:(Reflection Namespace)self :(Object)symbol :: Reflection SymbolBinding optional |
+        nil
+    }.
