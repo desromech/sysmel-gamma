@@ -1,0 +1,59 @@
+## Let meta builder.
+__BootstrapCompiler__
+    enterTopLevelNamespace;
+    enterNamespaceNamed: #MetaProgramming;
+    addBindingNamed: #LetMetaBuilder with: (__TypeBuilder__ newGCClassWithSuperclass: MetaProgramming NamedMetaBuilder slots: #{
+        typeExpression: Reflection AST Node optional.
+        initialValueExpression: Reflection AST Node optional.
+        isMutable: Boolean.
+        hasReferenceTypeInference: Boolean.
+        hasDirectTypeInference: Boolean.
+    }).
+
+MetaProgramming LetMetaBuilder
+    withSelector: #mutable addMethod: {:(MetaProgramming LetMetaBuilder)self :: Void |
+        <metaBuilder>
+        self isMutable: true.
+        void
+    };
+    withSelector: #ref addMethod: {:(MetaProgramming LetMetaBuilder)self :: Void |
+        <metaBuilder>
+        self hasReferenceTypeInference: true.
+        void
+    };
+    withSelector: #tempRef addMethod: {:(MetaProgramming LetMetaBuilder)self :: Void |
+        <metaBuilder>
+        self hasDirectTypeInference: true.
+        void
+    };
+    withSelector: #type addMethod: {:(MetaProgramming LetMetaBuilder)self :(Reflection AST Node)typeExpression :: Void |
+        <metaBuilder>
+        self typeExpression: typeExpression.
+        void
+    };
+    withSelector: #":=" addMethod: {:(MetaProgramming LetMetaBuilder)self :(Reflection AST Node)initialValueExpression :: Void |
+        <metaBuilder>
+        self initialValueExpression: initialValueExpression.
+        self finish.
+        void
+    };
+    withSelector: #concretizeMetaBuilder addMethod: {:(MetaProgramming LetMetaBuilder)self :: Reflection AST LocalVariableDefinitionNode |
+        (Reflection AST LocalVariableDefinitionNode basicNewWithNamedSlots: #{
+            sourcePosition: self metaContext sourcePosition.
+            nameExpression: self nameExpression.
+            typeExpression: self typeExpression.
+            initialValueExpression: self initialValueExpression.
+
+            isMutable: self isMutable.
+            hasReferenceTypeInference: self hasReferenceTypeInference.
+            hasDirectTypeInference: self hasDirectTypeInference.
+        })
+    }.
+
+__BootstrapCompiler__
+    enterTopLevelNamespace;
+    addBindingNamed: #let with: {:(MacroInvocationContext)macroSelf :: Reflection AST MetaBuilderInstanceNode |
+        <macro>
+        <messageMethod>
+        MetaProgramming LetMetaBuilder nodeWithContext: macroSelf
+    }.

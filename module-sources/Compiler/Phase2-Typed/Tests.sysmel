@@ -20,6 +20,9 @@ __BootstrapCompiler__
 let: #testVar with: 42.
 testVar.
 
+let testVar2 := 42.
+testVar2.
+
 ##1 arcTan: 2.
 ##1 perform: #+ with: 2.
 

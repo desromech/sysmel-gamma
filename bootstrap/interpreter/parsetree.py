@@ -27,7 +27,7 @@ MethodFlagPragmas = [
     'macro',
     'messageMethod',
     'fallback',
-    'metabuilder',
+    'metaBuilder',
 
     ## Side effects
     'const',

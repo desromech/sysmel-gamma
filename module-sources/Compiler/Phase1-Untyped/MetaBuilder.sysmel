@@ -7,7 +7,8 @@ __BootstrapCompiler__
     enterTopLevelNamespace;
     enterNamespaceNamed: #MetaProgramming;
     addBindingNamed: #MetaBuilder with: (__TypeBuilder__ newGCClassWithSuperclass: Object publicSlots: #{
-        metaContext: MacroInvocationContext
+        metaContext: MacroInvocationContext.
+        hasFinished: Boolean.
     });
     addBindingNamed: #NamedMetaBuilder with: (__TypeBuilder__ newGCClassWithSuperclass: MetaProgramming MetaBuilder publicSlots: #{
         hasSeenName: Boolean.
@@ -59,13 +60,35 @@ MetaProgramming MetaBuilder
         self analyzeMetaBuilderDirectMessageNode: node with: analyzer
     };
     withSelector: #analyzeMetaBuilderDirectMessageNode:with: addMethod: {:(MetaProgramming MetaBuilder)self :(Reflection AST MessageSendNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
-        self analyzeMetaBuilderFailedMessageNode: node with: analyzer
+        if: node selector isLiteralValueNode then: {
+            let: #selector with: (node selector evaluateLiteralValue).
+            let: #method with: (self __type__ lookupSelector: selector).
+
+            if: (if: method isNotNil then: method hasMetaBuilderFlag else: false) then: {
+                method run: (node selector analyzeAndEvaluateNodeWith: analyzer)
+                    with: node arguments
+                    in: self.
+
+                if: self hasFinished then: {
+                    analyzer analyzeNodeIfNeededWithCurrentExpectedType: self emitResultNode
+                } else: {
+                    node receiver _
+                }
+            } else: {
+                self analyzeMetaBuilderFailedMessageNode: node with: analyzer
+            }
+        } else: {
+            self analyzeMetaBuilderFailedMessageNode: node with: analyzer
+        }
     };
     withSelector: #analyzeMetaBuilderFailedMessageNode:with: addMethod: {:(MetaProgramming MetaBuilder)self :(Reflection AST MessageSendNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
         analyzer analyzeNodeIfNeededWithCurrentExpectedType: (node shallowCopy
-            receiver: self concretizeMetaBuilder;
+            receiver: self emitResultNode;
             yourself
         )
+    };
+    withSelector: #emitResultNode addMethod: {:(MetaProgramming MetaBuilder)self :: Reflection AST Node |
+        self concretizeMetaBuilder
     };
     withSelector: #concretizeMetaBuilder addMethod: {:(MetaProgramming MetaBuilder)self :: Reflection AST Node |
         Reflection AST LiteralValueNode basicNewWithNamedSlots: #{
@@ -73,6 +96,10 @@ MetaProgramming MetaBuilder
             value: void.
             analyzedType: Void
         }
+    };
+    withSelector: #finish addMethod: {:(MetaProgramming MetaBuilder)self :: Void |
+        self hasFinished: true.
+        void
     }.
 
 MetaProgramming NamedMetaBuilder
@@ -89,38 +116,4 @@ MetaProgramming NamedMetaBuilder
         } else: {
             self analyzeMetaBuilderDirectMessageNode: node with: analyzer
         }
-    }.
-
-## Let meta builder.
-__BootstrapCompiler__
-    enterTopLevelNamespace;
-    enterNamespaceNamed: #MetaProgramming;
-    addBindingNamed: #LetMetaBuilder with: (__TypeBuilder__ newGCClassWithSuperclass: MetaProgramming NamedMetaBuilder slots: #{
-        typeExpression: Reflection AST Node optional.
-        initialValueExpression: Reflection AST Node optional.
-        isMutable: Boolean.
-        hasReferenceTypeInference: Boolean.
-        hasDirectTypeInference: Boolean.
-    }).
-
-MetaProgramming LetMetaBuilder
-    withSelector: #concretizeMetaBuilder addMethod: {:(MetaProgramming LetMetaBuilder)self :: Reflection AST LocalVariableDefinitionNode |
-        (Reflection AST LocalVariableDefinitionNode basicNewWithNamedSlots: #{
-            sourcePosition: self metaContext sourcePosition.
-            nameExpression: self nameExpression.
-            typeExpression: self typeExpression;
-            initialValueExpression: self initialValueExpression.
-
-            isMutable: self isMutable.
-            hasReferenceTypeInference: self hasReferenceTypeInference.
-            hasDirectTypeInference: self hasDirectTypeInference.
-        })
-    }.
-
-__BootstrapCompiler__
-    enterTopLevelNamespace;
-    addBindingNamed: #let with: {:(MacroInvocationContext)macroSelf :: Reflection AST MetaBuilderInstanceNode |
-        <macro>
-        <messageMethod>
-        MetaProgramming LetMetaBuilder nodeWithContext: macroSelf
     }.
