@@ -10,6 +10,17 @@ SemanticAnalysisTypeMapping = {}
 
 PrimitiveMethodTable = {}
 
+NextRandomIdentityHash = 1
+
+def generateNextRandomIdentityHash():
+    # xorshift64 from https://en.wikipedia.org/wiki/Xorshift [27th July, 2022]
+    global NextRandomIdentityHash
+    NextRandomIdentityHash ^= NextRandomIdentityHash << 13
+    NextRandomIdentityHash ^= NextRandomIdentityHash >> 7
+    NextRandomIdentityHash ^= NextRandomIdentityHash << 17
+    NextRandomIdentityHash &= (1<<64) - 1
+    return NextRandomIdentityHash
+
 def getSemanticAnalysisType(symbol):
     return SemanticAnalysisTypeMapping.at(symbol)
 
@@ -99,6 +110,14 @@ class ValueInterface:
 
     def asCanonicalTypeForDependentType(self):
         raise InterpreterError('Expected a type instead of %s' % repr(self))
+
+    def identityHash(self):
+        if not hasattr(self, '__identityHash__'):
+            __identityHash__ = self.generateIdentityHash()
+        return __identityHash__
+
+    def generateIdentityHash(self):
+        return generateNextRandomIdentityHash()
 
 class TypedValue(ValueInterface):
     def getType(self):
@@ -1269,7 +1288,7 @@ class PointerTypeValue(TypedValue):
         return self.type
 
     def defaultPrintString(self):
-        return '%s(%s:%d)' % (str(self.type), str(self.value), self.baseIndex)
+        return '%s(0x%x:%d)' % (str(self.type), self.value.identityHash(), self.baseIndex)
 
     def __getitem__(self, index):
         return self.value[Integer(index.asInteger() + self.baseIndex)]
@@ -1277,23 +1296,39 @@ class PointerTypeValue(TypedValue):
     def __setitem__(self, index, value):
         self.value[Integer(index.asInteger() + self.baseIndex)] = value
 
-class PointerTypeSchema(TypeSchema):
+    def asPointerTypeValue(self, pointerType):
+        return PointerTypeValue(pointerType, self.value, self.baseIndex)
+
+    def asTemporaryReferenceTypeValue(self, temporaryReferenceType):
+        return TemporaryReferenceTypeValue(temporaryReferenceType, self.value, self.baseIndex)
+
+    def asReferenceTypeValue(self, referenceType):
+        return ReferenceTypeValue(referenceType, self.value, self.baseIndex)
+
+class ReferenceTypeValue(PointerTypeValue):
+    pass
+
+class TemporaryReferenceTypeValue(PointerTypeValue):
+    pass
+
+class PointerLikeTypeSchema(TypeSchema):
     def __init__(self, elementType, addressSpace):
         self.elementType = elementType
         self.addressSpace = addressSpace
         super().__init__()
 
-    def getType(self):
-        return getBasicTypeNamed('PointerTypeSchema')
-
     def hasPointerOrReferenceValueCopySemantics(self):
         return True
+
+class PointerTypeSchema(PointerLikeTypeSchema):
+    def getType(self):
+        return getBasicTypeNamed('PointerTypeSchema')
 
     def hasDirectCoercionToPointerOf(self, baseType, addressSpace):
         return self.elementType == baseType
 
     def makeDirectPointerOfValueTo(self, value, valueType, targetType):
-        return PointerTypeValue(targetType, value.value, value.baseIndex)
+        return value.asPointerTypeValue(targetType)
 
     def canCoerceValueOfType(self, valueType):
         if valueType.schema.hasDirectCoercionToPointerOf(self.elementType, self.addressSpace):
@@ -1313,11 +1348,7 @@ class PointerTypeSchema(TypeSchema):
     def buildPrimitiveMethodDictionary(self):
         self.metaTypeMethodDict[Symbol('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew, '{:(SelfType)self :: self}')
         self.metaTypeMethodDict[Symbol('basicNew:')] = TypeSchemaPrimitiveMethod(self.basicNewWithValue, '{:(SelfType)self :(AnyValue)value :: self}')
-        self.methodDict[Symbol('basicAt:')] = TypeSchemaPrimitiveMethod(self.basicAt, (('SelfType', 'Size'), self.elementType))
         return super().buildPrimitiveMethodDictionary()
-
-    def basicAt(self, value, index):
-        return value[index.asInteger()]
 
     def basicNew(self, valueType):
         return PointerTypeValue(valueType, 0)
@@ -1325,23 +1356,48 @@ class PointerTypeSchema(TypeSchema):
     def basicNewWithValue(self, valueType, initialValue):
         return PointerTypeValue(valueType, initialValue)
 
-class ReferenceTypeSchema(TypeSchema):
+class ReferenceTypeSchema(PointerLikeTypeSchema):
+    def getType(self):
+        return getBasicTypeNamed('ReferenceTypeSchema')
+
+    def canCoerceValueOfType(self, valueType):
+        if valueType.schema.hasDirectCoercionToReferenceOf(self.elementType, self.addressSpace):
+            return True
+
+        return super().canCoerceValueOfType(valueType)
+
+    def basicNew(self, valueType):
+        return ReferenceTypeValue(valueType, 0)
+
+    def basicNewWithValue(self, valueType, initialValue):
+        return ReferenceTypeValue(valueType, initialValue)
+
+class TemporaryReferenceTypeSchema(TypeSchema):
     def __init__(self, elementType, addressSpace):
         self.elementType = elementType
         self.addressSpace = addressSpace
         super().__init__()
 
     def getType(self):
-        return getBasicTypeNamed('ReferenceTypeSchema')
+        return getBasicTypeNamed('TemporaryReferenceTypeSchema')
 
     def hasPointerOrReferenceValueCopySemantics(self):
         return True
 
     def canCoerceValueOfType(self, valueType):
-        if valueType.schema.hasDirectCoercionToPointerOf(self.elementType):
+        if valueType.schema.hasDirectCoercionToTemporaryReferenceOfType(self.elementType, self.addressSpace):
             return True
 
         return super().canCoerceValueOfType(valueType)
+
+    def basicAt(self, value, index):
+        return value[index.asInteger()]
+
+    def basicNew(self, valueType):
+        return TemporaryReferenceTypeValue(valueType, 0)
+
+    def basicNewWithValue(self, valueType, initialValue):
+        return TemporaryReferenceTypeValue(valueType, initialValue)
 
 class GCClassTypeSchema(RecordTypeSchema):
     def getType(self):
@@ -2090,6 +2146,10 @@ class ObjectPrimitives:
     @primitiveNamed('object.comparison.identityNotEquals')
     def primitiveIdentityNotEquals(self, other):
         return getBooleanValue(self is not other)
+
+    @primitiveNamed('object.comparison.identityHash')
+    def primitiveIdentityNotEquals(self):
+        return getSizeValue(self.identityHash())
 
     @primitiveNamed('object.runWithIn')
     def primitiveRunWithIn(self, selector, arguments, receiver):
