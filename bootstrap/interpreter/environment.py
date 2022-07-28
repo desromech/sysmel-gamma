@@ -186,7 +186,7 @@ class BootstrapCompiler(BehaviorTypedObject):
         return self.sizeType.basicNewWithValue(size)
 
     def makeASTNodeArraySlice(self, elements):
-        arraySliceType = self.parseTreeASTMapping.at('NodeArraySlice')
+        arraySliceType = self.parseTreeASTMapping.at('NodeSharedArraySlice')
         return arraySliceType.basicNewWithArraySliceElements(list(elements))
 
     def makeASTNodeArrayList(self, elements):

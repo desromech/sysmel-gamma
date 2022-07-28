@@ -430,6 +430,24 @@ __BootstrapCompiler__
                     size: bounds
                 }
             };
+            withSelector: #asSharedArraySlice addMethod: {:(arrayType)self :: SharedArraySlice(elementType) |
+                <pure>
+                ## TODO: Make a shared copy if needed.
+                SharedArraySlice(elementType) basicNewWithNamedSlots: #{
+                    elements: self.
+                    size: bounds.
+                    storage: self
+                }
+            };
+            withSelector: #basicAt: addMethod: {:(arrayType)self :(Size)index :: elementType |
+                <pure>
+                <primitive: #"array.basicAt">
+                __BootstrapCompiler__ primitiveFailed
+            };
+            withSelector: #basicAt:put: addMethod: {:(arrayType)self :(Size)index :(elementType)value :: elementType |
+                <primitive: #"array.basicAtPut">
+                __BootstrapCompiler__ primitiveFailed
+            };
             withSelector: #size addMethod: {:(arrayType)self :: Size |
                 <pure>
                 bounds
@@ -437,13 +455,40 @@ __BootstrapCompiler__
         arrayType
     } templated;
 
-    addBasicTypeNamed: #Pointer with: {:(Type)elementType :: Type |
-        __TypeBuilder__ newPointerTypeFor: elementType
+    addBasicTypeNamed: #Pointer with: {:(Type)elementType :(Symbol)addressSpace :: Type |
+        let: #pointerType with: (__TypeBuilder__ newPointerTypeFor: elementType addressSpace: addressSpace).
+
+        pointerType __type__
+            withSelector: #allocate: addMethod: {:(pointerType __type__)self :(Size)count :: pointerType |
+                <pure>
+                <primitive: #"pointer.allocateWithCount">
+                __BootstrapCompiler__ primitiveFailed
+            };
+            withSelector: #allocate addMethod: {:(pointerType __type__)self :: pointerType |
+                <pure>
+                self allocate: 1
+            }.
+
+        pointerType
+            withSelector: #basicAt: addMethod: {:(pointerType)self :(Size)index :: elementType |
+                <pure>
+                <primitive: #"pointer.basicAt">
+                __BootstrapCompiler__ primitiveFailed
+            };
+            withSelector: #basicAt:put: addMethod: {:(pointerType)self :(Size)index :(elementType)value :: elementType |
+                <primitive: #"pointer.basicAtPut">
+                __BootstrapCompiler__ primitiveFailed
+            }.
+
+        pointerType
     } templated;
+    addBasicTypeNamed: #SharedPointer with: {:(Type)elementType :: Type |
+        Pointer(elementType, #shared)
+    };
 
     addBasicTypeNamed: #ArraySlice with: {:(Type)elementType :: Type |
         let: #arraySliceType with: (__TypeBuilder__ newRecordTypeWith: #{
-            elements: Pointer(elementType).
+            elements: Pointer(elementType, #generic).
             size: Size.
         }).
 
@@ -461,6 +506,9 @@ __BootstrapCompiler__
                 <pure>
                 self elements basicAt: index
             };
+            withSelector: #basicAt:put: addMethod: {:(arraySliceType)self :(Size)index :(elementType)element :: elementType |
+                self elements basicAt: index put: element
+            };
             withSelector: #first addMethod: {:(arraySliceType)self :: elementType |
                 <pure>
                 self basicAt: 0sz
@@ -469,17 +517,17 @@ __BootstrapCompiler__
                 <pure>
                 self basicAt: self size - 1sz
             };
-            withSelector: #collect: addMethod: {:*(Type)ResultType :(elementType => ResultType)block :: ArraySlice(ResultType) |
+            withSelector: #collect: addMethod: {:(arraySliceType)self :*(Type)ResultType :(elementType => ResultType)block :: SharedArraySlice(ResultType) |
                 <pure>
                 <primitive: #"arraySlice.collect">
                 __BootstrapCompiler__ primitiveFailed
             };
-            withSelector: #collectWithIndex: addMethod: {:*(Type)ResultType :((elementType -- Size) => ResultType)block :: ArraySlice(ResultType) |
+            withSelector: #collectWithIndex: addMethod: {:(arraySliceType)self :*(Type)ResultType :((elementType -- Size) => ResultType)block :: SharedArraySlice(ResultType) |
                 <pure>
                 <primitive: #"arraySlice.collectWithIndex">
                 __BootstrapCompiler__ primitiveFailed
             };
-            withSelector: #do: addMethod: {:*(Type)ResultType :((elementType) => ResultType)block :: ResultType |
+            withSelector: #do: addMethod: {:(arraySliceType)self :((elementType) => Void)block :: Void |
                 <pure>
                 <primitive: #"arraySlice.do">
                 __BootstrapCompiler__ primitiveFailed
@@ -487,6 +535,43 @@ __BootstrapCompiler__
         arraySliceType
     } templated;
     addBasicTypeNamed: #AnyArraySlice with: ArraySlice(AnyValue);
+
+    addBasicTypeNamed: #SharedArraySlice with: {:(Type)elementType :: Type |
+        let: #storagePointerType with: SharedPointer(elementType).
+        let: #sharedArraySliceType with: (__TypeBuilder__ newRecordTypeWithSupertype: ArraySlice(elementType) with: #{
+            storage: storagePointerType
+        }).
+
+        sharedArraySliceType addTypeFlag: #arraySlice.
+        sharedArraySliceType __type__
+            withSelector: #allocate: addMethod: {:(sharedArraySliceType)self :(Size)size :: sharedArraySliceType |
+                <pure>
+                let: #storage with: (storagePointerType allocate: size).
+                sharedArraySliceType basicNewWithNamedSlots: #{
+                    elements: storage.
+                    size: size.
+                    storage: storage
+                }.
+            };
+            withSelector: #with: addMethod: {:(sharedArraySliceType)self :(elementType)first :: sharedArraySliceType |
+                <pure>
+                let: #result with: (storagePointerType allocate: 1sz).
+                result
+                    at: 0sz put: first;
+                    yourself
+            };
+            withSelector: #with:with: addMethod: {:(sharedArraySliceType)self :(elementType)first :(elementType)second :: sharedArraySliceType |
+                <pure>
+                let: #result with: (self allocate: 2sz).
+                result
+                    basicAt: 0sz put: first;
+                    basicAt: 1sz put: second;
+                    yourself
+            }.
+
+        sharedArraySliceType
+    } templated;
+    addBasicTypeNamed: #AnySharedArraySlice with: SharedArraySlice(AnyValue);
 
     addBasicTypeNamed: #Association with: {:(Type)key :(Type)value :: Type |
         __TypeBuilder__ newRecordTypeWith: #{
@@ -513,21 +598,38 @@ __BootstrapCompiler__
     addBasicTypeNamed: #AnyArrayList with: ArrayList(AnyValue);
 
     addBasicTypeNamed: #Tuple with: {:*(Size)N :(Type array: N)elementTypes :: Type |
+        let: #tupleSize with: elementTypes size.
         let: #tupleType with: (__TypeBuilder__ newProductTypeWith: elementTypes).
         tupleType __type__
-            withSelector: #-- addMethod: {:(Type)self :(Type) nextType :: Type |
+            withSelector: #-- addMethod: {:(Type)self :(Type)nextType :: Type |
                 <override>
                 __TypeBuilder__ extendTupleType: self with: nextType
             };
-            withSelector: #=> addMethod: {:(Type)self :(Type) resultType :: Type |
+            withSelector: #=> addMethod: {:(Type)self :(Type)resultType :: Type |
                 <override>
                 __TypeBuilder__ newSimpleFunctionTypeWithArguments: self resultType: resultType
+            }.
+
+        tupleType
+            withSelector: #at: addMethod: {:(tupleType)self :(Size)elementIndex :: (elementTypes at: elementIndex) |
+                <pure>
+                <primitive: #"tuple.accessing.at">
+                __BootstrapCompiler__ primitiveFailed
+            };
+            withSelector: #at:put: addMethod: {:(tupleType)self :(Size)elementIndex :(elementTypes at: elementIndex)element :: (elementTypes at: elementIndex) |
+                <pure>
+                <primitive: #"tuple.accessing.atPut">
+                __BootstrapCompiler__ primitiveFailed
+            };
+            withSelector: #size addMethod: {:(tupleType)self :: Size |
+                <pure>
+                tupleSize
             }.
         tupleType
     } templated;
 
     addBasicTypeNamed: #ValueBox with: {:(Type)elementType :: Type |
-        let: #valueBoxType with: (__TypeBuilder__ newGCClassWithSlots: #{
+        let: #valueBoxType with: (__TypeBuilder__ newGCClassWithSuperclass: Object publicSlots: #{
             _: elementType
         }).
         valueBoxType __type__
@@ -625,13 +727,17 @@ MetaType
         <pure>
         ArraySlice(self)
     };
+    withSelector: #sharedArraySlice addMethod: {:(Type)self :: Type |
+        <pure>
+        SharedArraySlice(self)
+    };
     withSelector: #arrayList addMethod: {:(Type)self :: Type |
         <pure>
         ArrayList(self)
     };
     withSelector: #valueBox addMethod: {:(Type)self :: Type |
         <pure>
-        ArrayList(self)
+        ValueBox(self)
     }.
 
 ## Basic methods.
@@ -715,12 +821,12 @@ __BootstrapCompiler__
         type: Reflection AST Node.
     });
     addBindingNamed: #BlockClosureNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
-        arguments: Reflection AST Node arraySlice.
+        arguments: Reflection AST Node sharedArraySlice.
         body: Reflection AST Node.
     });
     addBindingNamed: #ChainedMessageNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
         selector: Reflection AST Node.
-        arguments: Reflection AST Node arraySlice
+        arguments: Reflection AST Node sharedArraySlice
     });
     addBindingNamed: #CleanUpScopeNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
         body: Reflection AST Node.
@@ -744,26 +850,26 @@ __BootstrapCompiler__
         value: Reflection AST Node.
     });
     addBindingNamed: #MakeTupleNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
-        elements: Reflection AST Node arraySlice.
+        elements: Reflection AST Node sharedArraySlice.
     });
     addBindingNamed: #MakeDictionaryNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
-        elements: Reflection AST Node arraySlice.
+        elements: Reflection AST Node sharedArraySlice.
     });
 
     addBindingNamed: #MessageSendNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
         receiver: Reflection AST Node optional.
         selector: Reflection AST Node.
-        arguments: Reflection AST Node arraySlice.
+        arguments: Reflection AST Node sharedArraySlice.
         boundMethod: AnyValue optional.
         usesDynamicDispatch: Boolean.
     });
     addBindingNamed: #MessageChainNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
         receiver: Reflection AST Node.
-        chainedMessages: Reflection AST Node arraySlice
+        chainedMessages: Reflection AST Node sharedArraySlice
     });
     addBindingNamed: #SequenceNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
-        expressions: Reflection AST Node arraySlice.
-        pragmas: Reflection AST Node arraySlice.
+        expressions: Reflection AST Node sharedArraySlice.
+        pragmas: Reflection AST Node sharedArraySlice.
     });
 
     addBindingNamed: #SpliceNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
@@ -797,7 +903,7 @@ __BootstrapCompiler__
         bodyExpression: Reflection AST Node optional.
         continueExpression: Reflection AST Node optional.
     });
-    addBindingNamed: #LocalVariableDefinitionNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
+    addBindingNamed: #VariableDefinitionNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
         nameExpression: Reflection AST Node.
         typeExpression: Reflection AST Node optional.
         initialValueExpression: Reflection AST Node optional.
@@ -808,6 +914,9 @@ __BootstrapCompiler__
         analyzedSymbol: AnyValue optional.
         analyzedExpectedValueType: Type optional.
         analyzedVariable: Reflection LocalVariable optional.
+    });
+
+    addBindingNamed: #LocalVariableDefinitionNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST VariableDefinitionNode publicSlots: #{
     });
 
     ## Basic type conversion nodes
@@ -837,7 +946,7 @@ __BootstrapCompiler__
 
         Node: Reflection AST Node.
         NodeArrayList: Reflection AST Node arrayList.
-        NodeArraySlice: Reflection AST Node arraySlice.
+        NodeSharedArraySlice: Reflection AST Node sharedArraySlice.
 
         ArgumentDefinitionNode: Reflection AST ArgumentDefinitionNode.
         BlockClosureNode: Reflection AST BlockClosureNode.
@@ -919,7 +1028,7 @@ __BootstrapCompiler__
 ## Macro invocation context.
 __BootstrapCompiler__
     enterTopLevelNamespace;
-    addBindingNamed: #MacroInvocationContext with: (__TypeBuilder__ newGCClassWithPublicSlots: #{
+    addBindingNamed: #MacroInvocationContext with: (__TypeBuilder__ newGCClassWithSuperclass: Object publicSlots: #{
         sourcePosition: Reflection SourcePosition.
         selfNode: Reflection AST Node optional.
         selfType: Type.
@@ -1050,9 +1159,14 @@ Reflection AST SequenceNode
             yourself
     };
     withSelector: #evaluateNodeWith: addMethod: {:(Type)self :(SysmelCompiler Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
-        self expressions do: {:(Reflection AST Node)node :: AnyValue |
-            node evaluateNodeWith: evaluationEnvironment
-        }
+        let: #result with: (AnyValue valueBox with: void).
+        
+        self expressions do: {:(Reflection AST Node)node |
+            result _: (node evaluateNodeWith: evaluationEnvironment).
+            void
+        }.
+
+        result _
     }.
 
 Reflection AST IdentifierReferenceNode
@@ -1154,7 +1268,7 @@ Reflection AST MessageChainNode
 
         let: #sequenceNode with: (Reflection AST SequenceNode basicNewWithNamedSlots: #{
             sourcePosition: self sourcePosition.
-            expressions: ((Reflection AST Node array: 2sz) basicNewWithSlots: (receiverVariable, messageSequenceNode)) asArraySlice
+            expressions: (Reflection AST Node sharedArraySlice with: receiverVariable with: messageSequenceNode)
         }).
 
         analyzer analyzeNodeIfNeededWithCurrentExpectedType: sequenceNode
@@ -1279,6 +1393,19 @@ Reflection AST WhileDoContinueNode
         }
     }.
 
+Reflection AST VariableDefinitionNode
+    withSelector: #makeValueTypeInferenceEnvironment addMethod: {:(Reflection AST VariableDefinitionNode)self :: SysmelCompiler Semantic TypeInferenceEnvironment |
+        if: self hasDirectTypeInference then: {
+            SysmelCompiler Semantic DirectAutoTypeInferenceEnvironment basicNew
+        } else: {
+            if: self hasReferenceTypeInference then: {
+                SysmelCompiler Semantic ReferenceAutoTypeInferenceEnvironment basicNew
+            } else: {
+                SysmelCompiler Semantic AutoTypeInferenceEnvironment basicNew
+            }
+        }
+    }.
+        
 Reflection AST LocalVariableDefinitionNode
     withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST LocalVariableDefinitionNode)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
         if: self initialValueExpression isNil & self isMutable not then: {
@@ -1295,7 +1422,7 @@ Reflection AST LocalVariableDefinitionNode
                     analyzedNode analyzedExpectedValueType: AnyValue.
                 } else: {
                     analyzedNode
-                        initialValueExpression: (analyzer analyzeNodeIfNeededWithAutoType: self initialValueExpression _);
+                        initialValueExpression: (analyzer analyzeNodeIfNeeded: self initialValueExpression _ withTypeInferenceEnvironment: self makeValueTypeInferenceEnvironment);
                         analyzedExpectedValueType: analyzedNode initialValueExpression _ analyzedType.
                 }.
             } else: {
@@ -2040,7 +2167,8 @@ __BootstrapCompiler__
     print: nil isNil;
     print: nil isNotNil;
 
-    print: Int32 => Void;
+    print: Int32 -- Int32;
+    print: Int32 -- Int32 -- Int32;
     print: Void => Void;
     print: (Int32 -- Int32) => Void;
     print: (Int32 -- Int32 -- Int32) => Void;

@@ -638,8 +638,8 @@ class PTBlockClosure(PTNode):
         return BlockClosure(self, environment, primitiveName = self.primitiveName, methodFlags = self.methodFlags)
 
     def evaluateClosureWithEnvironmentAndArguments(self, machine, closureEnvironment, arguments):
-        if self.expectedArgumentCount != len(arguments):
-            self.raiseEvaluationError('Mismatching number of arguments for evaluating closure. Expected %d and received %d arguments.' % (len(self.arguments), len(arguments)))
+        if len(arguments) != self.expectedArgumentCount:
+            self.raiseEvaluationError('Mismatching number of arguments for evaluating closure. Expected %d and received %d arguments.' % (self.expectedArgumentCount, len(arguments)))
         
         evaluationEnvironment = closureEnvironment.makeChildLexicalScope()
         sourceArgumentIndex = 0
@@ -663,8 +663,8 @@ class PTBlockClosure(PTNode):
         return result
 
     def evaluateClosureResultCoercionWithEnvironmentAndArguments(self, machine, closureEnvironment, arguments, result):
-        if len(self.arguments) != len(arguments):
-            self.raiseEvaluationError('Mismatching number of arguments for evaluating closure. Expected %d and received %d arguments.' % (len(self.arguments), len(arguments)))
+        if len(arguments) != self.expectedArgumentCount:
+            self.raiseEvaluationError('Mismatching number of arguments for evaluating closure. Expected %d and received %d arguments.' % (self.expectedArgumentCount, len(arguments)))
 
         ## FIXME: implement generic argument pattern matching.
         if self.hasForAllArgument:

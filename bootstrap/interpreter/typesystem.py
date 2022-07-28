@@ -82,6 +82,9 @@ class ValueInterface:
     def asArraySlice(self):
         return self.performWithArguments(EvaluationMachine.getActive(), Symbol('asArraySlice'), ())
 
+    def asSharedArraySlice(self):
+        return self.performWithArguments(EvaluationMachine.getActive(), Symbol('asSharedArraySlice'), ())
+
     def isConversionMethod(self):
         return False
 
@@ -746,7 +749,7 @@ class TypeSchema(TypedValue):
     def coerceValueOfTypeIntoType(self, value, valueType, targetType):
         raise CannotCoerceValueToType('Cannot coerce value "(%s: %s)" into type "%s".' % (repr(valueType), repr(value), repr(targetType)))
 
-    def hasDirectCoercionToPointerOf(self, baseType):
+    def hasDirectCoercionToPointerOf(self, baseType, addressSpace):
         return False
 
     def hasPointerOrReferenceValueCopySemantics(self):
@@ -1075,7 +1078,7 @@ class ProductTypeValue(TypedValue):
         return self.elements[self.type.schema.getIndexOfSlotNamed(slotName)]
 
     def setSlotWithIndexAndName(self, slotIndex, slotName, value):
-        expectedType = self.type.schema.elementTypes[slotIndex]
+        expectedType = self.type.schema.getTypeOfSlotIndex(slotIndex)
         coercedValue = expectedType.coerceValue(coerceNoneToNil(value))
         self.elements[slotIndex] = coercedValue
         return coercedValue
@@ -1092,6 +1095,15 @@ class ProductTypeValue(TypedValue):
         result += ')'
         return result
 
+    def __getitem__(self, index):
+        return self.elements[index.asInteger()]
+
+    def __setitem__(self, index, value):
+        expectedType = self.type.schema.getTypeOfSlotIndex(index)
+        coercedValue = expectedType.coerceValue(coerceNoneToNil(value))
+        self.elements[index.asInteger()] = coercedValue
+        return coercedValue
+
     def __iter__(self):
         if self.type.hasArraySliceFlag:
             return iter(extractArraySliceElements(self))
@@ -1105,6 +1117,9 @@ class ProductTypeSchema(TypeSchema):
 
     def getType(self):
         return getBasicTypeNamed('ProductTypeSchema')
+
+    def getTypeOfSlotIndex(self, slotIndex):
+        return self.elementTypes[slotIndex]
 
     def buildPrimitiveMethodDictionary(self):
         self.metaTypeMethodDict[Symbol('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew, '{:(SelfType)self :: self}')
@@ -1194,15 +1209,20 @@ class RecordTypeSchema(ProductTypeSchema):
         return elements
 
     def basicNewWithArraySliceElements(self, recordType, elements):
-        assert len(self.elementTypes) == 2
+        assert len(self.elementTypes) == 2 or len(self.elementTypes) == 3
+        if len(self.elementTypes) == 2:
+            return self.basicNewWithSequentialSlots(recordType, [
+                self.elementTypes[0].basicNewWithValue(elements),
+                self.elementTypes[1].basicNewWithValue(len(elements))
+            ])
         return self.basicNewWithSequentialSlots(recordType, [
             self.elementTypes[0].basicNewWithValue(elements),
-            self.elementTypes[1].basicNewWithValue(len(elements))
+            self.elementTypes[1].basicNewWithValue(len(elements)),
+            self.elementTypes[2].basicNewWithValue(elements),
         ])
 
 class ArrayTypeValue(ProductTypeValue):
-    def __getitem__(self, index):
-        return self.elements[index.asInteger()]
+    pass
 
 class ArrayTypeSchema(TypeSchema):
     def __init__(self, elementType, bounds):
@@ -1213,10 +1233,12 @@ class ArrayTypeSchema(TypeSchema):
     def getType(self):
         return getBasicTypeNamed('ArrayTypeSchema')
 
+    def getTypeOfSlotIndex(self, slotIndex):
+        return self.elementType
+
     def buildPrimitiveMethodDictionary(self):
         self.metaTypeMethodDict[Symbol('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew, '{:(SelfType)self :: self}')
         self.metaTypeMethodDict[Symbol('basicNewWithSlots:')] = TypeSchemaPrimitiveMethod(self.basicNewWithSequentialSlots, '{:(SelfType)self :(AnyValue)slots :: self}')
-        self.methodDict[Symbol('basicAt:')] = TypeSchemaPrimitiveMethod(self.basicAt, (('SelfType', 'Size'), self.elementType))
         return super().buildPrimitiveMethodDictionary()
 
     def basicNew(self, valueType):
@@ -1228,14 +1250,11 @@ class ArrayTypeSchema(TypeSchema):
         
         return ArrayTypeValue(valueType, list(map(lambda x: x.shallowCopyValue(), slots)))
 
-    def hasDirectCoercionToPointerOf(self, baseType):
+    def hasDirectCoercionToPointerOf(self, baseType, addressSpace):
         return self.elementType == baseType
 
     def makeDirectPointerOfValueTo(self, value, valueType, targetType):
         return PointerTypeValue(targetType, value, 0)
-
-    def basicAt(self, value, index):
-        return value[index.asInteger()]
 
 class PointerTypeValue(TypedValue):
     def __init__(self, type, value, baseIndex = 0):
@@ -1255,9 +1274,13 @@ class PointerTypeValue(TypedValue):
     def __getitem__(self, index):
         return self.value[Integer(index.asInteger() + self.baseIndex)]
 
+    def __setitem__(self, index, value):
+        self.value[Integer(index.asInteger() + self.baseIndex)] = value
+
 class PointerTypeSchema(TypeSchema):
-    def __init__(self, elementType):
+    def __init__(self, elementType, addressSpace):
         self.elementType = elementType
+        self.addressSpace = addressSpace
         super().__init__()
 
     def getType(self):
@@ -1266,14 +1289,20 @@ class PointerTypeSchema(TypeSchema):
     def hasPointerOrReferenceValueCopySemantics(self):
         return True
 
+    def hasDirectCoercionToPointerOf(self, baseType, addressSpace):
+        return self.elementType == baseType
+
+    def makeDirectPointerOfValueTo(self, value, valueType, targetType):
+        return PointerTypeValue(targetType, value.value, value.baseIndex)
+
     def canCoerceValueOfType(self, valueType):
-        if valueType.schema.hasDirectCoercionToPointerOf(self.elementType):
+        if valueType.schema.hasDirectCoercionToPointerOf(self.elementType, self.addressSpace):
             return True
 
         return super().canCoerceValueOfType(valueType)
 
     def coerceValueOfTypeIntoType(self, value, valueType, targetType):
-        if valueType.schema.hasDirectCoercionToPointerOf(self.elementType):
+        if valueType.schema.hasDirectCoercionToPointerOf(self.elementType, self.addressSpace):
             return valueType.schema.makeDirectPointerOfValueTo(value, valueType, targetType)
 
         return super().coerceValueOfTypeIntoType(value, valueType, targetType)
@@ -1297,8 +1326,9 @@ class PointerTypeSchema(TypeSchema):
         return PointerTypeValue(valueType, initialValue)
 
 class ReferenceTypeSchema(TypeSchema):
-    def __init__(self, elementType):
+    def __init__(self, elementType, addressSpace):
         self.elementType = elementType
+        self.addressSpace = addressSpace
         super().__init__()
 
     def getType(self):
@@ -1923,10 +1953,11 @@ class TypeBuilder(BehaviorTypedObject):
             (cls.newTrivialType, 'newTrivialType', '(SelfType) => Type'),
             (cls.newProductType, 'newProductTypeWith:', '(SelfType -- AnyValue) => Type'),
             (cls.newSumTypeWith, 'newSumTypeWith:', '(SelfType -- AnyValue) => Type'),
+            (cls.newRecordTypeWithSupertypeWith, 'newRecordTypeWithSupertype:with:', '(SelfType -- Type -- AnyValue) => Type'),
             (cls.newRecordTypeWith, 'newRecordTypeWith:', '(SelfType -- AnyValue) => Type'),
-            (cls.newArrayTypeForWithBounds, 'newArrayTypeFor:withBounds:', '(SelfType -- AnyValue -- Integer) => Type'),
-            (cls.newPointerTypeFor, 'newPointerTypeFor:', '(SelfType -- AnyValue -- Integer) => Type'),
-            (cls.newReferenceTypeFor, 'newReferenceTypeFor:', '(SelfType -- AnyValue -- Integer) => Type'),
+            (cls.newArrayTypeForWithBounds, 'newArrayTypeFor:withBounds:', '(SelfType -- Type -- Integer) => Type'),
+            (cls.newPointerTypeFor, 'newPointerTypeFor:addressSpace:', '(SelfType -- Type -- Symbol) => Type'),
+            (cls.newReferenceTypeFor, 'newReferenceTypeFor:', '(SelfType -- Type -- Symbol) => Type'),
 
             (cls.newBooleanTypeWithSizeAndAlignment, 'newBooleanTypeWithSize:alignment:', '(SelfType -- Integer -- Integer) => Type'),
             (cls.newUnsignedIntegerTypeWithSizeAndAlignment, 'newUnsignedIntegerTypeWithSize:alignment:', '(SelfType -- Integer -- Integer) => Type'),
@@ -1962,17 +1993,20 @@ class TypeBuilder(BehaviorTypedObject):
         elementTypeList = list(elementTypes)
         return SimpleType(schema = SumTypeSchema(elementTypeList))
 
+    def newRecordTypeWithSupertypeWith(self, supertype, slots):
+        return SimpleType(supertype = supertype, schema = RecordTypeSchema(slots, supertypeSchema = supertype.schema))
+
     def newRecordTypeWith(self, slots):
         return SimpleType(schema = RecordTypeSchema(slots))
 
     def newArrayTypeForWithBounds(self, elementType, bounds):
         return SimpleType(schema = ArrayTypeSchema(elementType, bounds))
 
-    def newPointerTypeFor(self, elementType):
-        return SimpleType(schema = PointerTypeSchema(elementType))
+    def newPointerTypeFor(self, elementType, addressSpace):
+        return SimpleType(schema = PointerTypeSchema(elementType, addressSpace))
 
-    def newReferenceTypeFor(self, elementType):
-        return SimpleType(schema = ReferenceTypeSchema(elementType))
+    def newReferenceTypeFor(self, elementType, addressSpace):
+        return SimpleType(schema = ReferenceTypeSchema(elementType, addressSpace))
 
     def newGCClassWithSuperclassSlots(self, supertype, instanceVariable):
         return SimpleType(supertype = supertype, schema = GCClassTypeSchema(instanceVariable, supertypeSchema = supertype.schema))
@@ -2029,7 +2063,7 @@ class ArraySlicePrimitives:
         resultArrayType = getBasicTypeNamed(Symbol('Array'))(resultElementType, size)
 
         collectedElements = resultArrayType.basicNewWithSequentialSlots(list(map(lambda index: aBlock(elements[Integer(index)]), range(size.asInteger()))))
-        return collectedElements.asArraySlice()
+        return collectedElements.asSharedArraySlice()
 
     @primitiveNamed('arraySlice.collectWithIndex')
     def collectWithIndex(arraySlice, aBlock):
@@ -2041,7 +2075,7 @@ class ArraySlicePrimitives:
         resultArrayType = getBasicTypeNamed(Symbol('Array'))(resultElementType, size)
 
         collectedElements = resultArrayType.basicNewWithSequentialSlots(list(map(lambda index: aBlock(elements[Integer(index)], indexType.basicNewWithValue(index)), range(size.asInteger()))))
-        return collectedElements.asArraySlice()
+        return collectedElements.asSharedArraySlice()
 
     @primitiveNamed('arraySlice.do')
     def do(arraySlice, aBlock):
@@ -2070,3 +2104,32 @@ class ObjectPrimitives:
     @primitiveNamed('object.runWithIn')
     def primitiveRunWithIn(self, selector, arguments, receiver):
         return self.runWithIn(EvaluationMachine.getActive(), selector, extractArraySliceElements(arguments), receiver)
+
+class ArrayPrimitives:
+    @primitiveNamed('array.basicAt')
+    def primitiveArrayBasicAt(self, index):
+        return self[index.asInteger()]
+
+    @primitiveNamed('array.basicAtPut')
+    def primitiveArrayBasicAtPut(self, index, value):
+        self[index.asInteger()] = value
+        return self[index.asInteger()]
+
+class PointerPrimitives:
+    @primitiveNamed('pointer.allocateWithCount')
+    def primitiveIdentityEquals(self, countValue):
+        count = countValue.asInteger()
+        if count == 0:
+            return self.basicNew()
+
+        pointedType = self.schema.elementType
+        return self.basicNewWithValue([None] * count)
+
+    @primitiveNamed('pointer.basicAt')
+    def primitivePointerBasicAt(self, index):
+        return self[index.asInteger()]
+
+    @primitiveNamed('pointer.basicAtPut')
+    def primitivePointerBasicAtPut(self, index, value):
+        self[index.asInteger()] = value
+        return self[index.asInteger()]
