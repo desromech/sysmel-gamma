@@ -1,0 +1,110 @@
+__BootstrapCompiler__
+    enterTopLevelNamespace;
+    enterNamespaceNamed: #Reflection;
+    enterNamespaceNamed: #AST;
+
+    addBindingNamed: #IfTrueIfFalseNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
+        condition: Reflection AST Node.
+        trueExpression: Reflection AST Node optional.
+        falseExpression: Reflection AST Node optional.
+    });
+    addBindingNamed: #WhileDoContinueNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
+        condition: Reflection AST Node.
+        bodyExpression: Reflection AST Node optional.
+        continueExpression: Reflection AST Node optional.
+    }).
+
+Reflection AST IfTrueIfFalseNode
+    withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST IfTrueIfFalseNode)self :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+        let: #analyzedNode with: self shallowCopy.
+
+        analyzedNode condition: (analyzer analyzeNodeIfNeeded: self condition withExpectedType: Boolean).
+        ## Initial per-branch analysis
+        if: analyzedNode trueExpression isNil then: {
+            ## Nothing is required here.
+        } else: {
+            analyzedNode trueExpression: (analyzer analyzeNodeIfNeededWithCurrentExpectedType: analyzedNode trueExpression _)
+        }.
+
+        if: analyzedNode falseExpression isNil then: {
+            ## Nothing is required here.
+        } else: {
+            analyzedNode falseExpression:  (analyzer analyzeNodeIfNeededWithCurrentExpectedType: analyzedNode falseExpression _)
+        }.
+
+        ## Compute the result type.
+        if: analyzedNode falseExpression isNil | analyzedNode trueExpression isNil then: {
+            analyzedNode analyzedType: Void
+        } else: {
+            analyzedNode analyzedType: (analyzer computeBranchResultTypeOf: analyzedNode falseExpression _ analyzedType _ with: analyzedNode trueExpression _ analyzedType _)
+        }.
+
+        if: analyzedNode trueExpression isNil then: {
+            ## Nothing is required here.
+        } else: {
+            analyzedNode trueExpression: (analyzer analyzeNodeIfNeeded: analyzedNode trueExpression _ withExpectedType: analyzedNode analyzedType _)
+        }.
+
+        if: analyzedNode falseExpression isNil then: {
+            ## Nothing is required here.
+        } else: {
+            analyzedNode falseExpression: (analyzer analyzeNodeIfNeeded: analyzedNode falseExpression _ withExpectedType: analyzedNode analyzedType _)
+        }.
+
+        analyzedNode
+    };
+    withSelector: #evaluateNodeWith: addMethod: {:(Reflection AST IfTrueIfFalseNode)self :(Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+        if: (self condition evaluateNodeWith: evaluationEnvironment) then: {
+            if: self trueExpression isNil then: {
+                void
+            } else: {
+                self trueExpression _ evaluateNodeWith: evaluationEnvironment
+            }
+        } else: {
+            if: self falseExpression isNil then: {
+                void
+            } else: {
+                self falseExpression _ evaluateNodeWith: evaluationEnvironment
+            }
+        }
+    }.
+
+Reflection AST WhileDoContinueNode
+    withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST WhileDoContinueNode)self :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+        let: #analyzedNode with: self shallowCopy.
+
+        analyzedNode
+            condition: (analyzer analyzeNodeIfNeeded: self condition withExpectedType: Boolean);
+            analyzedType: Void.
+
+        ## Body expression.
+        if: analyzedNode bodyExpression isNil then: {
+            ## Nothing is required here
+        } else: {
+            analyzedNode bodyExpression: (analyzer analyzeNodeIfNeeded: analyzedNode bodyExpression _ withExpectedType: Void)
+        }.
+
+        ## Continue expression.
+        if: analyzedNode continueExpression isNil then: {
+            ## Nothing is required here
+        } else: {
+            analyzedNode continueExpression: (analyzer analyzeNodeIfNeeded: analyzedNode continueExpression _ withExpectedType: Void)
+        }.
+
+        analyzedNode
+    };
+    withSelector: #evaluateNodeWith: addMethod: {:(Reflection AST WhileDoContinueNode)self :(Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+        while: (self condition evaluateNodeWith: evaluationEnvironment) do: {
+            if: self bodyExpression isNil then: {
+                void
+            } else: {
+                self bodyExpression _ evaluateNodeWith: evaluationEnvironment
+            }
+        } continueWith: {
+            if: self continueExpression isNil then: {
+                void
+            } else: {
+                self continueExpression _ evaluateNodeWith: evaluationEnvironment
+            }
+        }
+    }.

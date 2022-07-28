@@ -1,0 +1,33 @@
+__BootstrapCompiler__ setParseTreeASTMaping: #{
+    SourceCollection: Reflection SourceCollection.
+    SourcePosition: Reflection SourcePosition.
+    SourceStringCollection: Reflection SourceStringCollection.
+    SourceStringPosition: Reflection SourceStringPosition.
+    EmptySourcePosition: Reflection EmptySourcePosition.
+
+    Node: Reflection AST Node.
+    NodeArrayList: Reflection AST Node arrayList.
+    NodeSharedArraySlice: Reflection AST Node sharedArraySlice.
+
+    ArgumentDefinitionNode: Reflection AST ArgumentDefinitionNode.
+    BlockClosureNode: Reflection AST BlockClosureNode.
+    ChainedMessageNode: Reflection AST ChainedMessageNode.
+    CleanUpScopeNode: Reflection AST CleanUpScopeNode.
+    IdentifierReferenceNode: Reflection AST IdentifierReferenceNode.
+    LexicalScopeNode: Reflection AST LexicalScopeNode.
+    LiteralValueNode: Reflection AST LiteralValueNode.
+    MakeAssociationNode: Reflection AST MakeAssociationNode.
+    MakeDictionaryNode: Reflection AST MakeDictionaryNode.
+    MakeTupleNode: Reflection AST MakeTupleNode.
+    MessageSendNode: Reflection AST MessageSendNode.
+    MessageChainNode: Reflection AST MessageChainNode.
+    QuoteNode: Reflection AST QuoteNode.
+    QuasiQuoteNode: Reflection AST QuasiQuoteNode.
+    QuasiUnquoteNode: Reflection AST QuasiUnquoteNode.
+    SequenceNode: Reflection AST SequenceNode.
+    SpliceNode: Reflection AST SpliceNode.
+
+    ErrorNode: Reflection AST ErrorNode.
+    ParseErrorNode: Reflection AST ParseErrorNode.
+    SemanticErrorNode: Reflection AST SemanticErrorNode.
+}.

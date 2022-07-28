@@ -1,0 +1,29 @@
+__BootstrapCompiler__
+    enterTopLevelNamespace;
+    addBindingNamed: #MacroInvocationContext with: (__TypeBuilder__ newGCClassWithSuperclass: Object publicSlots: #{
+        sourcePosition: Reflection SourcePosition.
+        selfNode: Reflection AST Node optional.
+        selfType: Type.
+        astAnalyzer: Reflection Semantic ASTAnalyzer.
+    }).
+
+Reflection Semantic ASTAnalyzer
+    withSelector: #makeMacroInvocationContextForIdentifierReferenceNode: addMethod: {:(Reflection Semantic ASTAnalyzer)self :(Reflection AST IdentifierReferenceNode)node :: MacroInvocationContext |
+        MacroInvocationContext basicNewWithNamedSlots: #{
+            sourcePosition: node sourcePosition.
+            selfType: Void.
+            astAnalyzer: self
+        }
+    };
+    withSelector: #makeMacroInvocationContextForMessageSendNode: addMethod: {:(Reflection Semantic ASTAnalyzer)self :(Reflection AST MessageSendNode)node :: MacroInvocationContext |
+        MacroInvocationContext basicNewWithNamedSlots: #{
+            sourcePosition: node sourcePosition.
+            selfNode: node receiver.
+            selfType: (if: node receiver isNil then: {
+                Void
+            } else: {
+                if: node receiver _ analyzedType isNil then: Void then: node receiver _ analyzedType
+            }).
+            astAnalyzer: self
+        }
+    }.

@@ -1,0 +1,43 @@
+__BootstrapCompiler__
+    enterTopLevelNamespace;
+    enterNamespaceNamed: #Reflection;
+    enterNamespaceNamed: #AST;
+
+    addBindingNamed: #TypeConversionNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
+        expression: Reflection AST Node.
+    });
+    addBindingNamed: #ValueAsVoidNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST TypeConversionNode publicSlots: #{});
+    addBindingNamed: #WrapValueInSumTypeNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST TypeConversionNode publicSlots: #{
+        typeSelector: Size.
+    });
+    addBindingNamed: #WrapAnyValueNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST TypeConversionNode publicSlots: #{});
+    addBindingNamed: #UnwrapAnyValueNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST TypeConversionNode publicSlots: #{});
+    addBindingNamed: #UpcastConversionNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST TypeConversionNode publicSlots: #{}).
+
+Reflection AST ValueAsVoidNode
+    withSelector: #evaluateNodeWith: addMethod: {:(Reflection AST ValueAsVoidNode)self :(Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+        self expression evaluateNodeWith: evaluationEnvironment.
+        void
+    }.
+
+Reflection AST WrapValueInSumTypeNode
+    withSelector: #evaluateNodeWith: addMethod: {:(Reflection AST WrapValueInSumTypeNode)self :(Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+        self analyzedType _ basicNew: (self expression evaluateNodeWith: evaluationEnvironment) typeSelector: self typeSelector
+    }.
+
+Reflection AST UpcastConversionNode
+    withSelector: #evaluateNodeWith: addMethod: {:(Reflection AST WrapValueInSumTypeNode)self :(Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+        ## This is a nop in the evaluator.
+        self expression evaluateNodeWith: evaluationEnvironment
+    }.
+
+Reflection AST WrapAnyValueNode
+    withSelector: #evaluateNodeWith: addMethod: {:(Reflection AST WrapValueInSumTypeNode)self :(Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+        ## This is a nop in the evaluator.
+        self expression evaluateNodeWith: evaluationEnvironment
+    }.
+Reflection AST UnwrapAnyValueNode
+    withSelector: #evaluateNodeWith: addMethod: {:(Reflection AST WrapValueInSumTypeNode)self :(Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+        ## This is a nop in the evaluator.
+        self expression evaluateNodeWith: evaluationEnvironment
+    }.

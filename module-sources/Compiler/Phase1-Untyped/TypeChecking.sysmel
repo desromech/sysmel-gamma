@@ -1,0 +1,332 @@
+Type
+    withSelector: #asString addMethod: {:(Type)self :: String |
+        <pure>
+        <primitive: #"type.conversion.toString">
+        __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #printString addMethod: {:(Type)self :: String |
+        <pure>
+        <primitive: #"type.conversion.toString">
+        __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #lookupSelector: addMethod: {:(Type)self :(AnyValue)selector :: AnyValue |
+        <primitive: #"type.lookupSelector">
+        __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #analyzeMessageSendNode:with: addMethod: {:(Type)self :(Reflection AST MessageSendNode)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+        self analyzeNormalMessageSendNode: node with: analyzer
+    };
+    withSelector: #analyzeNormalMessageSendNode:with: addMethod: {:(Type)self :(Reflection AST MessageSendNode)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+        if: node selector isLiteralValueNode then: {
+            let: #selector with: (node selector evaluateLiteralValue).
+            let: #method with: (self lookupSelector: selector).
+
+            if: method isNil then: {
+                self analyzeUnboundMessageSendNode: node with: analyzer
+            } else: {
+                method analyzeMessageSendNode: node with: analyzer
+            }
+        } else: {
+            self analyzeUnboundOrDynamicMessageSendNode: node with: analyzer
+        }
+    };
+    withSelector: #analyzeUnboundMessageSendNode:with: addMethod: {:(Type)self :(Reflection AST MessageSendNode)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+        self analyzeUnboundOrDynamicMessageSendNode: node with: analyzer
+    };
+    withSelector: #analyzeUnboundOrDynamicMessageSendNode:with: addMethod: {:(Type)self :(Reflection AST MessageSendNode)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+        if: self hasAnyValueFlag then: {
+            self analyzeDynamicMessageSendNode: node with: analyzerx
+        } else: {
+            __BootstrapCompiler__ print: "Selector node".
+            __BootstrapCompiler__ print: node selector.
+            __BootstrapCompiler__ print: "Receiver type".
+            __BootstrapCompiler__ print: node receiver _ analyzedType.
+            analyzer makeSemanticAnalysisError: "Unsupported dynamic message send." at: node sourcePosition
+        }
+    };
+    withSelector: #analyzeDynamicMessageSendNode:with: addMethod: {:(Type)self :(Reflection AST MessageSendNode)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+        let: #analyzedNode with: node shallowCopy.
+        analyzedNode
+            selector: (analyzer analyzeNodeIfNeeded: analyzedNode selector withExpectedType: self);
+            arguments: (node arguments collect: {:(Reflection AST Node)argumentNode :: Reflection AST Node |
+                analyzer analyzeNodeIfNeeded: argumentNode withExpectedType: AnyValue
+            });
+            usesDynamicDispatch: true;
+            yourself
+    };
+    withSelector: #analyzeIdentifierReferenceNode:with:valueBinding: addMethod: {:(Type)self :(Reflection AST IdentifierReferenceNode)node :(Reflection Semantic ASTAnalyzer)analyzer :(Reflection Semantic SymbolValueBinding)binding :: Reflection AST Node |
+        Reflection AST LiteralValueNode basicNewWithNamedSlots: #{
+            sourcePosition: node sourcePosition.
+            analyzedType: self.
+            value: binding value
+        }
+    };
+    withSelector: #supportsDynamicDispatch addMethod: {:(Type)self :: AnyValue |
+        <primitive: #"type.supportsDynamicDispatch">
+        __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #asReferenceDecayedType addMethod: {:(Type)self :: Type |
+        self
+    };
+    withSelector: #asDecayedType addMethod: {:(Type)self :: Type |
+        self
+    };
+    withSelector: #isSubtypeOf: addMethod: {:(Type)self :(Type)other :: Boolean |
+        <primitive: #"type.isSubtypeOf">
+        if: self == other then: {
+            true
+        } else: {
+            if: self supertype isNil then: {
+                false
+            } else: {
+                self supertype _ isSubtypeOf: other
+            }
+        }
+    };
+    withSelector: #hasTypeFlag: addMethod: {:(Type)self :(AnyValue)methodFlag :: Boolean |
+        <primitive: #"type.hasTypeFlag">
+        __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #hasAnyValueFlag addMethod: {:(Type)self :: Boolean |
+        self hasTypeFlag: #anyValue
+    };
+
+    withSelector: #addImplicitCoercionToNode:targetType:with: addMethod: {:(Type)self
+        :(Reflection AST Node)node :(Type)targetType :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+        if: self == targetType then: {
+            node
+        } else: {
+            if: (self isSubtypeOf: targetType) then: {
+                Reflection AST UpcastConversionNode basicNewWithNamedSlots: #{
+                    sourcePosition: node sourcePosition.
+                    expression: node.
+                    analyzedType: targetType
+                }
+            } else: {
+                targetType addImplicitCoercionToNode: node fromType: self with: analyzer
+            }
+        }
+    };
+    withSelector: #addImplicitCoercionToNode:fromType:with: addMethod: {:(Type)self
+        :(Reflection AST Node)node :(Type)fromType :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+        if: self == fromType then: {
+            node
+        } else: {
+            if: self hasAnyValueFlag then: {
+                Reflection AST WrapAnyValueNode basicNewWithNamedSlots: #{
+                    sourcePosition: node sourcePosition.
+                    expression: node.
+                    analyzedType: self
+                }
+            } else: {
+                if: (self schema canConstructWithValueOfType: fromType) then: {
+                    self schema addConstructionNodeFor: node valueType: fromType into: self with: analyzer
+                } else: {
+                    analyzer makeSemanticAnalysisError: ("Failed to perform implicit conversion {0} -> {1}" format: (fromType printString, self printString)) at: node sourcePosition
+                }
+            }
+        }
+    }.
+
+Reflection TypeSchema 
+    withSelector: #canConstructWithValueOfType: addMethod: {:(TypeSchema)self :(Type)sourceType :: Boolean |
+        false
+    };
+    withSelector: #addConstructionNodeFor:valueType:into:with: addMethod: {:(TypeSchema)self :(Reflection AST Node)node :(Type)sourceType :(Type)targetType :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+        __BootstrapCompiler__ subclassResponsibility
+    }.
+
+Reflection SumTypeSchema 
+    withSelector: #containsType: addMethod: {:(SumTypeSchema)self :(Type)typeToCheck :: Boolean |
+        <primitive: #"sumTypeSchema.containsType" >
+        __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #getTypeSelectorIndexFor: addMethod: {:(SumTypeSchema)self :(Type)elementType :: Size |
+        <primitive: #"sumTypeSchema.getTypeSelectorIndexFor" >
+        __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #canConstructWithValueOfType: addMethod: {:(SumTypeSchema)self :(Type)sourceType :: Boolean |
+        self containsType: sourceType
+    };
+    withSelector: #addConstructionNodeFor:valueType:into:with: addMethod: {:(TypeSchema)self :(Reflection AST Node)node :(Type)sourceType :(Type)targetType :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+        Reflection AST WrapValueInSumTypeNode basicNewWithNamedSlots: #{
+            sourcePosition: node sourcePosition.
+            expression: node.
+            typeSelector: (self getTypeSelectorIndexFor: sourceType).
+            analyzedType: targetType.
+        }
+    }.
+
+Void __type__
+    withSelector: #addImplicitCoercionToNode:fromType:with: addMethod: {:(Type)self
+        :(Reflection AST Node)node :(Type)fromType :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+        if: self == fromType then: {
+            node
+        } else: {
+            Reflection AST ValueAsVoidNode basicNewWithNamedSlots: #{
+                sourcePosition: node sourcePosition.
+                expression: node.
+                analyzedType: self
+            }
+        }
+    }.
+
+Function __type__
+    withSelector: #canonicalArgumentTypes addMethod: {:(Function __type__)self :: Type arraySlice |
+        <primitive: #"functionType.getCanonicalArgumentTypes">
+        __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #canonicalResultType addMethod: {:(Function __type__)self :: Type |
+        <primitive: #"functionType.getCanonicalResultType">
+        __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #makeFunctionSignatureAnalyzer addMethod: {:(Function __type__)self :: Reflection Semantic FunctionSignatureAnalyzer |
+        <primitive: #"functionType.makeFunctionSignatureAnalyzer">
+        __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #analyzeMessageSendNode:with:valueBinding: addMethod: {:(Function __type__)self :(Reflection AST MessageSendNode)node :(Reflection Semantic ASTAnalyzer)analyzer :(Reflection Semantic SymbolValueBinding)binding :: Reflection AST Node |
+        binding value analyzeMessageSendNode: node with: analyzer
+    };
+    withSelector: #analyzeIdentifierReferenceNode:with:valueBinding: addMethod: {:(Function __type__)self :(Reflection AST IdentifierReferenceNode)node :(Reflection Semantic ASTAnalyzer)analyzer :(Reflection Semantic SymbolValueBinding)binding :: Reflection AST Node |
+        if: binding value hasMacroFlag & binding value hasMessageMethodFlag then: {
+            analyzer analyzeNodeIfNeededWithCurrentExpectedType: (binding value
+                run: node value
+                with: AnyValue arraySlice basicNew
+                in: (analyzer makeMacroInvocationContextForIdentifierReferenceNode: node)
+            )
+        } else: {
+            Reflection AST LiteralValueNode basicNewWithNamedSlots: #{
+                sourcePosition: node sourcePosition.
+                analyzedType: self.
+                value: binding value
+            }
+        }
+    }.
+
+Reflection Semantic FunctionSignatureAnalyzer
+    withSelector: #hasPendingArguments addMethod: {:(Reflection Semantic FunctionSignatureAnalyzer)self :: Boolean |
+        <primitive: #"functionSignatureAnalyzer.hasPendingArguments">
+        __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #evaluateNextSignatureType addMethod: {:(Reflection Semantic FunctionSignatureAnalyzer)self :: Reflection Semantic TypeOrForAllPlaceholder |
+        <primitive: #"functionSignatureAnalyzer.evaluateNextSignatureType">
+        __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #computeResultType addMethod: {:(Reflection Semantic FunctionSignatureAnalyzer)self :: Type |
+        <primitive: #"functionSignatureAnalyzer.computeResultType">
+        __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #advanceArgumentWithAnalyzedType: addMethod: {:(Reflection Semantic FunctionSignatureAnalyzer)self :(Type)analyzedType :: Void |
+        <primitive: #"functionSignatureAnalyzer.advanceArgument">
+        __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #analyzeReceiverArgumentNode:with: addMethod: {:(Reflection Semantic FunctionSignatureAnalyzer)self :(Reflection AST Node)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+        self analyzeArgumentNode: node with: analyzer
+    };
+    withSelector: #analyzeArgumentNode:with: addMethod: {:(Reflection Semantic FunctionSignatureAnalyzer)self :(Reflection AST Node)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+        if: self hasPendingArguments then: {
+            let: #signatureTypeOrPlaceholder with: self evaluateNextSignatureType.
+            let: #analyzedNode with: (if: (signatureTypeOrPlaceholder is: Reflection Semantic ForAllPlaceholderBinding) then: {
+                let: #placeholder with: (signatureTypeOrPlaceholder get: Reflection Semantic ForAllPlaceholderBinding).
+                let: #directNode with: (analyzer analyzeNodeIfNeeded: node withTypeInferenceEnvironment: signatureType makeTypeInferenceEnvironment).
+
+                if: (signatureType matchAndSolveWithType: directNode _ analyzedType) then: {
+                    directNode
+                } else: {
+                    analyzer makeSemanticAnalysisError: "Generic argument type is not matching" atNode: directNode
+                }
+            } else: {
+                let: #expectedType with: (signatureTypeOrPlaceholder get: Type).
+                analyzer analyzeNodeIfNeeded: node withExpectedType: expectedType
+            }).
+
+            self advanceArgumentWithAnalyzedType: analyzedNode analyzedType _.
+            analyzedNode
+        } else: {
+            analyzer makeSemanticAnalysisError: "Unexpected excessive argument." atNode: (analyzer analyzeNodeIfNeededWithAutoType: node)
+        }
+    };
+    withSelector: #annotateExtraSemanticAnalysisErrorsOn:with: addMethod: {:(Reflection Semantic FunctionSignatureAnalyzer)self :(Reflection AST Node)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+        if: self hasPendingArguments then: {
+            analyzer makeSemanticAnalysisError: "Missing required arguments." atNode: node
+        } else: {
+            node
+        }
+    }.
+
+Function
+    withSelector: #analyzeMessageSendNode:with: addMethod: {:(Function)self :(Reflection AST MessageSendNode)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+        if: self hasMacroFlag then: {
+            analyzer analyzeNodeIfNeededWithCurrentExpectedType: (self
+                run: (node selector analyzeAndEvaluateNodeWith: analyzer)
+                with: node arguments
+                in: (analyzer makeMacroInvocationContextForMessageSendNode: node)
+            )
+        } else: {
+            let: #signatureAnalyzer with: self __type__ makeFunctionSignatureAnalyzer.
+            let: #analyzedNode with: node shallowCopy.
+
+            if: analyzedNode receiver isNotNil then: {
+                analyzedNode receiver: (signatureAnalyzer analyzeReceiverArgumentNode: analyzedNode receiver _ with: analyzer)
+            } else: {void}.
+
+            analyzedNode
+                arguments: (node arguments collect: {:(Reflection AST Node)node :: Reflection AST Node |
+                    signatureAnalyzer analyzeArgumentNode: node with: analyzer
+                });
+                analyzedType: signatureAnalyzer computeResultType;
+                boundMethod: self;
+                usesDynamicDispatch: node receiver _ analyzedType _ supportsDynamicDispatch & self usesDynamicDispatch.
+
+            signatureAnalyzer annotateExtraSemanticAnalysisErrorsOn: analyzedNode with: analyzer
+        }.
+    };
+    withSelector: #run:with:in: addMethod: {:(Function)self :(AnyValue)selector :(AnyValue arraySlice)arguments :(AnyValue)receiver :: AnyValue |
+        <primitive: #"object.runWithIn">
+        __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #hasMethodFlag: addMethod: {:(Function)self :(AnyValue)methodFlag :: Boolean |
+        <primitive: #"function.hasMethodFlag">
+        __BootstrapCompiler__ primitiveFailed
+    };
+
+    ## Macro
+    withSelector: #hasMacroFlag addMethod: {:(Function)self :: Boolean |
+        self hasMethodFlag: #macro
+    };
+    withSelector: #hasMessageMethodFlag addMethod: {:(Function)self :: Boolean |
+        self hasMethodFlag: #messageMethod
+    };
+    withSelector: #hasFallbackFlag addMethod: {:(Function)self :: Boolean |
+        self hasMethodFlag: #fallback
+    };
+
+    ## Side effects
+    withSelector: #hasPureFlag addMethod: {:(Function)self :: Boolean |
+        self hasMethodFlag: #pure
+    };
+
+    ## Dispatch mode
+    withSelector: #hasAbstractFlag addMethod: {:(Function)self :: Boolean |
+        self hasMethodFlag: #abstract
+    };
+    withSelector: #hasVirtualFlag addMethod: {:(Function)self :: Boolean |
+        self hasMethodFlag: #virtual
+    };
+    withSelector: #hasOverrideFlag addMethod: {:(Function)self :: Boolean |
+        self hasMethodFlag: #override
+    };
+    withSelector: #hasStaticFlag addMethod: {:(Function)self :: Boolean |
+        self hasMethodFlag: #static
+    };
+    withSelector: #hasFinalFlag addMethod: {:(Function)self :: Boolean |
+        self hasMethodFlag: #final
+    };
+
+    withSelector: #hasDynamicDispatchFlag addMethod: {:(Function)self :: Boolean |
+        self hasAbstractFlag | self hasVirtualFlag | self hasOverrideFlag
+    };
+
+    withSelector: #usesDynamicDispatch addMethod: {:(Function)self :: Boolean |
+        self hasDynamicDispatchFlag & self hasFinalFlag not 
+    }.

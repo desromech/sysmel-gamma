@@ -1,0 +1,9 @@
+__BootstrapCompiler__
+    enterTopLevelNamespace;
+    enterNamespaceNamed: #Reflection;
+    enterNamespaceNamed: #Semantic;
+
+    addBindingNamed: #AnonymousSymbol with: (__TypeBuilder__ newGCClassWithSuperclass: Object publicSlots: #{
+        sourcePosition: Reflection SourcePosition optional
+    });
+    addBindingNamed: #MessageChainReceiverAnonymousSymbol with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection Semantic AnonymousSymbol publicSlots: #{}).

@@ -2,7 +2,17 @@
 
 python3 bootstrap/interpreter/sysmelbi.py \
     module-sources/Compiler/Phase1-Untyped/CoreHierarchy.sysmel \
-    module-sources/Compiler/Phase1-Untyped/Semantics.sysmel \
+    module-sources/Compiler/Phase1-Untyped/CoreSemantics.sysmel \
+    module-sources/Compiler/Phase1-Untyped/ParseTreeMapping.sysmel \
+    module-sources/Compiler/Phase1-Untyped/SemanticAnalysisMapping.sysmel \
+    module-sources/Compiler/Phase1-Untyped/TypeChecking.sysmel \
+    module-sources/Compiler/Phase1-Untyped/TypeInference.sysmel \
+    module-sources/Compiler/Phase1-Untyped/Symbol.sysmel \
+    module-sources/Compiler/Phase1-Untyped/Environment.sysmel \
+    module-sources/Compiler/Phase1-Untyped/MacroInvocationContext.sysmel \
+    module-sources/Compiler/Phase1-Untyped/ASTAnalyzer.sysmel \
+    module-sources/Compiler/Phase1-Untyped/ControlFlowNodes.sysmel \
+    module-sources/Compiler/Phase1-Untyped/BasicConversionNodes.sysmel \
     module-sources/Compiler/Phase1-Untyped/Variable.sysmel \
     module-sources/Compiler/Phase1-Untyped/LocalVariable.sysmel \
     module-sources/Compiler/Phase1-Untyped/Macros.sysmel \
