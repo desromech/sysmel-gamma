@@ -1474,6 +1474,13 @@ class ProgramEntity(TypedValue):
     def getType(self):
         return getBasicTypeNamed('ProgramEntity')
 
+    def getSlotWithIndexAndName(self, slotIndex, slotName):
+        if slotName == 'parent':
+            return self.parent
+        elif slotName == 'name':
+            return self.name
+        return super().getSlotWithIndexAndName(slotIndex, slotName)
+
     def lookupScopeSymbol(self, selector):
         return None
 
@@ -1564,8 +1571,6 @@ class BehaviorType(ProgramEntity, TypeInterface):
             return self.supertype
         elif slotName == 'schema':
             return self.schema
-        elif slotName == 'name':
-            return self.name
         return super().getSlotWithIndexAndName(slotIndex, slotName)
 
     def isSubtypeOf(self, expectedSuperType):

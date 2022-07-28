@@ -5,7 +5,7 @@ __BootstrapCompiler__
     addBindingNamed: #ProgramEntityDefinitionNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
     }).
 
-Reflection Namespace
+Reflection ProgramEntity
     withSelector: #lookupPublicSymbol: addMethod: {:(Reflection Namespace)self :(Object)symbol :: Reflection SymbolBinding optional |
         nil
     };

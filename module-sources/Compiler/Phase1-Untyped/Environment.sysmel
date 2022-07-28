@@ -36,9 +36,7 @@ Reflection Semantic IdentifierLookupScope
 
 Reflection Semantic ProgramEntityLookupScope
     withSelector: #lookupSymbol: addMethod: {:(Reflection Semantic ProgramEntityLookupScope)self :(Object)symbol :: Reflection SymbolBinding optional |
-        self programEntity lookupScopeSymbol: symbol.
-        ##<primitive: #"programEntityLookupScope.lookupSymbol">
-        ##__BootstrapCompiler__ primitiveFailed
+        self programEntity lookupScopeSymbol: symbol
     }.
 
 Reflection Semantic LexicalScope

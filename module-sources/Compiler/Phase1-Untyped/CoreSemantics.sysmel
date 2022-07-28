@@ -23,7 +23,6 @@ __BootstrapCompiler__
         symbolTable: Reflection SymbolTable
     }).
 
-
 ## The AST nodes.
 __BootstrapCompiler__
     enterTopLevelNamespace;
