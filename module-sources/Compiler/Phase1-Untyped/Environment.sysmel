@@ -29,6 +29,20 @@ Reflection Semantic IdentifierLookupScope
             }
         }
     };
+    withSelector: #lookupCurrentProgramEntityDefinitionOwner addMethod: {:(Reflection Semantic IdentifierLookupScope)self :: Reflection ProgramEntity optional |
+        if: self parent isNotNil then: {
+            self parent _ lookupCurrentProgramEntityDefinitionOwner
+        } else: {
+            nil
+        }
+    };
+    withSelector: #lookupCurrentProgramEntity addMethod: {:(Reflection Semantic IdentifierLookupScope)self :: Reflection ProgramEntity optional |
+        if: self parent isNotNil then: {
+            self parent _ lookupCurrentProgramEntity
+        } else: {
+            nil
+        }
+    };
     withSelector: #makeChildLexicalScope addMethod: {:(Reflection Semantic IdentifierLookupScope)self :: Reflection Semantic LexicalScope |
         <primitive: #"identifierLookupScope.makeChildLexicalScope">
         __BootstrapCompiler__ primitiveFailed
@@ -37,6 +51,20 @@ Reflection Semantic IdentifierLookupScope
 Reflection Semantic ProgramEntityLookupScope
     withSelector: #lookupSymbol: addMethod: {:(Reflection Semantic ProgramEntityLookupScope)self :(Object)symbol :: Reflection SymbolBinding optional |
         self programEntity lookupScopeSymbol: symbol
+    };
+    withSelector: #lookupCurrentProgramEntityDefinitionOwner addMethod: {:(Reflection Semantic IdentifierLookupScope)self :: Reflection ProgramEntity optional |
+        if: self programEntity isDefinitionOwner then: {
+            self programEntity
+        } else: {
+            if: self parent isNotNil then: {
+                self parent _ lookupCurrentProgramEntityDefinitionOwner
+            } else: {
+                nil
+            }
+        }
+    };
+    withSelector: #lookupCurrentProgramEntity addMethod: {:(Reflection Semantic IdentifierLookupScope)self :: Reflection ProgramEntity optional |
+        self programEntity
     }.
 
 Reflection Semantic LexicalScope

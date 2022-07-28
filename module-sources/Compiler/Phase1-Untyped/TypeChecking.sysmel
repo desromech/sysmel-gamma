@@ -9,6 +9,9 @@ Type
         <primitive: #"type.conversion.toString">
         __BootstrapCompiler__ primitiveFailed
     };
+    withSelector: #isDefinitionOwner addMethod: {:(Reflection ProgramEntity)self :: Boolean |
+        true
+    };
     withSelector: #lookupSelector: addMethod: {:(Type)self :(AnyValue)selector :: AnyValue |
         <primitive: #"type.lookupSelector">
         __BootstrapCompiler__ primitiveFailed

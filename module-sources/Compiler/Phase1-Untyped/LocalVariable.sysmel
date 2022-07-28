@@ -30,7 +30,7 @@ Reflection AST LocalVariableDefinitionNode
                     sourcePosition: self sourcePosition
                 })
             ).
-            let: #sanitizedName with: name.
+            let: #sanitizedName with: (name asSanitizedNameSymbolFor: self sourcePosition).
             let: #hasError with: (ValueBox(Boolean) with: false).
 
             ## Type expression evaluation, and type checking.

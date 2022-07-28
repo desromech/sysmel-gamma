@@ -6,6 +6,8 @@ from evalmachine import *
 from environment import *
 from errors import *
 
+sys.setrecursionlimit(50000)
+
 def printHelp():
     print('sysmelbi.py <scripts to evaluate> -- <script arguments>')
 

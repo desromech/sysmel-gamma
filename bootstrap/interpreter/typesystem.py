@@ -1517,6 +1517,7 @@ class Namespace(ProgramEntity):
         self.symbolTable.setSymbolValueBinding(symbol, value)
         value.onGlobalBindingWithSymbolAdded(symbol)
 
+    @primitiveNamed('namespace.getOrCreateChildNamespaceNamed')
     def getOrCreateChildNamespaceNamed(self, childName):
         childNamespace = self.symbolTable.lookupSymbol(childName)
         if childNamespace is None:

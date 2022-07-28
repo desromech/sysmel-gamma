@@ -3,12 +3,19 @@ __BootstrapCompiler__
     enterNamespaceNamed: #Reflection;
     enterNamespaceNamed: #AST;
     addBindingNamed: #ProgramEntityDefinitionNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
+        analyzedProgramEntity: Reflection ProgramEntity optional
     }).
 
 Reflection ProgramEntity
-    withSelector: #lookupPublicSymbol: addMethod: {:(Reflection Namespace)self :(Object)symbol :: Reflection SymbolBinding optional |
+    withSelector: #isDefinitionOwner addMethod: {:(Reflection ProgramEntity)self :: Boolean |
+        false
+    };
+    withSelector: #canHaveNamespaces addMethod: {:(Reflection ProgramEntity)self :: Boolean |
+        false
+    };
+    withSelector: #lookupPublicSymbol: addMethod: {:(Reflection ProgramEntity)self :(Object)symbol :: Reflection SymbolBinding optional |
         nil
     };
-    withSelector: #lookupScopeSymbol: addMethod: {:(Reflection Namespace)self :(Object)symbol :: Reflection SymbolBinding optional |
+    withSelector: #lookupScopeSymbol: addMethod: {:(Reflection ProgramEntity)self :(Object)symbol :: Reflection SymbolBinding optional |
         nil
     }.
