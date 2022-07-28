@@ -30,34 +30,34 @@ __BootstrapCompiler__
     });
     print: Int32 basicNew;
     print: (Int32 basicNew: -42);
-    print: SysmelCompiler Semantic ASTAnalyzer __type__;
+    print: Reflection Semantic ASTAnalyzer __type__;
 
-    print: (`'1 analyzeNodeIfNeededWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
-    print: (`'1 analyzeAndEvaluateNodeWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
+    print: (`'1 analyzeNodeIfNeededWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
+    print: (`'1 analyzeAndEvaluateNodeWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
 
-    print: (`'(1 + 1) analyzeNodeIfNeededWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
-    print: (`'(1 + 1) analyzeAndEvaluateNodeWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
+    print: (`'(1 + 1) analyzeNodeIfNeededWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
+    print: (`'(1 + 1) analyzeAndEvaluateNodeWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
 
-    print: (`'{} analyzeNodeIfNeededWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
-    print: (`'{} analyzeAndEvaluateNodeWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
+    print: (`'{} analyzeNodeIfNeededWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
+    print: (`'{} analyzeAndEvaluateNodeWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
 
-    print: (`'{1 . 1 + 1} analyzeNodeIfNeededWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
-    print: (`'{1 . 1 + 1} analyzeAndEvaluateNodeWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
+    print: (`'{1 . 1 + 1} analyzeNodeIfNeededWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
+    print: (`'{1 . 1 + 1} analyzeAndEvaluateNodeWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
 
-    print: (`'(1 negated) analyzeNodeIfNeededWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
+    print: (`'(1 negated) analyzeNodeIfNeededWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
 
-    print: (`'(if: true then: 1 else: 2) analyzeNodeIfNeededWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
-    print: (`'(if: true then: 1 else: 2) analyzeAndEvaluateNodeWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
-    print: (`'(if: false then: 1 else: 2) analyzeAndEvaluateNodeWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
+    print: (`'(if: true then: 1 else: 2) analyzeNodeIfNeededWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
+    print: (`'(if: true then: 1 else: 2) analyzeAndEvaluateNodeWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
+    print: (`'(if: false then: 1 else: 2) analyzeAndEvaluateNodeWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
 
-    print: (`'(if: true then: 1) analyzeNodeIfNeededWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
-    print: (`'(if: false then: 1) analyzeAndEvaluateNodeWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
+    print: (`'(if: true then: 1) analyzeNodeIfNeededWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
+    print: (`'(if: false then: 1) analyzeAndEvaluateNodeWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
 
-    print: (`'{let: #testVar with: 1 . testVar} analyzeNodeIfNeededWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
-    print: (`'{let: #testVar with: 1 . testVar} analyzeAndEvaluateNodeWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
-    ##print: (`'(let: #testVar type: Int32 with: 1s32) analyzeNodeIfNeededWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
+    print: (`'{let: #testVar with: 1 . testVar} analyzeNodeIfNeededWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
+    print: (`'{let: #testVar with: 1 . testVar} analyzeAndEvaluateNodeWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
+    ##print: (`'(let: #testVar type: Int32 with: 1s32) analyzeNodeIfNeededWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
 
-    print: (`'(let testVar := 42) analyzeNodeIfNeededWith: SysmelCompiler Semantic ASTAnalyzer forDefaultEnvironment);
+    print: (`'(let testVar := 42) analyzeNodeIfNeededWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
 
     print: nil isNil;
     print: nil isNotNil;

@@ -1,0 +1,103 @@
+__BootstrapCompiler__
+    enterTopLevelNamespace;
+    enterNamespaceNamed: #Reflection;
+    addBindingNamed: #LocalVariable with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection Variable publicSlots: #{});
+
+    enterNamespaceNamed: #AST;
+    addBindingNamed: #LocalVariableDefinitionNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST VariableDefinitionNode publicSlots: #{
+    });
+    addBindingNamed: #LocalVariableReferenceNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
+        binding: Reflection LocalVariable.
+    }).
+
+Reflection LocalVariable
+    withSelector: #analyzeIdentifierReferenceNode:with: addMethod: {:(Reflection Semantic SymbolBinding)self :(Reflection AST IdentifierReferenceNode)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+        Reflection AST LocalVariableReferenceNode basicNewWithNamedSlots: #{
+            binding: self.
+            analyzedType: self referenceType
+        }
+    }.
+
+Reflection AST LocalVariableDefinitionNode
+    withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST LocalVariableDefinitionNode)self :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+        if: self initialValueExpression isNil & self isMutable not then: {
+            analyzer makeSemanticAnalysisError: "Immutable local variable definition requires an initial value." atNode: self
+        } else: {
+            let: #analyzedNode with: self shallowCopy.
+            let: #name with: (if: self nameExpression isNotNil
+                then: (self nameExpression _ analyzeAndEvaluateNodeWith: analyzer)
+                else: (AnonymousSymbol basicNewWithNamedSlots: #{
+                    sourcePosition: self sourcePosition
+                })
+            ).
+            let: #sanitizedName with: name.
+            let: #hasError with: (ValueBox(Boolean) with: false).
+
+            ## Type expression evaluation, and type checking.
+            if: analyzedNode typeExpression isNil then: {
+                if: analyzedNode initialValueExpression isNil then: {
+                    analyzedNode analyzedExpectedValueType: AnyValue.
+                } else: {
+                    analyzedNode
+                        initialValueExpression: (analyzer analyzeNodeIfNeeded: self initialValueExpression _ withTypeInferenceEnvironment: self makeValueTypeInferenceEnvironment);
+                        analyzedExpectedValueType: analyzedNode initialValueExpression _ analyzedType.
+                }.
+            } else: {
+                analyzedNode typeExpression: (analyzer analyzeNodeIfNeeded: self typeExpression _ withExpectedType: Type)
+                let: #typeExpressionValue with: (self typeExpression _ evaluateNodeWith: analyzer environment).
+                if: (typeExpressionValue __type__ isSubtypeOf: Type) then: {
+                    analyzedNode analyzedExpectedValueType: typeExpressionValue.
+                } else: {
+                    hasError _: true.
+
+                    analyzedNode
+                        typeExpression: (analyzer makeSemanticAnalysisError: "Expected a type expression." atNode: self typeExpression _);
+                        analyzedExpectedValueType: CompilationError
+                }.
+            }.
+
+            ## Make the variable.
+            let: #valueType with: analyzedNode analyzedExpectedValueType _.
+
+            ## TODO: Add support for mutability.
+            let: #variableReferenceType with: (if: hasError _ then: CompilationError else: valueType).
+            let: #variable with: (Reflection LocalVariable basicNewWithNamedSlots: #{
+                name: sanitizedName.
+                valueType: analyzedNode analyzedExpectedValueType _.
+                referenceType: variableReferenceType.
+            }).
+
+            ## Set the variable binding.
+            analyzer environment lexicalScope setSymbol: sanitizedName variableBinding: variable.
+
+            ## Analyze the initial value expression.
+            if: analyzedNode initialValueExpression isNil then: {
+                analyzedNode initialValueExpression: (typeExpressionValue makeInitialValueNodeWith: analyzer at: analyzedNode sourcePosition)
+            } else: {
+                analyzedNode initialValueExpression: (analyzer analyzeNodeIfNeeded: analyzedNode initialValueExpression _ withExpectedType: analyzedNode analyzedExpectedValueType _)
+            }.
+
+            analyzedNode
+                analyzedType: variableReferenceType;
+                analyzedVariable: variable;
+                analyzedSymbol: sanitizedName.
+
+            analyzedNode
+        }
+    };
+    withSelector: #evaluateNodeWith: addMethod: {:(Reflection AST LocalVariableDefinitionNode)self :(Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+        ## TODO: Add support for mutability.
+        
+        let: #initialValue with: (self initialValueExpression _ evaluateNodeWith: evaluationEnvironment).
+        let: #bindingValue with: initialValue.
+
+        evaluationEnvironment lexicalScope setSymbol: self analyzedVariable _ immutableValue: bindingValue.
+        
+        bindingValue
+    }.
+
+Reflection AST LocalVariableReferenceNode
+    withSelector: #evaluateNodeWith: addMethod: {:(Reflection AST LocalVariableReferenceNode)self :(Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+        (evaluationEnvironment lexicalScope lookupSymbolRecursively: self binding) _ 
+            evaluateBindingWithEnvironment: evaluationEnvironment
+    }.

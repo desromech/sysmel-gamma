@@ -1,0 +1,65 @@
+__BootstrapCompiler__
+    enterTopLevelNamespace;
+    enterNamespaceNamed: #Reflection;
+    addBindingNamed: #Variable with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection ProgramEntity publicSlots: #{
+        name: AnyValue.
+        valueType: Type.
+        referenceType: Type.
+    });
+
+    enterNamespaceNamed: #AST;
+    addBindingNamed: #VariableDefinitionNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
+        nameExpression: Reflection AST Node optional.
+        typeExpression: Reflection AST Node optional.
+        initialValueExpression: Reflection AST Node optional.
+        isMutable: Boolean.
+        hasReferenceTypeInference: Boolean.
+        hasDirectTypeInference: Boolean.
+
+        analyzedSymbol: Object optional.
+        analyzedExpectedValueType: Type optional.
+        analyzedVariable: Reflection Variable optional.
+    });
+
+    enterTopLevelNamespace;
+    enterNamespaceNamed: #Reflection;
+    enterNamespaceNamed: #Semantic;
+    addBindingNamed: #SymbolVariableBinding with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection Semantic SymbolBinding publicSlots: #{
+        variable: Reflection Variable
+    }).
+
+Reflection Variable
+    withSelector: #analyzeMessageSendNode:with: addMethod: {:(Type)self :(Reflection AST MessageSendNode)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+        __BootstrapCompiler__ subclassResponsibility
+    };
+    withSelector: #analyzeIdentifierReferenceNode:with: addMethod: {:(Reflection Semantic SymbolBinding)self :(Reflection AST IdentifierReferenceNode)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+        __BootstrapCompiler__ subclassResponsibility
+    }.
+
+Reflection AST VariableDefinitionNode
+    withSelector: #makeValueTypeInferenceEnvironment addMethod: {:(Reflection AST VariableDefinitionNode)self :: Reflection Semantic TypeInferenceEnvironment |
+        if: self hasDirectTypeInference then: {
+            Reflection Semantic DirectAutoTypeInferenceEnvironment basicNew
+        } else: {
+            if: self hasReferenceTypeInference then: {
+                Reflection Semantic ReferenceAutoTypeInferenceEnvironment basicNew
+            } else: {
+                Reflection Semantic AutoTypeInferenceEnvironment basicNew
+            }
+        }
+    }.
+
+Reflection Semantic LexicalScope
+    withSelector: #setSymbol:variableBinding: addMethod: {:(Reflection Semantic LexicalScope)self :(Object)symbol :(Reflection Variable)variable :: Void |
+        self setSymbol: symbol binding: (Reflection Semantic SymbolVariableBinding basicNewWithNamedSlots: #{
+            variable: variable
+        })
+    }.
+
+Reflection Semantic SymbolVariableBinding
+    withSelector: #analyzeMessageSendNode:with: addMethod: {:(Type)self :(Reflection AST MessageSendNode)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+        self variable analyzeMessageSendNode: node with: analyzer
+    };
+    withSelector: #analyzeIdentifierReferenceNode:with: addMethod: {:(Reflection Semantic SymbolValueBinding)self :(Reflection AST IdentifierReferenceNode)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+        self variable analyzeIdentifierReferenceNode: node with: analyzer
+    }.    

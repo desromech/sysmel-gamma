@@ -22,7 +22,7 @@ Reflection AST Node
     }.
 
 Reflection AST MetaBuilderInstanceNode
-    withSelector: #asCollapsedNodeWith: addMethod: {:(Reflection AST Node)self :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+    withSelector: #asCollapsedNodeWith: addMethod: {:(Reflection AST Node)self :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
         analyzer analyzeNodeIfNeededWithCurrentExpectedType: self value concretizeMetaBuilder
     };
     withSelector: #isMetaBuilderInstanceNode addMethod: {:(Reflection AST MetaBuilderInstanceNode)self :: Boolean |
@@ -47,7 +47,7 @@ MetaProgramming MetaBuilder __type__
             analyzedType: self.
         }
     };
-    withSelector: #analyzeMessageSendNode:with: addMethod: {:(Type)self :(Reflection AST MessageSendNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+    withSelector: #analyzeMessageSendNode:with: addMethod: {:(Type)self :(Reflection AST MessageSendNode)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
         if: (if: node receiver isNotNil then: node receiver _ isMetaBuilderInstanceNode else: false) then: {
             node receiver _ evaluateLiteralValue analyzeMessageSendNode: node with: analyzer
         } else: {
@@ -56,10 +56,10 @@ MetaProgramming MetaBuilder __type__
     }.
 
 MetaProgramming MetaBuilder
-    withSelector: #analyzeMessageSendNode:with: addMethod: {:(MetaProgramming MetaBuilder)self :(Reflection AST MessageSendNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+    withSelector: #analyzeMessageSendNode:with: addMethod: {:(MetaProgramming MetaBuilder)self :(Reflection AST MessageSendNode)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
         self analyzeMetaBuilderDirectMessageNode: node with: analyzer
     };
-    withSelector: #analyzeMetaBuilderDirectMessageNode:with: addMethod: {:(MetaProgramming MetaBuilder)self :(Reflection AST MessageSendNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+    withSelector: #analyzeMetaBuilderDirectMessageNode:with: addMethod: {:(MetaProgramming MetaBuilder)self :(Reflection AST MessageSendNode)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
         if: node selector isLiteralValueNode then: {
             let: #selector with: (node selector evaluateLiteralValue).
             let: #method with: (self __type__ lookupSelector: selector).
@@ -81,7 +81,7 @@ MetaProgramming MetaBuilder
             self analyzeMetaBuilderFailedMessageNode: node with: analyzer
         }
     };
-    withSelector: #analyzeMetaBuilderFailedMessageNode:with: addMethod: {:(MetaProgramming MetaBuilder)self :(Reflection AST MessageSendNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+    withSelector: #analyzeMetaBuilderFailedMessageNode:with: addMethod: {:(MetaProgramming MetaBuilder)self :(Reflection AST MessageSendNode)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
         analyzer analyzeNodeIfNeededWithCurrentExpectedType: (node shallowCopy
             receiver: self emitResultNode;
             yourself
@@ -103,7 +103,7 @@ MetaProgramming MetaBuilder
     }.
 
 MetaProgramming NamedMetaBuilder
-    withSelector: #analyzeMessageSendNode:with: addMethod: {:(MetaProgramming NamedMetaBuilder)self :(Reflection AST MessageSendNode)node :(SysmelCompiler Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+    withSelector: #analyzeMessageSendNode:with: addMethod: {:(MetaProgramming NamedMetaBuilder)self :(Reflection AST MessageSendNode)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
         let: #selectorNode with: node selector.
         if: self hasSeenName not & selectorNode isLiteralValueNode & node arguments isEmpty then: {
             let: #selectorValue with: (selectorNode evaluateNodeWith: analyzer environment).
