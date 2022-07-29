@@ -7,7 +7,7 @@ __BootstrapCompiler__
     }).
 
 Reflection ProgramEntity
-    withSelector: #isDefinitionOwner addMethod: {:(Reflection ProgramEntity)self :: Boolean |
+    withSelector: #canHaveTypes addMethod: {:(Reflection Namespace)self :: Boolean |
         false
     };
     withSelector: #canHaveNamespaces addMethod: {:(Reflection ProgramEntity)self :: Boolean |
@@ -18,4 +18,7 @@ Reflection ProgramEntity
     };
     withSelector: #lookupScopeSymbol: addMethod: {:(Reflection ProgramEntity)self :(Object)symbol :: Reflection SymbolBinding optional |
         nil
+    };
+    withSelector: #setSymbol:visibility:immutableValue: addMethod: {:(Reflection ProgramEntity)self :(Object)symbol :(Reflection ProgramEntityVisibility)visibility :(AnyValue)immutableValue :: Void |
+        __BootstrapCompiler__ subclassResponsibility
     }.

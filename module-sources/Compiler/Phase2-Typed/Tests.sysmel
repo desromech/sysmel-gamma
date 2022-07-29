@@ -1,29 +1,12 @@
+#*
 namespace TestNamespace definition: {
-    1 + 2.
-    false.
-    nil.
-    void.
-
-    1 negated.
-
-    __BootstrapCompiler__
-        print: "Test Phase 2 Typed";
-
-        print: 1;
-        print: Int32 => Void;
-        print: Void => Void;
-        print: Int32 -- Int32;
-        print: Int32 -- Int32 -- Int32;
-        print: (Int32 -- Int32) => Void;
-        print: (Int32 -- Int32 -- Int32) => Void;
-        print: Float32 -- Int32 -- Float64.
-
-    let: #testVar with: 42.
-    testVar.
-
-    let testVar2 := 42.
-    testVar2.
 }.
+*#
+public struct TestStruct definition: {
+
+}.
+
+TestStruct
 
 ##1 arcTan: 2.
 ##1 perform: #+ with: 2.

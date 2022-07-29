@@ -1,0 +1,131 @@
+__BootstrapCompiler__
+    enterTopLevelNamespace;
+    enterNamespaceNamed: #Reflection;
+    enterNamespaceNamed: #AST;
+    addBindingNamed: #TypeDefinitionNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST ProgramEntityDefinitionNode publicSlots: #{
+        nameExpression: Reflection AST Node optional.
+        supertypeExpression: Reflection AST Node optional.
+        traitExpressions: Reflection AST Node arraySlice.
+        bodyExpression: Reflection AST Node optional.
+        visibility: Reflection ProgramEntityVisibility.
+        analyzedName: Object optional.
+        isAnalyzedLocalDefinition: Boolean.
+        localDefinitionVariable: Reflection LocalVariable optional.
+    }).
+
+Reflection AST TypeDefinitionNode
+    withSelector: #constructTypeInstance addMethod: {:(Reflection AST TypeDefinitionNode)self :: Type |
+        __TypeBuilder__ newTrivialType
+    };
+    withSelector: #getGenericResultMetaType addMethod: {:(Reflection AST TypeDefinitionNode)self :: Type |
+        Type __type__
+    };
+    withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST TypeDefinitionNode)self :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+        let: #analyzedNode with: self shallowCopy.
+        if: (analyzedNode visibility is: Undefined) then: {
+            analyzedNode visibility: Reflection LexicalScopeVisibility basicNew
+        } else: { void }.
+
+        ## Check the name.
+        let: #name with: (if: self nameExpression isNotNil
+            then: (self nameExpression _ analyzeAndEvaluateNodeWith: analyzer)
+            else: (Reflection AnonymousSymbol basicNewWithNamedSlots: #{
+                sourcePosition: self sourcePosition
+            })
+        ).
+        let: #sanitizedName with: (name asSanitizedNameSymbolFor: self sourcePosition).
+        analyzedNode analyzedName: sanitizedName.
+
+        ## Make sure the name is not duplicated.
+        let: #errorNode with: (Reflection AST Node optional valueBox with: nil).
+        if: (analyzedNode visibility is: Reflection LexicalScopeVisibility) then: {
+            let: #existentBinding with: (analyzer environment lexicalScope lookupSymbol: sanitizedName).
+
+            if: existentBinding isNil then: {
+                let: #expectedMetaType with: analyzedNode getGenericResultMetaType.
+                let: #variable with: (Reflection LocalVariable basicNewWithNamedSlots: #{
+                    name: sanitizedName.
+                    valueType: expectedMetaType.
+                    referenceType: expectedMetaType.
+                }).
+
+                analyzer environment lexicalScope setSymbol: sanitizedName variableBinding: variable.
+                
+                analyzedNode
+                    analyzedType: expectedMetaType;
+                    isAnalyzedLocalDefinition: true;
+                    localDefinitionVariable: variable.
+            } else: {
+                analyzer makeSemanticAnalysisError: "Non-lexical scoped type definition is not inside a program entity with visibility." at: node sourcePosition
+            }.
+        } else: {
+            let: #ownerProgramEntity with: (analyzer environment lexicalScope lookupCurrentProgramEntity).
+            let: #hasValidOwner with: (if: ownerProgramEntity isNotNil then: ownerProgramEntity _ canHaveTypes else: false).
+            
+            if: hasValidOwner then: {
+                let: #existentBinding with: (ownerProgramEntity _ lookupScopeSymbol: sanitizedName).
+
+                if: existentBinding isNil then: {
+                    let: #typeInstance with: analyzedNode constructTypeInstance.
+                    typeInstance name: sanitizedName.
+
+                    if: sanitizedName isAnonymousSymbol not then: {
+                        ownerProgramEntity _ setSymbol: sanitizedName visibility: analyzedNode visibility immutableValue: typeInstance
+                    } else: {void}.
+
+                    analyzedNode
+                        analyzedName: sanitizedName;
+                        analyzedProgramEntity: typeInstance;
+                        analyzedType: typeInstance __type__;
+                        isAnalyzedLocalDefinition: false.
+                } else: {
+                    __BootstrapCompiler__ print: "TODO: check existent binding compatibility.".
+                }.
+            } else: {
+                errorNode _: (analyzer makeSemanticAnalysisError: "Non-lexical scoped type definition is not inside a program entity with visibility." at: node sourcePosition)
+            }.
+        }.
+
+        if: errorNode _ isNotNil then: {
+            errorNode _ _
+        } else: {
+            analyzedNode
+        }.
+    };
+    withSelector: #evaluateNodeWith: addMethod: {:(Reflection AST TypeDefinitionNode)self :(Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+        let: #typeProgramEntity with: (if: self isAnalyzedLocalDefinition then: {
+            let: #typeInstance with: self constructTypeInstance.
+            if: self analyzedName isNotNil then: {
+                typeInstance name: self analyzedName _
+            } else: { void }.
+
+            evaluationEnvironment lexicalScope setSymbol: self localDefinitionVariable _ immutableValue: typeInstance.
+            typeInstance
+        } else: {
+            self analyzedProgramEntity _
+        }).
+
+        self evaluateTypeDefinitionComponentsWith: evaluationEnvironment.
+
+        typeProgramEntity
+    };
+    withSelector: #evaluateTypeDefinitionComponentsWith: addMethod: {:(Reflection AST TypeDefinitionNode)self :(Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: Void |
+        self evaluateCommonTypeDefinitionComponentsWith: evaluationEnvironment.
+        void
+    };
+    withSelector: #evaluateCommonTypeDefinitionComponentsWith: addMethod: {:(Reflection AST TypeDefinitionNode)self :(Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: Void |
+        if: self supertypeExpression isNotNil then: {
+            __BootstrapCompiler__ print: "TODO: analyze and evaluate type supertypeExpression".
+        } else: {void}.
+
+        self traitExpressions do: {:(Reflection AST Node)node :: Void |
+            __BootstrapCompiler__ print: "TODO: analyze and evaluate type trait".
+            void
+        }.
+
+        if: self bodyExpression isNotNil then: {
+            __BootstrapCompiler__ print: "TODO: analyze and evaluate type body expression.".
+        } else: {void}.
+
+        void
+    }.

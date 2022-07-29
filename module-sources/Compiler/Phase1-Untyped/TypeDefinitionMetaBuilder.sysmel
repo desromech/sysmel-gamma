@@ -1,0 +1,32 @@
+## Type definition builder.
+__BootstrapCompiler__
+    enterTopLevelNamespace;
+    enterNamespaceNamed: #MetaProgramming;
+    addBindingNamed: #TypeDefinitionMetaBuilder with: (__TypeBuilder__ newGCClassWithSuperclass: MetaProgramming NamedMetaBuilder slots: #{
+        supertypeExpression: Reflection AST Node optional.
+        traitExpressions: Reflection AST Node arraySlice.
+        bodyExpression: Reflection AST Node optional.
+    }).
+
+MetaProgramming TypeDefinitionMetaBuilder
+    withSelector: #"supertype:" addMethod: {:(MetaProgramming NamespaceMetaBuilder)self :(Reflection AST Node)supertypeExpression :: Void |
+        <metaBuilder>
+        self supertypeExpression: supertypeExpression.
+        void
+    };
+    withSelector: #"definition:" addMethod: {:(MetaProgramming NamespaceMetaBuilder)self :(Reflection AST Node)bodyExpression :: Void |
+        <metaBuilder>
+        self bodyExpression: bodyExpression.
+        self finish.
+        void
+    };
+    withSelector: #concretizeMetaBuilder addMethod: {:(MetaProgramming NamespaceMetaBuilder)self :: Reflection AST Node |
+        (Reflection AST TypeDefinitionNode basicNewWithNamedSlots: #{
+            sourcePosition: self metaContext sourcePosition.
+            nameExpression: self nameExpression.
+            supertypeExpression: self supertypeExpression.
+            traitExpressions: self traitExpressions.
+            bodyExpression: self bodyExpression.
+            visibility: self programEntityAttributes visibility.
+        })
+    }.

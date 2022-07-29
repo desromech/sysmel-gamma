@@ -1,0 +1,53 @@
+## Type definition builder.
+__BootstrapCompiler__
+    enterTopLevelNamespace;
+    enterNamespaceNamed: #MetaProgramming;
+    addBindingNamed: #FlagMetaBuilder with: (__TypeBuilder__ newGCClassWithSuperclass: MetaProgramming MetaBuilder slots: #{}).
+
+__BootstrapCompiler__
+    enterTopLevelNamespace;
+    addBindingNamed: #public with: {:(MacroInvocationContext)macroSelf :: Reflection AST MetaBuilderInstanceNode |
+        <macro>
+        <messageMethod>
+        (MetaProgramming FlagMetaBuilder withContext: macroSelf)
+            programEntityAttributes: (MetaProgramming ProgramEntityMetaBuilderAttributes basicNewWithNamedSlots: #{
+                visibility: Reflection PublicVisibility basicNew
+            });
+            makeInstanceNode
+    }.
+
+__BootstrapCompiler__
+    enterTopLevelNamespace;
+    addBindingNamed: #protected with: {:(MacroInvocationContext)macroSelf :: Reflection AST MetaBuilderInstanceNode |
+        <macro>
+        <messageMethod>
+        (MetaProgramming FlagMetaBuilder withContext: macroSelf)
+            programEntityAttributes: (MetaProgramming ProgramEntityMetaBuilderAttributes basicNewWithNamedSlots: #{
+                visibility: Reflection ProtectedVisibility basicNew
+            });
+            makeInstanceNode
+    }.
+
+__BootstrapCompiler__
+    enterTopLevelNamespace;
+    addBindingNamed: #private with: {:(MacroInvocationContext)macroSelf :: Reflection AST MetaBuilderInstanceNode |
+        <macro>
+        <messageMethod>
+        (MetaProgramming FlagMetaBuilder withContext: macroSelf)
+            programEntityAttributes: (MetaProgramming ProgramEntityMetaBuilderAttributes basicNewWithNamedSlots: #{
+                visibility: Reflection PrivateVisibility basicNew
+            });
+            makeInstanceNode
+    }.
+
+__BootstrapCompiler__
+    enterTopLevelNamespace;
+    addBindingNamed: #internal with: {:(MacroInvocationContext)macroSelf :: Reflection AST MetaBuilderInstanceNode |
+        <macro>
+        <messageMethod>
+        (MetaProgramming FlagMetaBuilder withContext: macroSelf)
+            programEntityAttributes: (MetaProgramming ProgramEntityMetaBuilderAttributes basicNewWithNamedSlots: #{
+                visibility: Reflection InternalVisibility basicNew
+            });
+            makeInstanceNode
+    }.

@@ -6,8 +6,14 @@ __BootstrapCompiler__
 
     enterTopLevelNamespace;
     enterNamespaceNamed: #MetaProgramming;
+    addBindingNamed: #ProgramEntityMetaBuilderAttributes with: (__TypeBuilder__ newRecordTypeWith: #{
+        visibility: Reflection ProgramEntityVisibility.
+    });
+
     addBindingNamed: #MetaBuilder with: (__TypeBuilder__ newGCClassWithSuperclass: Object publicSlots: #{
         metaContext: MacroInvocationContext.
+        programEntityAttributes: MetaProgramming ProgramEntityMetaBuilderAttributes.
+        finishResultNode: Reflection AST Node optional.
         hasFinished: Boolean.
     });
     addBindingNamed: #NamedMetaBuilder with: (__TypeBuilder__ newGCClassWithSuperclass: MetaProgramming MetaBuilder publicSlots: #{
@@ -40,14 +46,16 @@ MetaProgramming MetaBuilder __type__
             metaContext: context
         }
     };
-    withSelector: #nodeWithContext: addMethod: {:(MetaProgramming MetaBuilder __type__)self :(MacroInvocationContext)context :: Reflection AST LiteralValueNode |
-        Reflection AST MetaBuilderInstanceNode basicNewWithNamedSlots: #{
-            sourcePosition: context sourcePosition.
-            value: (self withContext: context).
-            analyzedType: self.
+    withSelector: #constructInheritingStateFrom: addMethod: {:(MetaProgramming MetaBuilder __type__)self :(MetaProgramming MetaBuilder)otherMetaBuilder :: self |
+         self basicNewWithNamedSlots: #{
+            metaContext: otherMetaBuilder metaContext.
+            programEntityAttributes: otherMetaBuilder programEntityAttributes.
         }
     };
-    withSelector: #analyzeMessageSendNode:with: addMethod: {:(Type)self :(Reflection AST MessageSendNode)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+    withSelector: #nodeWithContext: addMethod: {:(MetaProgramming MetaBuilder __type__)self :(MacroInvocationContext)context :: Reflection AST MetaBuilderInstanceNode |
+       (self withContext: context) makeInstanceNode
+    };
+    withSelector: #analyzeMessageSendNode:with: addMethod: {:(MetaProgramming MetaBuilder __type__)self :(Reflection AST MessageSendNode)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
         if: (if: node receiver isNotNil then: node receiver _ isMetaBuilderInstanceNode else: false) then: {
             node receiver _ evaluateLiteralValue analyzeMessageSendNode: node with: analyzer
         } else: {
@@ -56,6 +64,14 @@ MetaProgramming MetaBuilder __type__
     }.
 
 MetaProgramming MetaBuilder
+    withSelector: #makeInstanceNode addMethod: {:(MetaProgramming MetaBuilder)self :: Reflection AST MetaBuilderInstanceNode |
+        Reflection AST MetaBuilderInstanceNode basicNewWithNamedSlots: #{
+            sourcePosition: self metaContext sourcePosition.
+            value: self.
+            analyzedType: self __type__.
+        }
+    };
+
     withSelector: #analyzeMessageSendNode:with: addMethod: {:(MetaProgramming MetaBuilder)self :(Reflection AST MessageSendNode)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
         self analyzeMetaBuilderDirectMessageNode: node with: analyzer
     };
@@ -88,7 +104,11 @@ MetaProgramming MetaBuilder
         )
     };
     withSelector: #emitResultNode addMethod: {:(MetaProgramming MetaBuilder)self :: Reflection AST Node |
-        self concretizeMetaBuilder
+        if: self finishResultNode isNotNil then: {
+            self finishResultNode _
+        } else: {
+            self concretizeMetaBuilder
+        }
     };
     withSelector: #concretizeMetaBuilder addMethod: {:(MetaProgramming MetaBuilder)self :: Reflection AST Node |
         Reflection AST LiteralValueNode basicNewWithNamedSlots: #{
@@ -96,6 +116,18 @@ MetaProgramming MetaBuilder
             value: void.
             analyzedType: Void
         }
+    };
+    withSelector: #delegateToMetaBuilderClass: addMethod: {:(MetaProgramming MetaBuilder)self :(MetaProgramming MetaBuilder __type__)metaBuilderClass :: Void |
+        self delegateToMetaBuilder: (metaBuilderClass constructInheritingStateFrom: self)
+    };
+    withSelector: #delegateToMetaBuilder: addMethod: {:(MetaProgramming MetaBuilder)self :(MetaProgramming MetaBuilder)delegatedMetaBuilder :: Void |
+        self finishWithNode: delegatedMetaBuilder makeInstanceNode.
+        void
+    };
+    withSelector: #finishWithNode: addMethod: {:(MetaProgramming MetaBuilder)self :(Reflection AST Node)resultNode :: Void |
+        self hasFinished: true.
+        self finishResultNode: resultNode.
+        void
     };
     withSelector: #finish addMethod: {:(MetaProgramming MetaBuilder)self :: Void |
         self hasFinished: true.

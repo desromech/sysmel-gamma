@@ -1,0 +1,39 @@
+## Structure definition builder.
+__BootstrapCompiler__
+    enterTopLevelNamespace;
+    enterNamespaceNamed: #MetaProgramming;
+    addBindingNamed: #StructureDefinitionMetaBuilder with: (__TypeBuilder__ newGCClassWithSuperclass: MetaProgramming TypeDefinitionMetaBuilder slots: #{
+        isPacked: Boolean optional
+    }).
+
+MetaProgramming StructureDefinitionMetaBuilder
+    withSelector: #concretizeMetaBuilder addMethod: {:(MetaProgramming NamespaceMetaBuilder)self :: Reflection AST Node |
+        (Reflection AST StructureDefinitionNode basicNewWithNamedSlots: #{
+            sourcePosition: self metaContext sourcePosition.
+            nameExpression: self nameExpression.
+            supertypeExpression: self supertypeExpression.
+            traitExpressions: self traitExpressions.
+            bodyExpression: self bodyExpression.
+            packed: self isPacked.
+            visibility: self programEntityAttributes visibility.
+        })
+    };
+    withSelector: #packed addMethod: {:(MetaProgramming NamespaceMetaBuilder)self :: Void |
+        <metaBuilder>
+        self isPacked: true
+    }.
+
+MetaProgramming FlagMetaBuilder
+    withSelector: #struct addMethod: {:(MetaProgramming FlagMetaBuilder)self :: Void |
+        <metaBuilder>
+        self delegateToMetaBuilderClass: MetaProgramming StructureDefinitionMetaBuilder.
+        void
+    }.
+
+__BootstrapCompiler__
+    enterTopLevelNamespace;
+    addBindingNamed: #struct with: {:(MacroInvocationContext)macroSelf :: Reflection AST MetaBuilderInstanceNode |
+        <macro>
+        <messageMethod>
+        MetaProgramming StructureDefinitionMetaBuilder nodeWithContext: macroSelf
+    }.

@@ -84,6 +84,9 @@ class ValueInterface:
     def getSlotWithIndexAndName(self, slotIndex, slotName):
         raise SubclassResponsibility()
 
+    def setSlotWithIndexAndName(self, slotIndex, slotName, value):
+        raise SubclassResponsibility()
+
     def installedInType(self, type):
         pass
 
@@ -1473,6 +1476,15 @@ class ProgramEntity(TypedValue):
 
     def getType(self):
         return getBasicTypeNamed('ProgramEntity')
+
+    def setSlotWithIndexAndName(self, slotIndex, slotName, value):
+        if slotName == 'parent':
+            self.parent = value
+            return self.parent
+        elif slotName == 'name':
+            self.name = value
+            return self.parent
+        return super().setSlotWithIndexAndName(slotIndex, slotName, value)
 
     def getSlotWithIndexAndName(self, slotIndex, slotName):
         if slotName == 'parent':

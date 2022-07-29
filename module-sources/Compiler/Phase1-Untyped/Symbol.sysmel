@@ -1,21 +1,28 @@
 __BootstrapCompiler__
     enterTopLevelNamespace;
     enterNamespaceNamed: #Reflection;
-    enterNamespaceNamed: #Semantic;
 
     addBindingNamed: #AnonymousSymbol with: (__TypeBuilder__ newGCClassWithSuperclass: Object publicSlots: #{
         sourcePosition: Reflection SourcePosition optional
     });
-    addBindingNamed: #MessageChainReceiverAnonymousSymbol with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection Semantic AnonymousSymbol publicSlots: #{}).
+    addBindingNamed: #MessageChainReceiverAnonymousSymbol with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AnonymousSymbol publicSlots: #{}).
 
 
 Object
-    withSelector: #asSanitizedNameSymbolFor: addMethod: {:(ReflectionSymbol)self :(Reflection AST SourcePosition)sourcePosition :: Object |
+    withSelector: #asSanitizedNameSymbolFor: addMethod: {:(Object)self :(Reflection AST SourcePosition)sourcePosition :: Object |
         self
+    };
+    withSelector: #isAnonymousSymbol addMethod: {:(Object)self :: Boolean |
+        false
+    }.
+
+Reflection AnonymousSymbol
+    withSelector: #isAnonymousSymbol addMethod: {:(Object)self :: Boolean |
+        true
     }.
 
 Symbol
-    withSelector: #asSanitizedNameSymbolFor: addMethod: {:(ReflectionSymbol)self :(Reflection AST SourcePosition)sourcePosition :: Object |
+    withSelector: #asSanitizedNameSymbolFor: addMethod: {:(Symbol)self :(Reflection AST SourcePosition)sourcePosition :: Object |
         if: self = #_ then: {
             AnonymousSymbol basicNewWithNamedSlots: #{
                 sourcePosition: sourcePosition

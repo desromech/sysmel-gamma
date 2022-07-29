@@ -18,6 +18,9 @@ Reflection Namespace
     withSelector: #isDefinitionOwner addMethod: {:(Reflection Namespace)self :: Boolean |
         true
     };
+    withSelector: #canHaveTypes addMethod: {:(Reflection Namespace)self :: Boolean |
+        true
+    };
     withSelector: #canHaveNamespaces addMethod: {:(Reflection Namespace)self :: Boolean |
         true
     };
@@ -30,17 +33,20 @@ Reflection Namespace
     };
     withSelector: #lookupScopeSymbol: addMethod: {:(Reflection Namespace)self :(Object)symbol :: Reflection SymbolBinding optional |
         self symbolTable lookupSymbol: symbol
+    };
+    withSelector: #setSymbol:visibility:immutableValue: addMethod: {:(Reflection Namespace)self :(Object)symbol :(Reflection ProgramEntityVisibility)visibility :(AnyValue)immutableValue :: Void |
+        self symbolTable setSymbol: symbol immutableValue: immutableValue
     }.
 
 Reflection AST NamespaceDefinitionNode
     withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST NamespaceDefinitionNode)self :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
-        let: #ownerProgramEntity with: (analyzer environment lexicalScope lookupCurrentProgramEntityDefinitionOwner).
+        let: #ownerProgramEntity with: (analyzer environment lexicalScope lookupCurrentProgramEntity).
         let: #hasValidOwner with: (if: ownerProgramEntity isNotNil then: ownerProgramEntity _ canHaveNamespaces else: false).
 
         if: hasValidOwner then: {
             let: #name with: (if: self nameExpression isNotNil
                 then: (self nameExpression _ analyzeAndEvaluateNodeWith: analyzer)
-                else: (AnonymousSymbol basicNewWithNamedSlots: #{
+                else: (Reflection AnonymousSymbol basicNewWithNamedSlots: #{
                     sourcePosition: self sourcePosition
                 })
             ).
