@@ -217,14 +217,14 @@ class BootstrapCompiler(BehaviorTypedObject):
     def addBasicTypeNamedWith(self, bindingName, basicType):
         self.addBindingNamedWith(bindingName, basicType)
         self.basicTypeEnvironment[bindingName] = basicType
-        if bindingName == 'MetaType':
-            basicType.addMetaTypeRootMethods()
+        if bindingName == 'Type':
+            basicType.addTypeRootMethods()
 
     def addBasicTypeWithName(self, basicType, basicTypeName):
         self.basicTypeEnvironment[basicTypeName] = basicType
         self.activeNamespace.setSymbolValueBinding(basicTypeName, basicType)
-        if basicTypeName == 'MetaType':
-            basicType.addMetaTypeRootMethods()
+        if basicTypeName == 'Type':
+            basicType.addTypeRootMethods()
 
     def addPrimitiveTypeNamedWithSchema(self, typeName, schema):
         typeNameSymbol = Symbol.intern(typeName)

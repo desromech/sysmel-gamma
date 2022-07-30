@@ -13,6 +13,20 @@ __BootstrapCompiler__
         localDefinitionVariable: Reflection LocalVariable optional.
     }).
 
+Type
+    withSelector: #addPendingSupertypeExpression: addMethod: {:(Type)self :(Void => Type)supertypeExpression :: Void |
+        <primitive: #"type.addPendingSupertypeExpression">
+        __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #addPendingTraitExpression: addMethod: {:(Type)self :(Void => Void)traitExpressions :: Void |
+        <primitive: #"type.addPendingTraitExpression">
+        __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #addPendingBodyExpression: addMethod: {:(Type)self :(Void => Void)bodyExpression :: Void |
+        <primitive: #"type.addPendingBodyExpression">
+        __BootstrapCompiler__ primitiveFailed
+    }.
+
 Reflection AST TypeDefinitionNode
     withSelector: #constructTypeInstance addMethod: {:(Reflection AST TypeDefinitionNode)self :: Type |
         __TypeBuilder__ newTrivialType
@@ -105,26 +119,39 @@ Reflection AST TypeDefinitionNode
             self analyzedProgramEntity _
         }).
 
-        self evaluateTypeDefinitionComponentsWith: evaluationEnvironment.
+        self evaluateTypeDefinitionComponentsWith: evaluationEnvironment on: typeProgramEntity.
 
         typeProgramEntity
     };
-    withSelector: #evaluateTypeDefinitionComponentsWith: addMethod: {:(Reflection AST TypeDefinitionNode)self :(Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: Void |
-        self evaluateCommonTypeDefinitionComponentsWith: evaluationEnvironment.
+    withSelector: #evaluateTypeDefinitionComponentsWith:on: addMethod: {:(Reflection AST TypeDefinitionNode)self :(Reflection Semantic EvaluationEnvironment)evaluationEnvironment :(Type)typeProgramEntity :: Void |
+        self evaluateCommonTypeDefinitionComponentsWith: evaluationEnvironment on: typeProgramEntity.
         void
     };
-    withSelector: #evaluateCommonTypeDefinitionComponentsWith: addMethod: {:(Reflection AST TypeDefinitionNode)self :(Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: Void |
+    withSelector: #evaluateCommonTypeDefinitionComponentsWith:on: addMethod: {:(Reflection AST TypeDefinitionNode)self :(Reflection Semantic EvaluationEnvironment)evaluationEnvironment :(Type)typeProgramEntity :: Void |
         if: self supertypeExpression isNotNil then: {
-            __BootstrapCompiler__ print: "TODO: analyze and evaluate type supertypeExpression".
+            typeProgramEntity addPendingSupertypeExpression: {:: Type |
+                self supertypeExpression _ analyzeAndEvaluateNodeWith: (Reflection Semantic ASTAnalyzer forEnvironment: evaluationEnvironment withExpectedType: Type).
+            }.
         } else: {void}.
 
-        self traitExpressions do: {:(Reflection AST Node)node :: Void |
-            __BootstrapCompiler__ print: "TODO: analyze and evaluate type trait".
-            void
+        self traitExpressions do: {:(Reflection AST Node)traitExpression :: Void |
+            typeProgramEntity addPendingTraitExpression: {:: Type |
+                traitExpression analyzeAndEvaluateNodeWith: (Reflection Semantic ASTAnalyzer forEnvironment: evaluationEnvironment withExpectedType: Trait).
+            }.
         }.
 
         if: self bodyExpression isNotNil then: {
-            __BootstrapCompiler__ print: "TODO: analyze and evaluate type body expression.".
+            let: #typeDefinitionScope with: (Reflection Semantic TypeDefinitionLookupScope basicNewWithNamedSlots: #{
+                parent: evaluationEnvironment lexicalScope.
+                programEntity: typeProgramEntity
+            }).
+            let: #bodyLexicalScope with: typeDefinitionScope makeChildLexicalScope.
+            let: #bodyEnvironment with: (evaluationEnvironment copyWithLexicalScope: bodyLexicalScope) copyWithEmptyCleanUpScope.
+
+            typeProgramEntity addPendingBodyExpression: {:: Void |
+                self bodyExpression _ analyzeAndEvaluateNodeWith: (Reflection Semantic ASTAnalyzer forEnvironment: bodyEnvironment withExpectedType: Void).
+                void
+            }.
         } else: {void}.
 
         void

@@ -113,5 +113,9 @@ Reflection Semantic EvaluationEnvironment
         self shallowCopy
             cleanUpScope: scope;
             yourself
-    }.
-
+    };
+    withSelector: #copyWithEmptyCleanUpScope addMethod: {:(Reflection Semantic EvaluationEnvironment)self :: Reflection Semantic EvaluationEnvironment |
+        self shallowCopy
+            cleanUpScope: Reflection Semantic CleanUpScope basicNew;
+            yourself
+    }

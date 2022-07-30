@@ -728,6 +728,9 @@ class TypeSchema(TypedValue):
         self.metaTypeMethodDict = {}
         self.buildPrimitiveMethodDictionary()
 
+    def setSupertypeSchema(self, newSupertypeSchema):
+        pass
+
     def getType(self):
         return getBasicTypeNamed('TypeSchema')
 
@@ -1187,9 +1190,16 @@ class RecordTypeSchema(ProductTypeSchema):
         self.supertypeSchema = supertypeSchema
         self.definePublicSlots(slots)
 
+    def setSupertypeSchema(self, newSupertypeSchema):
+        self.supertypeSchema = newSupertypeSchema
+        self.computeSlotsLayout()
+
     def definePublicSlots(self, slots):
         self.slots = slots
         self.allSlots = slots
+        self.computeSlotsLayout()
+
+    def computeSlotsLayout(self):
         self.startSlotIndex = 0
         if self.supertypeSchema is not None:
             self.startSlotIndex = len(self.supertypeSchema.allSlots)
@@ -1542,6 +1552,7 @@ class Namespace(ProgramEntity):
 class BehaviorType(ProgramEntity, TypeInterface):
     def __init__(self, name = None, supertype = None, traits = [], schema = EmptyTypeSchema(), methodDict = {}):
         super().__init__(name = None)
+        self.symbolTable = SymbolTable()
         self.methodDict = dict(methodDict)
         self.implicitConversionMethods = []
         self.explicitConversionMethods = []
@@ -1559,6 +1570,10 @@ class BehaviorType(ProgramEntity, TypeInterface):
 
         self.constructionTemplate = None
         self.constructionTemplateArguments = None
+
+        self.pendingSupertypeExpression = []
+        self.pendingTraitExpressions = []
+        self.pendingBodyExpressions = []
 
     def shallowCopyValue(self):
         return self
@@ -1579,18 +1594,69 @@ class BehaviorType(ProgramEntity, TypeInterface):
 
         return super().coerceValue(value)
 
+    @primitiveNamed('type.addPendingSupertypeExpression')
+    def addPendingSupertypeExpression(self, supertypeExpression):
+        self.pendingSupertypeExpression.append(supertypeExpression)
+        EvaluationMachine.getActive().addPendingEvaluation(lambda: self.evaluatePendingSupertypeExpressions())
+        return getVoidValue()
+
+    def evaluatePendingSupertypeExpressions(self):
+        while len(self.pendingSupertypeExpression) > 0:
+            expressionToEvaluate = self.pendingSupertypeExpression.pop(0)
+            self.setSupertype(expressionToEvaluate())
+
+    @primitiveNamed('type.addPendingTraitExpression')
+    def addPendingTraitExpression(self, traitExpression):
+        self.pendingTraitExpressions.append(traitExpression)
+        EvaluationMachine.getActive().addPendingEvaluation(lambda: self.evaluatePendingTraitExpressions())
+        return getVoidValue()
+
+    def evaluatePendingTraitExpressions(self):
+        self.evaluatePendingSupertypeExpressions()
+        while len(self.pendingTraitExpressions) > 0:
+            self.pendingTraitExpressions.pop(0)()
+
+    @primitiveNamed('type.addPendingBodyExpression')
+    def addPendingBodyExpression(self, bodyExpression):
+        self.pendingBodyExpressions.append(bodyExpression)
+        EvaluationMachine.getActive().addPendingEvaluation(lambda: self.evaluatePendingBodyExpressions())
+        return getVoidValue()
+
+    def evaluatePendingBodyExpressions(self):
+        self.evaluatePendingTraitExpressions()
+        while len(self.pendingBodyExpressions) > 0:
+            self.pendingBodyExpressions.pop(0)()
+
+    def setSupertype(self, newSupertype):
+        self.supertype = newSupertype
+        if self.type is not None:
+            if self.supertype is not None:
+                self.type.setSupertype(self.supertype.getType())
+            else:
+                self.type.setSupertype(self.getMetaTypeRoot())
+        if newSupertype is not None:
+            self.schema.setSupertypeSchema(newSupertype.schema)
+        else:
+            self.schema.setSupertypeSchema(None)
+
+    def getSupertype(self):
+        self.evaluatePendingSupertypeExpressions()
+        return self.supertype
+
     def getSlotWithIndexAndName(self, slotIndex, slotName):
         if slotName == 'supertype':
-            return self.supertype
+            return self.getSupertype()
         elif slotName == 'schema':
             return self.schema
+        elif slotName == 'symbolTable':
+            return self.symbolTable
         return super().getSlotWithIndexAndName(slotIndex, slotName)
 
     def isSubtypeOf(self, expectedSuperType):
         if self is expectedSuperType:
             return True;
-        if self.supertype is not None:
-            return self.supertype.isSubtypeOf(expectedSuperType)
+        if self.getSupertype() is not None:
+            return self.getSupertype().isSubtypeOf(expectedSuperType)
         return False
         
     def onGlobalBindingWithSymbolAdded(self, symbol):
@@ -1605,6 +1671,7 @@ class BehaviorType(ProgramEntity, TypeInterface):
         return self.traits
 
     def lookupLocalSelector(self, selector):
+        self.evaluatePendingBodyExpressions()
         found = self.methodDict.get(selector, None)
         if found is not None:
             return found
@@ -1653,9 +1720,11 @@ class BehaviorType(ProgramEntity, TypeInterface):
             else:
                 self.explicitConstructionMethods.append(method)
 
+    @primitiveNamed('type.withSelectorAddMethod')
     def withSelectorAddMethod(self, selector, method):
         self.addMethodWithSelector(method, selector)
 
+    @primitiveNamed('type.addFlag')
     def addTypeFlag(self, flagName):
         self.typeFlags.append(flagName)
         if flagName == 'anyValue':
@@ -1689,12 +1758,12 @@ class BehaviorType(ProgramEntity, TypeInterface):
         return self.type
 
     def getMetaTypeRoot(self):
-        return getBasicTypeNamed(Symbol.intern('MetaType'))
+        return getBasicTypeNamed(Symbol.intern('SimpleType'))
 
     def createMetaType(self):
         typeSupertype = None
-        if self.supertype is not None:
-            typeSupertype = self.supertype.getType()
+        if self.getSupertype() is not None:
+            typeSupertype = self.getSupertype().getType()
         else:
             typeSupertype = self.getMetaTypeRoot()
         return MetaType(thisType = self, supertype = typeSupertype, schema = OpaqueTypeSchema())
@@ -1707,7 +1776,7 @@ class BehaviorType(ProgramEntity, TypeInterface):
     def defaultPrintString(self):
         return String(self.getName())
 
-    def addMetaTypeRootMethods(self):
+    def addTypeRootMethods(self):
         cls = self.__class__
         self.addPrimitiveMethodsWithSelectors([
             (cls.withSelectorAddMethod, 'withSelector:addMethod:', '(AnyValue -- AnyValue) => AnyValue'),
@@ -1715,6 +1784,7 @@ class BehaviorType(ProgramEntity, TypeInterface):
             (cls.definePublicSlots, 'definePublicSlots:', '(SelfType -- AnyValue) => Type'),
         ])
 
+    @primitiveNamed('type.definePublicSlots')
     def definePublicSlots(self, slotDefinitions):
         return self.schema.definePublicSlots(slotDefinitions)
 

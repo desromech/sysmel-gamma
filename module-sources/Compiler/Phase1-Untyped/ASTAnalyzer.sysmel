@@ -5,6 +5,14 @@ Reflection Semantic ASTAnalyzer __type__
             typeInferenceEnvironment: Reflection Semantic AutoTypeInferenceEnvironment basicNew.
         }
     };
+    withSelector: #forEnvironment:withExpectedType: addMethod: {:(Reflection Semantic ASTAnalyzer __type__)self :(Reflection Semantic EvaluationEnvironment)environment :(Type)expectedType :: self |
+        self basicNewWithNamedSlots: #{
+            environment: environment.
+            typeInferenceEnvironment: (Reflection Semantic ExpectedTypeInferenceEnvironment basicNewWithNamedSlots: #{
+                expectedType: expectedType
+            }).
+        }
+    };
     withSelector: #forScriptEvaluationScope: addMethod: {:(Reflection Semantic ASTAnalyzer __type__)self :(Reflection Semantic ScriptEvaluationScope)scope :: self |
         self forEnvironment: (Reflection Semantic EvaluationEnvironment forScriptEvaluationScope: scope)
     };

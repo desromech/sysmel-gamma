@@ -12,6 +12,15 @@ Type
     withSelector: #canHaveTypes addMethod: {:(Reflection Namespace)self :: Boolean |
         true
     };
+    withSelector: #lookupPublicSymbol: addMethod: {:(Type)self :(Object)symbol :: Reflection SymbolBinding optional |
+        self symbolTable lookupSymbol: symbol
+    };
+    withSelector: #lookupScopeSymbol: addMethod: {:(Type)self :(Object)symbol :: Reflection SymbolBinding optional |
+        self symbolTable lookupSymbol: symbol
+    };
+    withSelector: #setSymbol:visibility:immutableValue: addMethod: {:(Type)self :(Object)symbol :(Reflection ProgramEntityVisibility)visibility :(AnyValue)immutableValue :: Void |
+        self symbolTable setSymbol: symbol immutableValue: immutableValue
+    };
     withSelector: #lookupSelector: addMethod: {:(Type)self :(AnyValue)selector :: AnyValue |
         <primitive: #"type.lookupSelector">
         __BootstrapCompiler__ primitiveFailed

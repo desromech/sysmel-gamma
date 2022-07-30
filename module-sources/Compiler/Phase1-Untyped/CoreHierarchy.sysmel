@@ -38,6 +38,7 @@ __BootstrapCompiler__
     addBasicTypeNamed: #Type with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection ProgramEntity slots: #{});
     addBasicTypeNamed: #SimpleType with: (__TypeBuilder__ newGCClassWithSuperclass: Type slots: #{});
     addBasicTypeNamed: #MetaType with: (__TypeBuilder__ newGCClassWithSuperclass: Type slots: #{});
+    addBasicTypeNamed: #Trait with: (__TypeBuilder__ newGCClassWithSuperclass: Type slots: #{});
 
     addBasicTypeNamed: #Tuple with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
     addBasicTypeNamed: #Function with: (__TypeBuilder__ newGCClassWithSuperclass: SimpleType slots: #{});
@@ -708,7 +709,7 @@ Void __type__
     }.
 
 ## Basic type system methods.
-MetaType
+Type
     withSelector: #"[]" addMethod: {:(Type)self :: Type |
         <pure>
         Array(self, 0)
@@ -780,6 +781,7 @@ Reflection ProgramEntity definePublicSlots: #{
 Type definePublicSlots: #{
     supertype: Type optional.
     schema: Reflection TypeSchema.
+    symbolTable: Reflection SymbolTable
 }.
 
 __BootstrapCompiler__

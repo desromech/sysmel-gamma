@@ -147,6 +147,7 @@ __BootstrapCompiler__
         programEntity: Reflection ProgramEntity
     });
     addBindingNamed: #NamespaceLookupScope with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection Semantic ProgramEntityLookupScope publicSlots: #{});
+    addBindingNamed: #TypeDefinitionLookupScope with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection Semantic ProgramEntityLookupScope publicSlots: #{});
     addBindingNamed: #ScriptEvaluationScope with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection Semantic LexicalScope publicSlots: #{});
     addBindingNamed: #EvaluationEnvironment with: (__TypeBuilder__ newGCClassWithSuperclass: Object publicSlots: #{
         lexicalScope: Reflection Semantic LexicalScope.
