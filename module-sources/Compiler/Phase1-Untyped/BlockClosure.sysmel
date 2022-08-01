@@ -1,0 +1,113 @@
+__BootstrapCompiler__
+    enterTopLevelNamespace;
+    enterNamespaceNamed: #Reflection;
+    enterNamespaceNamed: #AST;
+    addBindingNamed: #BlockClosureNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
+        arguments: Reflection AST Node sharedArraySlice.
+        resultTypeExpression: Reflection AST Node optional.
+        body: Reflection AST Node.
+        analyzedResultTypeExpression: Reflection AST Node optional.
+        argumentAnalysisScope: Reflection Semantic LexicalScope optional.
+        hasGenericForAllArguments: Boolean.
+        hasDependentArguments: Boolean.
+        hasCompileTimeDefinedType: Boolean.
+    }).
+
+Reflection AST BlockClosureNode
+    withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST BlockClosureNode)self :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+        let: #analyzedNode with: self shallowCopy.
+
+        let: #argumentAnalysisScope with: analyzer environment lexicalScope makeChildLexicalScope.
+        let: #argumentAnalysisEnvironment with: (analyzer environment copyWithLexicalScope: argumentAnalysisScope) copyWithEmptyCleanUpScope.
+        let: #hasError with: (Boolean valueBox with: false).
+
+        ## Perform the analysis of the arguments.
+        analyzer withEnvironment: argumentAnalysisEnvironment do: { :: Void |
+            ## Analyze the arguments.
+            analyzedNode arguments: (analyzedNode arguments collect: {:argumentNode :: Reflection AST Node |
+                let: #analyzedArgument with: (analyzer analyzeNodeIfNeededWithCurrentExpectedType: argumentNode).
+                if: analyzedArgument isErrorNode then: {
+                    hasError _: true
+                } else: {void}.
+
+                analyzedArgument
+            }).
+
+            ## Analyze the result type.
+            if: analyzedNode resultTypeExpression isNotNil then: {
+                analyzedNode analyzedResultTypeExpression: (analyzer analyzeNodeIfNeeded: analyzedNode resultTypeExpression _ withExpectedType: Type)
+            } else: {
+                analyzedNode analyzedResultTypeExpression: (LiteralValueNode basicNewWithNamedSlots: #{
+                    value: Void.
+                    analyzedType: Void __type__
+                }).
+            }.
+
+            if: analyzedNode analyzedResultTypeExpression _ isErrorNode then: {
+                hasError _: true
+            } else: {void}.
+
+            void
+        }.
+
+        if: hasError _ then: {
+            analyzedNode
+                analyzedType: CompilationError;
+                yourself
+        } else: {
+            analyzedNode
+                analyzeCompileTimeTypeConstraintsWith: argumentAnalysisEnvironment;
+                analyzedType: (analyzedNode computeFunctionTypeWith: argumentAnalysisEnvironment).
+            analyzedNode
+        }.
+    };
+    withSelector: #analyzeCompileTimeTypeConstraintsWith: addMethod: {:(Reflection AST BlockClosureNode)self :(Reflection EvaluationEnvironment)environment :: Void |
+        self
+            hasGenericForAllArguments: false;
+            hasDependentArguments: false;
+            hasCompileTimeDefinedType: true.
+
+        self arguments do: {:argumentNode :: Void |
+            if: argumentNode isGenericForallArgument then: {
+                self hasGenericForAllArguments: true.
+            } else: {void}.
+
+            let: #argumentVariable with: argumentNode getArgumentVariable.
+            argumentVariable isAnalyzingSignature: false.
+
+            if: argumentVariable hasDependentTypeAccess then: {
+                self hasDependentArguments: true
+            } else: { void }.
+
+            if: (argumentNode analyzedTypeExpression _ isCompileTimeDirectlyEvaluableWith: environment) then: {
+                argumentNode analyzedTypeExpression: (argumentNode analyzedTypeExpression _ optimizeViaCompileTimeEvaluationWith: environment)
+            } else: {
+                self hasCompileTimeDefinedType: false
+            }.
+
+            void
+        }.
+
+        if: (self analyzedResultTypeExpression _ isCompileTimeDirectlyEvaluableWith: environment) then: {
+            self analyzedResultTypeExpression: (self analyzedResultTypeExpression _ optimizeViaCompileTimeEvaluationWith: environment)
+        } else: {
+            self hasCompileTimeDefinedType: false
+        }.
+
+        void
+    };
+    withSelector: #computeFunctionTypeWith: addMethod: {:(Reflection AST BlockClosureNode)self :(Reflection EvaluationEnvironment)environment :: Type |
+        if: self hasCompileTimeDefinedType then: {
+            let: #argumentTypes with: (self arguments collect: {:argumentNode :: Type |
+                argumentNode analyzedTypeExpression _ evaluateNodeWith: environment
+            }).
+
+            let: #resultType with: (self analyzedResultTypeExpression _ evaluateNodeWith: environment).
+
+            ## TODO: Wrap this in a method with a primitive.
+            __TypeBuilder__ newSimpleFunctionTypeWithArguments: argumentTypes resultType: resultType
+        } else: {
+            __BootstrapCompiler__ print: "TODO: compute block closure dependent function type.".
+            __BootstrapCompiler__ primitiveFailed
+        }.
+    }.

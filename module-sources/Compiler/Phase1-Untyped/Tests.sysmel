@@ -13,6 +13,13 @@ __BootstrapCompiler__
 
     print: 2 = 2;
 
+    print: Int32 -- Int32;
+    print: Int32 -- Int32 -- Int32;
+    print: Void => Void;
+    print: (Int32 -- Int32) => Void;
+    print: (Int32 -- Int32 -- Int32) => Void;
+    print: Float32 -- Int32 -- Float64;
+
     print: "Some number: " -- 1 asString;
     print: ("Some number: {0} " format: (1 asString,));
 
@@ -62,12 +69,7 @@ __BootstrapCompiler__
     print: nil isNil;
     print: nil isNotNil;
 
-    print: Int32 -- Int32;
-    print: Int32 -- Int32 -- Int32;
-    print: Void => Void;
-    print: (Int32 -- Int32) => Void;
-    print: (Int32 -- Int32 -- Int32) => Void;
-    print: Float32 -- Int32 -- Float64.
+    print: (`'{:(Int32)a :(Int32)b :: Int32 | a + b } analyzeNodeIfNeededWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment).
 
 if: true then: {
     __BootstrapCompiler__ print: "then branch"

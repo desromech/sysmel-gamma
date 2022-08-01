@@ -1,0 +1,70 @@
+__BootstrapCompiler__
+    enterTopLevelNamespace;
+    enterNamespaceNamed: #Reflection;
+    addBindingNamed: #ArgumentVariable with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection Variable publicSlots: #{
+        isAnalyzingSignature: Boolean.
+        hasDependentTypeAccess: Boolean.
+    });
+
+    enterNamespaceNamed: #AST;
+    addBindingNamed: #ArgumentDefinitionNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
+        nameExpression: Reflection AST Node optional.
+        typeExpression: Reflection AST Node optional.
+        analyzedName: Object optional.
+        analyzedTypeExpression: Reflection AST Node optional.
+        analyzedVariable: Reflection ArgumentVariable optional.
+        isGenericForallArgument: Boolean.
+    }).
+
+Reflection AST ArgumentDefinitionNode
+    withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST ArgumentDefinitionNode)self :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+        if: self nameExpression isNil & self typeExpression isNil then: {
+            analyzer makeSemanticAnalysisError: "Argument definition node requires at least a name or a type" at: self sourcePosition
+        } else: {
+            let: #analyzedNode with: self shallowCopy.
+
+            let: #name with: (if: self nameExpression isNotNil
+                then: (self nameExpression _ analyzeAndEvaluateNodeWith: analyzer)
+                else: (Reflection AnonymousSymbol basicNewWithNamedSlots: #{
+                    sourcePosition: self sourcePosition
+                })
+            ).
+            let: #sanitizedName with: (name asSanitizedNameSymbolFor: self sourcePosition).
+            let: #errorNode with: (Reflection AST Node optional valueBox with: nil).
+            let: #existentBinding with: (analyzer environment lexicalScope lookupSymbol: sanitizedName).
+            analyzedNode analyzedName: sanitizedName.
+
+            if: existentBinding isNotNil then: {
+                errorNode _: (analyzer makeSemanticAnalysisError: ("Argument definition for {0} overrides a previous argument." format: (sanitizedName printString,) at: analyzedNode sourcePosition))
+            } else: { void }.
+
+            if: analyzedNode typeExpression isNotNil then: {
+                analyzedNode analyzedTypeExpression: (analyzer analyzeNodeIfNeeded: analyzedNode typeExpression _ withExpectedType: Type)
+            } else: {
+                __BootstrapCompiler__ print: "TODO: infer or set block closure default argument type.".
+                __BootstrapCompiler__ primitiveFailed
+            }.
+
+            if: errorNode _ isNotNil then: {
+                errorNode _ _
+            } else: {
+                let: #argumentVariableType with: Void.
+                let: #argumentVariable with: (Reflection ArgumentVariable basicNewWithNamedSlots: #{
+                    name: sanitizedName.
+                    valueType: argumentVariableType.
+                    referenceType: argumentVariableType.
+                    isAnalyzingSignature: true
+                }).
+
+                analyzer environment lexicalScope setSymbol: sanitizedName variableBinding: argumentVariable.
+
+                analyzedNode 
+                    analyzedVariable: argumentVariable;
+                    analyzedType: Reflection ArgumentVariable;
+                    yourself
+            }.
+        }.
+    };
+    withSelector: #getArgumentVariable addMethod: {:(Reflection AST ArgumentDefinitionNode)self :: Reflection ArgumentVariable |
+        self analyzedVariable _
+    }.

@@ -697,6 +697,18 @@ class PTBlockClosure(PTNode):
 
         return result
 
+    def convertIntoGenericASTWith(self, bootstrapCompiler):
+        resultType = None
+        if self.resultType is not None:
+            resultType = self.resultType.convertIntoGenericASTWith(bootstrapCompiler)
+
+        return bootstrapCompiler.makeASTNodeWithSlots('BlockClosureNode',
+            sourcePosition = bootstrapCompiler.convertASTSourcePosition(self.sourcePosition),
+            arguments = bootstrapCompiler.makeASTNodeArraySlice(map(lambda arg: arg.convertIntoGenericASTWith(bootstrapCompiler), self.arguments)),
+            resultTypeExpression = resultType,
+            body = self.body.convertIntoGenericASTWith(bootstrapCompiler)
+        )
+
 class PTBlockArgument(PTNode):
     def __init__(self, type, identifier):
         PTNode.__init__(self)
@@ -709,6 +721,18 @@ class PTBlockArgument(PTNode):
     def asFunctionTypeArgument(self):
         return FunctionTypeArgumentExpression(self.identifier.evaluateAsLiteralSymbol(), self.type)
 
+    def convertIntoGenericASTWith(self, bootstrapCompiler):
+        convertedType = None
+        if self.type is not None:
+            convertedType = self.type.convertIntoGenericASTWith(bootstrapCompiler)
+
+        return bootstrapCompiler.makeASTNodeWithSlots('ArgumentDefinitionNode',
+            sourcePosition = bootstrapCompiler.convertASTSourcePosition(self.sourcePosition),
+            nameExpression = self.identifier.convertIntoGenericASTWith(bootstrapCompiler),
+            typeExpression = convertedType,
+            isGenericForallArgument = getBooleanValue(False)
+        )
+
 class PTBlockGenericArgument(PTNode):
     def __init__(self, type, identifier):
         PTNode.__init__(self)
@@ -720,6 +744,18 @@ class PTBlockGenericArgument(PTNode):
 
     def isForAllBlockArgument(self):
         return True
+
+    def convertIntoGenericASTWith(self, bootstrapCompiler):
+        convertedType = None
+        if self.type is not None:
+            convertedType = self.type.convertIntoGenericASTWith(bootstrapCompiler)
+
+        return bootstrapCompiler.makeASTNodeWithSlots('ArgumentDefinitionNode',
+            sourcePosition = bootstrapCompiler.convertASTSourcePosition(self.sourcePosition),
+            nameExpression = self.identifier.convertIntoGenericASTWith(bootstrapCompiler),
+            typeExpression = convertedType,
+            isGenericForallArgument = getBooleanValue(True)
+        )
 
 class PTQuote(PTNode):
     def __init__(self, expression, tokens):

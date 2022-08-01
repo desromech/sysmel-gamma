@@ -49,14 +49,6 @@ __BootstrapCompiler__
         sourcePosition: Reflection SourcePosition.
         analyzedType: Type optional
     });
-    addBindingNamed: #ArgumentDefinitionNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
-        name: Reflection AST Node.
-        type: Reflection AST Node.
-    });
-    addBindingNamed: #BlockClosureNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
-        arguments: Reflection AST Node sharedArraySlice.
-        body: Reflection AST Node.
-    });
     addBindingNamed: #ChainedMessageNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
         selector: Reflection AST Node.
         arguments: Reflection AST Node sharedArraySlice
@@ -189,13 +181,25 @@ Reflection AST Node
     withSelector: #isLiteralValueNode addMethod: {:(Reflection AST Node)self :: Boolean |
         false
     };
+    withSelector: #isErrorNode addMethod: {:(Reflection AST Node)self :: Boolean |
+        false
+    };
     withSelector: #evaluateLiteralValue addMethod: {:(Reflection AST Node)self :: AnyValue |
         __BootstrapCompiler__ error: "Not a literal value node."
     };
     withSelector: #analyzeAndEvaluateNodeWithScriptEvaluationScope: addMethod: {:(Reflection AST Node)self :(Reflection Semantic ScriptEvaluationScope)scope :: AnyValue |
         self analyzeAndEvaluateNodeWith: (Reflection Semantic ASTAnalyzer forScriptEvaluationScope: scope)
+    };
+    withSelector: #isCompileTimeDirectlyEvaluableWith: addMethod: {:(Reflection AST Node)self :(Reflection Semantic EvaluationEnvironment)environment :: Boolean |
+        false
+    };
+    withSelector: #optimizeViaCompileTimeEvaluationWith: addMethod: {:(Reflection AST Node)self :(Reflection Semantic EvaluationEnvironment)environment :: Reflection AST Node |
+        Reflection AST LiteralValueNode basicNewWithNamedSlots: #{
+            analyzedType: self analyzedType _.
+            value: (self evaluateNodeWith: environment).
+        }
     }.
-
+    
 Reflection SourceStringCollection
     withSelector: #printString addMethod: {:(Reflection AST SourceStringCollection)self :: String |
         self name
@@ -223,6 +227,9 @@ Reflection AST LiteralValueNode
     };
     withSelector: #evaluateLiteralValue addMethod: {:(Reflection AST LiteralValueNode)self :: AnyValue |
         self value
+    };
+    withSelector: #isCompileTimeDirectlyEvaluableWith: addMethod: {:(Reflection AST Node)self :(Reflection Semantic EvaluationEnvironment)environment :: Boolean |
+        true
     }.
 
 Reflection AST CleanUpScopeNode
@@ -406,6 +413,11 @@ Reflection AST MessageChainNode
         }).
 
         analyzer analyzeNodeIfNeededWithCurrentExpectedType: sequenceNode
+    }.
+
+Reflection AST ErrorNode
+    withSelector: #isErrorNode addMethod: {:(Reflection AST ErrorNode)self :: Boolean |
+        true
     }.
 
 Reflection AST ParseErrorNode

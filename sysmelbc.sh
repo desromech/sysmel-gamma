@@ -3,7 +3,6 @@
 python3 bootstrap/interpreter/sysmelbi.py \
     module-sources/Compiler/Phase1-Untyped/CoreHierarchy.sysmel \
     module-sources/Compiler/Phase1-Untyped/CoreSemantics.sysmel \
-    module-sources/Compiler/Phase1-Untyped/ParseTreeMapping.sysmel \
     module-sources/Compiler/Phase1-Untyped/SemanticAnalysisMapping.sysmel \
     module-sources/Compiler/Phase1-Untyped/TypeChecking.sysmel \
     module-sources/Compiler/Phase1-Untyped/TypeInference.sysmel \
@@ -16,6 +15,8 @@ python3 bootstrap/interpreter/sysmelbi.py \
     module-sources/Compiler/Phase1-Untyped/ProgramEntity.sysmel \
     module-sources/Compiler/Phase1-Untyped/Namespace.sysmel \
     module-sources/Compiler/Phase1-Untyped/Variable.sysmel \
+    module-sources/Compiler/Phase1-Untyped/ArgumentVariable.sysmel \
+    module-sources/Compiler/Phase1-Untyped/BlockClosure.sysmel \
     module-sources/Compiler/Phase1-Untyped/LocalVariable.sysmel \
     module-sources/Compiler/Phase1-Untyped/TypeDefinition.sysmel \
     module-sources/Compiler/Phase1-Untyped/StructureDefinition.sysmel \
@@ -26,6 +27,7 @@ python3 bootstrap/interpreter/sysmelbi.py \
     module-sources/Compiler/Phase1-Untyped/NamespaceMetaBuilder.sysmel \
     module-sources/Compiler/Phase1-Untyped/TypeDefinitionMetaBuilder.sysmel \
     module-sources/Compiler/Phase1-Untyped/StructureDefinitionMetaBuilder.sysmel \
+    module-sources/Compiler/Phase1-Untyped/ParseTreeMapping.sysmel \
     module-sources/Compiler/Phase1-Untyped/Tests.sysmel \
     module-sources/Compiler/Phase1-Untyped/Finish.sysmel \
     \

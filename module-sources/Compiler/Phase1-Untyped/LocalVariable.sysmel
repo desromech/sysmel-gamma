@@ -28,13 +28,12 @@ Reflection AST LocalVariableDefinitionNode
             })
         ).
         let: #sanitizedName with: (name asSanitizedNameSymbolFor: self sourcePosition).
-        let: #hasError with: (ValueBox(Boolean) with: false).
         let: #errorNode with: (Reflection AST Node optional valueBox with: nil).
 
         let: #existentBinding with: (analyzer environment lexicalScope lookupSymbol: sanitizedName).
 
         if: existentBinding isNotNil then: {
-            errorNode _: (analyzer makeSemanticAnalysisError: "Expected a type expression." at: analyzedNode sourcePosition).
+            errorNode _: (analyzer makeSemanticAnalysisError: ("Local variable definition for {0} overrides an existent binding." format: (sanitizedName printString,) at: analyzedNode sourcePosition))
         } else: { void }.
 
         ## Type expression evaluation, and type checking.
@@ -61,13 +60,13 @@ Reflection AST LocalVariableDefinitionNode
         }.
 
         if: errorNode _ isNotNil then: {
-            errorNode _
+            errorNode _ _
         } else: {
             ## Make the variable.
             let: #valueType with: analyzedNode analyzedExpectedValueType _.
 
             ## TODO: Add support for mutability.
-            let: #variableReferenceType with: (if: hasError _ then: CompilationError else: valueType).
+            let: #variableReferenceType with: valueType.
             let: #variable with: (Reflection LocalVariable basicNewWithNamedSlots: #{
                 name: sanitizedName.
                 valueType: analyzedNode analyzedExpectedValueType _.

@@ -2299,7 +2299,10 @@ class TypeBuilder(BehaviorTypedObject):
         return self.doNewSimpleFunctionTypeWithArgumentsAndResultType((argumentType,), resultType)
 
     def newSimpleFunctionTypeWithArgumentsAndResultType(self, argumentsTypes, resultType):
-        return self.doNewSimpleFunctionTypeWithArgumentsAndResultType(tuple(argumentsTypes.schema.elementTypes), resultType)
+        if hasattr(argumentsTypes, 'schema'):
+            return self.doNewSimpleFunctionTypeWithArgumentsAndResultType(tuple(argumentsTypes.schema.elementTypes), resultType)
+        else:
+            return self.doNewSimpleFunctionTypeWithArgumentsAndResultType(tuple(list(argumentsTypes)), resultType)
 
     def doNewSimpleFunctionTypeWithArgumentsAndResultType(self, argumentsTypes, resultType):
         return FunctionType.makeSimpleFunctionType(argumentsTypes, resultType)

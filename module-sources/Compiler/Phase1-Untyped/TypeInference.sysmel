@@ -35,33 +35,6 @@ Reflection Semantic ASTAnalyzer
     withSelector: #analyzeNodeIfNeededWithAutoType: addMethod: {:(Reflection Semantic ASTAnalyzer)self :(Reflection AST Node)node :: Reflection AST Node |
         self analyzeNodeIfNeeded: node withTypeInferenceEnvironment: Reflection Semantic AutoTypeInferenceEnvironment basicNew
     };
-    withSelector: #analyzeNodeIfNeeded:withEnvironment: addMethod: {:(Reflection Semantic ASTAnalyzer)self :(Reflection AST Node)node :(Reflection Semantic EvaluationEnvironment)environment :: Reflection AST Node |
-        let: #oldEnvironment with: self environment.
-        self environment: environment.
-
-        let: #analyzedNode with: (self analyzeNodeIfNeededWithCurrentExpectedType: node).
-        self environment: oldEnvironment.
-
-        analyzedNode
-    };
-    withSelector: #analyzeNodeIfNeeded:withEnvironment:expectedType: addMethod: {:(Reflection Semantic ASTAnalyzer)self :(Reflection AST Node)node :(Reflection Semantic EvaluationEnvironment)environment :(Type)expectedType :: Reflection AST Node |
-        let: #oldEnvironment with: self environment.
-        self environment: environment.
-
-        let: #analyzedNode with: (self analyzeNodeIfNeeded: node withExpectedType: expectedType).
-        self environment: oldEnvironment.
-
-        analyzedNode
-    };
-    withSelector: #analyzeNodeIfNeeded:withTypeInferenceEnvironment: addMethod: {:(Reflection Semantic ASTAnalyzer)self :(Reflection AST Node)node :(Reflection Semantic TypeInferenceEnvironment)typeInferenceEnvironment :: Reflection AST Node |
-        let: #oldTypeInferenceEnvironment with: (self typeInferenceEnvironment).
-        self typeInferenceEnvironment: typeInferenceEnvironment.
-
-        let: #analyzedNode with: (self analyzeNodeIfNeededWithCurrentExpectedType: node).
-        self typeInferenceEnvironment: oldTypeInferenceEnvironment.
-        analyzedNode
-    };
-    
     withSelector: #analyzeNodeIfNeeded:withExpectedType: addMethod: {:(Reflection Semantic ASTAnalyzer)self :(Reflection AST Node)node :(Type)expectedType :: Reflection AST Node |
         self analyzeNodeIfNeeded: node withTypeInferenceEnvironment: (Reflection Semantic ExpectedTypeInferenceEnvironment basicNewWithNamedSlots: #{
             expectedType: expectedType

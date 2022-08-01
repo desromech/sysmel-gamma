@@ -75,7 +75,6 @@ Reflection AST NamespaceDefinitionNode
                 void
             }.
 
-            __BootstrapCompiler__ print: analyzedNode.
             analyzedNode
         } else: {
             analyzer makeSemanticAnalysisError: "A namespace cannot be defined in this location." at: self sourcePosition.

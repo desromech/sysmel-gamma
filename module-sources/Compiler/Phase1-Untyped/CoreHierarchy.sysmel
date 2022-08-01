@@ -64,9 +64,9 @@ __BootstrapCompiler__
     addBasicTypeNamed: #PointerTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection TypeSchema slots: #{});
     addBasicTypeNamed: #ReferenceTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection TypeSchema slots: #{});
 
-    addBasicTypeNamed: #FunctionImplementation with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
-    addBasicTypeNamed: #BlockClosure with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection FunctionImplementation slots: #{});
-    addBasicTypeNamed: #AbstractPrimitiveMethod with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection FunctionImplementation slots: #{});
+    addBasicTypeNamed: #FunctionProgramEntity with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection ProgramEntity slots: #{});
+    addBasicTypeNamed: #BlockClosure with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection FunctionProgramEntity slots: #{});
+    addBasicTypeNamed: #AbstractPrimitiveMethod with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection FunctionProgramEntity slots: #{});
     addBasicTypeNamed: #PrimitiveMethod with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AbstractPrimitiveMethod slots: #{});
     addBasicTypeNamed: #TypeSchemaPrimitiveMethod with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AbstractPrimitiveMethod slots: #{});
     addBasicTypeNamed: #RecordTypeAccessorPrimitiveMethod with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AbstractPrimitiveMethod slots: #{});
