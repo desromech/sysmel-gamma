@@ -260,7 +260,7 @@ Integer
         <primitive: #"integer.conversion.toUInt8">
         UInt8 basicNew: self
     };
-    withSelector: #s8 addMethod: {:(Integer)self :: Int8 |
+    withSelector: #i8 addMethod: {:(Integer)self :: Int8 |
         <pure>
         <primitive: #"integer.conversion.toInt8">
         Int8 basicNew: self
@@ -270,7 +270,7 @@ Integer
         <primitive: #"integer.conversion.toUInt16">
         UInt16 basicNew: self
     };
-    withSelector: #s16 addMethod: {:(Integer)self :: Int16 |
+    withSelector: #i16 addMethod: {:(Integer)self :: Int16 |
         <pure>
         <primitive: #"integer.conversion.toInt16">
         Int16 basicNew: self
@@ -280,7 +280,7 @@ Integer
         <primitive: #"integer.conversion.toUInt32">
         UInt32 basicNew: self
     };
-    withSelector: #s32 addMethod: {:(Integer)self :: Int32 |
+    withSelector: #i32 addMethod: {:(Integer)self :: Int32 |
         <pure>
         <primitive: #"integer.conversion.toInt32">
         Int32 basicNew: self
@@ -290,7 +290,7 @@ Integer
         <primitive: #"integer.conversion.toUInt64">
         UInt64 basicNew: self
     };
-    withSelector: #s64 addMethod: {:(Integer)self :: Int64 |
+    withSelector: #i64 addMethod: {:(Integer)self :: Int64 |
         <pure>
         <primitive: #"integer.conversion.toInt64">
         Int64 basicNew: self

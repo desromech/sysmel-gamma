@@ -303,7 +303,19 @@ Function
     };
     withSelector: #run:with:in: addMethod: {:(Function)self :(AnyValue)selector :(AnyValue arraySlice)arguments :(AnyValue)receiver :: AnyValue |
         <primitive: #"object.runWithIn">
-        __BootstrapCompiler__ primitiveFailed
+        if: bootstrapImplementation isNotNil then: {
+            bootstrapImplementation _ run: selector with: arguments in: receiver
+        } else: {
+            implementation _ run: selector with: arguments in: receiver
+        }.
+    };
+    withSelector: #evaluateWithArguments: addMethod: {:(Function)self :(AnyValue arraySlice)arguments :: AnyValue |
+        <primitive: #"object.evaluateWithArguments">
+        if: bootstrapImplementation isNotNil then: {
+            bootstrapImplementation _ evaluateWithArguments: arguments
+        } else: {
+            implementation _ evaluateWithArguments: arguments
+        }.
     };
     withSelector: #hasMethodFlag: addMethod: {:(Function)self :(AnyValue)methodFlag :: Boolean |
         <primitive: #"function.hasMethodFlag">

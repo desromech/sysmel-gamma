@@ -125,3 +125,17 @@ Reflection AST BlockClosureNode
 
         self analyzedType _ newWithImplementation: blockClosure
     }.
+
+Reflection BlockClosure
+    withSelector: #run:with:in: addMethod: {:(Reflection BlockClosure)self :(AnyValue)selector :(AnyValue arraySlice)arguments :(AnyValue)receiver :: AnyValue |
+        __BootstrapCompiler__ print: "TODO: BlockClosure evaluateWithArguments:".
+        __BootstrapCompiler__ print: selector.
+        __BootstrapCompiler__ print: arguments.
+        __BootstrapCompiler__ print: receiver.
+        __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #evaluateWithArguments: addMethod: {:(Reflection BlockClosure)self :(AnyValue arraySlice)arguments :: AnyValue |
+        __BootstrapCompiler__ print: "TODO: BlockClosure evaluateWithArguments:".
+        __BootstrapCompiler__ print: arguments.
+        __BootstrapCompiler__ primitiveFailed
+    }.

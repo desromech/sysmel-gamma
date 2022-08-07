@@ -24,6 +24,9 @@ def generateNextRandomIdentityHash():
 def getSemanticAnalysisType(symbol):
     return SemanticAnalysisTypeMapping.at(symbol)
 
+def makeAnyValueArraySlice(collection):
+    return getBasicTypeNamed('AnyArraySlice').basicNewWithArraySliceElements(collection)
+
 class ValueInterface:
     def performWithArguments(self, machine, selector, arguments):
         raise NotImplementedError()
@@ -121,6 +124,12 @@ class ValueInterface:
 
     def generateIdentityHash(self):
         return generateNextRandomIdentityHash()
+
+    def runWithIn(self, machine, selector, arguments, receiver):
+        return self.performWithArguments(machine, Symbol.intern('run:with:in:'), (selector, makeAnyValueArraySlice(arguments), receiver))
+
+    def evaluateWithArguments(self, machine, arguments):
+        return self.performWithArguments(machine, Symbol.intern('evaluateWithArguments:'), (makeAnyValueArraySlice(arguments),))
 
 class TypedValue(ValueInterface):
     def getType(self):
@@ -2393,6 +2402,10 @@ class ObjectPrimitives:
     def primitiveRunWithIn(self, selector, arguments, receiver):
         return self.runWithIn(EvaluationMachine.getActive(), selector, extractArraySliceElements(arguments), receiver)
 
+    @primitiveNamed('object.evaluateWithArguments')
+    def primitiveEvaluateWithArguments(self, arguments):
+        return self.evaluateWithArguments(EvaluationMachine.getActive(), extractArraySliceElements(arguments))
+
 class ArrayPrimitives:
     @primitiveNamed('array.basicAt')
     def primitiveArrayBasicAt(self, index):
@@ -2426,7 +2439,6 @@ class TypePrimitives:
     @primitiveNamed('type.newSimpleFunctionType')
     def newSimpleFunctionTypeWithArgumentsAndResultType(self, argumentsTypes, resultType):
         return FunctionType.makeSimpleFunctionType(tuple(list(argumentsTypes)), resultType)
-
 
 class FunctionPrimitives:
     @primitiveNamed('function.hasMethodFlag')
