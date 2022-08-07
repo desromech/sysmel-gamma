@@ -65,9 +65,10 @@ __BootstrapCompiler__
     addBasicTypeNamed: #ReferenceTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection TypeSchema slots: #{});
 
     addBasicTypeNamed: #FunctionProgramEntity with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection ProgramEntity slots: #{});
+    addBasicTypeNamed: #BootstrapBlockClosure with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection FunctionProgramEntity slots: #{});
     addBasicTypeNamed: #BlockClosure with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection FunctionProgramEntity slots: #{});
     addBasicTypeNamed: #AbstractPrimitiveMethod with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection FunctionProgramEntity slots: #{});
-    addBasicTypeNamed: #PrimitiveMethod with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AbstractPrimitiveMethod slots: #{});
+    addBasicTypeNamed: #BootstrapPrimitiveMethod with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AbstractPrimitiveMethod slots: #{});
     addBasicTypeNamed: #TypeSchemaPrimitiveMethod with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AbstractPrimitiveMethod slots: #{});
     addBasicTypeNamed: #RecordTypeAccessorPrimitiveMethod with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AbstractPrimitiveMethod slots: #{});
     addBasicTypeNamed: #RecordTypeGetterPrimitiveMethod with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection RecordTypeAccessorPrimitiveMethod slots: #{});
@@ -782,6 +783,11 @@ Type definePublicSlots: #{
     supertype: Type optional.
     schema: Reflection TypeSchema.
     symbolTable: Reflection SymbolTable
+}.
+
+Function definePublicSlots: #{
+    bootstrapImplementation: Reflection FunctionProgramEntity optional.
+    implementation: Reflection FunctionProgramEntity optional.
 }.
 
 __BootstrapCompiler__

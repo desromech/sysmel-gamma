@@ -13,6 +13,13 @@ __BootstrapCompiler__
         hasCompileTimeDefinedType: Boolean.
     }).
 
+Reflection BlockClosure
+    definePublicSlots: #{
+        functionType: Function __type__ optional.
+        node: Reflection AST BlockClosureNode.
+        environment: Reflection Semantic EvaluationEnvironment.
+    }.
+
 Reflection AST BlockClosureNode
     withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST BlockClosureNode)self :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
         let: #analyzedNode with: self shallowCopy.
@@ -104,10 +111,17 @@ Reflection AST BlockClosureNode
 
             let: #resultType with: (self analyzedResultTypeExpression _ evaluateNodeWith: environment).
 
-            ## TODO: Wrap this in a method with a primitive.
-            __TypeBuilder__ newSimpleFunctionTypeWithArguments: argumentTypes resultType: resultType
+            Function newSimpleFunctionTypeWithArguments: argumentTypes resultType: resultType
         } else: {
-            __BootstrapCompiler__ print: "TODO: compute block closure dependent function type.".
-            __BootstrapCompiler__ primitiveFailed
+            Function newDependentFunctionTypeWithEnvironment: environment arguments: self arguments resultType: self analyzedResultTypeExpression.
         }.
+    };
+    withSelector: #evaluateNodeWith: addMethod: {:(Reflection AST BlockClosureNode)self :(Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+        let: #blockClosure with: (Reflection BlockClosure basicNewWithNamedSlots: #{
+            functionType: self analyzedType _.
+            node: self.
+            environment: evaluationEnvironment.
+        }).
+
+        self analyzedType _ newWithImplementation: blockClosure
     }.

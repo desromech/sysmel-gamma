@@ -213,6 +213,14 @@ Function __type__
                 value: binding value
             }
         }
+    };
+    withSelector: #newSimpleFunctionTypeWithArguments:resultType: addMethod: {:(Function __type__)self :(Type arraySlice)argumentTypes :(Type)resultType :: Function __type__ |
+        <primitive: #"type.newSimpleFunctionType">
+        __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #newWithImplementation: addMethod: {:(Function __type__)self :(Reflection FunctionProgramEntity)implementation :: self |
+        <primitive: #"function.newWithImplementation">
+        __BootstrapCompiler__ primitiveFailed
     }.
 
 Reflection Semantic FunctionSignatureAnalyzer

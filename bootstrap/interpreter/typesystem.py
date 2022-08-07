@@ -141,12 +141,14 @@ class TypedValue(ValueInterface):
     def asCanonicalTypeForDependentTypeArgument(self):
         return getBasicTypeNamed('AnyValue')
 
-class PrimitiveMethod(TypedValue):
-    def __init__(self, method, functionTypeSpec):
-        self.method = method
-        self.methodFlags = []
+class FunctionTypeValue(TypedValue):
+    def __init__(self, type, bootstrapImplementation = None, implementation = None, functionTypeSpec = None):
+        super().__init__()
+        self.type = type
         self.functionTypeSpec = functionTypeSpec
-        self.functionType = None
+        self.name = None
+        self.bootstrapImplementation = bootstrapImplementation
+        self.implementation = implementation
         self.rawOwnerType = None
         self.rawOwnerTypeIsMetaType = False
 
@@ -165,17 +167,81 @@ class PrimitiveMethod(TypedValue):
             return self.rawOwnerType
 
     def getType(self):
-        if self.functionType is None:
-            self.functionType = FunctionType.constructFromTypeSpec(self.functionTypeSpec, self.getOwnerType())
-            assert self.functionType is not None
-        return self.functionType
+        if self.type is None:
+            self.type = FunctionType.constructFromTypeSpec(self.functionTypeSpec, self.getOwnerType())
+            assert self.type is not None
+        return self.type
+
+    def runWithIn(self, machine, selector, arguments, receiver):
+        return self.evaluateWithArguments(machine, tuple([receiver] + list(arguments)))
+
+    def evaluateWithArguments(self, machine, arguments):
+        if self.bootstrapImplementation is not None:
+            result = self.bootstrapImplementation.evaluateWithArguments(machine, arguments)
+        else:
+            result = self.implementation.evaluateWithArguments(machine, arguments)
+        return self.applyResultTransform(machine, result)
+
+    def hasMethodFlag(self, methodFlag):
+        if self.bootstrapImplementation is not None:
+            return self.bootstrapImplementation.hasMethodFlag(methodFlag)
+        else:
+            return self.bootstrapImplementation.hasMethodFlag(methodFlag)
+
+    def performWithArguments(self, machine, selector, arguments):
+        if selector == '()':
+            return self.evaluateWithArguments(machine, arguments)
+        elif selector == 'memoized':
+            return self.asMemoizedFunction()
+        elif selector == 'templated':
+            return self.asTemplatedFunction()
+        return super().performWithArguments(machine, selector, arguments)
+
+    def asMemoizedFunction(self):
+        return MemoizedFunctionTypeValue(self)
+
+    def asTemplatedFunction(self):
+        return TemplatedFunctionTypeValue(self)
+
+    def applyResultTransform(self, machine, result):
+        return result
+
+    def onGlobalBindingWithSymbolAdded(self, symbol):
+        if self.name is None:
+            self.name = symbol
+
+    def defaultPrintString(self) -> str:
+        if self.name is not None:
+            return self.name
+        return "a " + str(self.getType())
+
+    def __call__(self, *args):
+        return self.evaluateWithArguments(EvaluationMachine.getActive(), args)
+
+class PrimitiveMethod(TypedValue):
+    def __init__(self, method):
+        self.method = method
+        self.methodFlags = []
+
+    @classmethod
+    def makeFunction(cls, method, functionTypeSpec):
+        return FunctionTypeValue(None, bootstrapImplementation = cls(method), functionTypeSpec = functionTypeSpec)
+
+    def getType(self):
+        return getBasicTypeNamed('BootstrapPrimitiveMethod')
+
+    def evaluateWithArguments(self, machine, arguments):
+        return coerceNoneToNil(self.method(*arguments))
 
     def runWithIn(self, machine, selector, arguments, receiver):
         return coerceNoneToNil(self.method(receiver, *arguments))
 
+    def hasMethodFlag(self, methodFlag):
+        return getBooleanValue(methodFlag in self.methodFlags)
+
 def primitiveNamed(primitiveName, functionTypeSpec = None):
     def decorator(primitiveImplementation):
-        primitiveMethod = PrimitiveMethod(primitiveImplementation, functionTypeSpec)
+        primitiveMethod = PrimitiveMethod(primitiveImplementation)
         PrimitiveMethodTable[primitiveName] = primitiveMethod
         return primitiveImplementation
     return decorator
@@ -574,15 +640,15 @@ class TypeSchemaPrimitiveMethod(PrimitiveMethod):
         return self.method(receiver, *arguments)
 
 class RecordTypeAccessorPrimitiveMethod(PrimitiveMethod):
-    def __init__(self, selector, slotName, slotIndex, slotType, functionTypeSpec):
-        super().__init__(None, functionTypeSpec)
+    def __init__(self, selector, slotName, slotIndex, slotType):
+        super().__init__(None)
         self.selector = selector
         self.slotName = slotName
         self.slotIndex = slotIndex
         self.slotType = slotType
 
-    def runWithIn(self, machine, selector, arguments, receiver):
-        return self.method(receiver, *arguments)
+    def evaluateWithArguments(self, machine, arguments):
+        return self.runWithIn(machine, Symbol.intern('()'), arguments[1:], arguments[0])
 
 class RecordTypeGetterPrimitiveMethod(RecordTypeAccessorPrimitiveMethod):
     def runWithIn(self, machine, selector, arguments, receiver):
@@ -593,13 +659,13 @@ class RecordTypeSetterPrimitiveMethod(RecordTypeAccessorPrimitiveMethod):
         return receiver.setSlotWithIndexAndName(self.slotIndex, self.slotName, arguments[0])
 
 class BlockClosure(TypedValue):
-    def __init__(self, node, environment, primitiveName = None, methodFlags = []):
+    def __init__(self, node, environment, functionType, primitiveName = None, methodFlags = []):
         self.node = node
         self.environment = environment
         self.name = None
         self.primitiveName = primitiveName
         self.methodFlags = methodFlags
-        self.functionType = None
+        self.functionType = functionType
 
     def isConversionMethod(self):
         return 'conversion' in self.methodFlags
@@ -611,116 +677,20 @@ class BlockClosure(TypedValue):
         return 'explicit' in self.methodFlags
 
     def getType(self):
-        if self.functionType is None:
-            self.functionType = self.node.constructFunctionTypeWithEnvironment(self.environment)
-        return self.functionType
-
-    def performWithArguments(self, machine, selector, arguments):
-        if selector == '()':
-            return self.evaluateWithArguments(machine, arguments)
-        elif selector == 'memoized':
-            return self.asMemoizedBlockClosure()
-        elif selector == 'templated':
-            return self.asTemplatedBlockClosure()
-        return super().performWithArguments(machine, selector, arguments)
+        return getBasicTypeNamed("BootstrapBlockClosure")
 
     def runWithIn(self, machine, selector, arguments, receiver):
         return self.evaluateWithArguments(machine, tuple([receiver] + list(arguments)))
 
     def evaluateWithArguments(self, machine, arguments):
         if self.primitiveName is not None and self.primitiveName in PrimitiveMethodTable:
-            rawResult = self.node.evaluateClosureResultCoercionWithEnvironmentAndArguments(machine, self.environment, arguments,
+            return self.node.evaluateClosureResultCoercionWithEnvironmentAndArguments(machine, self.environment, arguments,
                 PrimitiveMethodTable[self.primitiveName].runWithIn(machine, Symbol.intern('()'), arguments[1:], arguments[0]))
         else:
-            rawResult = self.node.evaluateClosureWithEnvironmentAndArguments(machine, self.environment, arguments)
-        return self.applyResultTransform(machine, rawResult)
+            return self.node.evaluateClosureWithEnvironmentAndArguments(machine, self.environment, arguments)
 
-    def asMemoizedBlockClosure(self):
-        return MemoizedBlockClosure(self.node, self.environment)
-
-    def asTemplatedBlockClosure(self):
-        return TemplatedBlockClosure(self.node, self.environment)
-
-    def applyResultTransform(self, machine, result):
-        return result
-
-    def onGlobalBindingWithSymbolAdded(self, symbol):
-        if self.name is None:
-            self.name = symbol
-
-    def defaultPrintString(self) -> str:
-        if self.name is not None:
-            return self.name
-        return 'BlockClosure(' + str(self.getType()) + ')'
-
-    @primitiveNamed('function.hasMethodFlag')
     def hasMethodFlag(self, methodFlag):
         return getBooleanValue(methodFlag in self.methodFlags)
-
-    def __call__(self, *args):
-        return self.evaluateWithArguments(EvaluationMachine.getActive(), tuple(args))
-
-class AbstractMemoizedBlockClosure(BlockClosure):
-    def __init__(self, node, environment):
-        super().__init__(node, environment)
-        self.memoizationTable = {}
-
-    def evaluateWithArguments(self, machine, arguments):
-        if arguments in self.memoizationTable:
-            return self.memoizationTable[arguments]
-
-        result = super().evaluateWithArguments(machine, arguments)
-        self.applyNameToResult(machine, arguments, result)
-        self.memoizationTable[arguments] = result
-        return result
-
-    def applyNameToResult(self, machine, arguments, result):
-        pass
-
-class MemoizedBlockClosure(AbstractMemoizedBlockClosure):
-    def asMemoizedBlockClosure(self):
-        return self
-
-class TemplatedBlockClosure(AbstractMemoizedBlockClosure):
-    def __init__(self, node, environment):
-        super().__init__(node, environment)
-        self.resultExtensionList = []
-
-    def asTemplatedBlockClosure(self):
-        return self
-
-    def applyResultTransform(self, machine, result):
-        callSymbol = Symbol.intern('()')
-        callArguments = (result,)
-        for resultExtension in self.resultExtensionList:
-            resultExtension.performWithArguments(machine, callSymbol, callArguments)
-        return result
-
-    def extendWith(self, machine, extension):
-        callSymbol = Symbol.intern('()')
-        for arguments, result in self.memoizationTable.items():
-            extension.performWithArguments(machine, callSymbol, (result,))
-        self.resultExtensionList.append(extension)
-
-    def performWithArguments(self, machine, selector, arguments):
-        if selector == 'extendWith:':
-            return self.extendWith(machine, arguments[0])
-        return super().performWithArguments(machine, selector, arguments)
-
-    def applyNameToResult(self, machine, arguments, result):
-        if self.name is None:
-            return
-
-        valueName = self.name + '('
-        i = 0
-        for arg in arguments:
-            if i > 0:
-                valueName += ', '
-            valueName += repr(arg)
-            i += 1
-        valueName += ')'
-        result.setConstructionTemplateAndArguments(self, arguments)
-        result.onGlobalBindingWithSymbolAdded(Symbol.intern(valueName))
 
 class TypeSchema(TypedValue):
     def __init__(self):
@@ -744,9 +714,9 @@ class TypeSchema(TypedValue):
             method.installedInMetaTypeOf(type)
 
     def buildPrimitiveMethodDictionary(self):
-        self.methodDict[Symbol.intern('shallowCopy')] = TypeSchemaPrimitiveMethod(self.primitiveShallowCopy, '(SelfType => SelfType)')
-        self.methodDict[Symbol.intern('yourself')] = TypeSchemaPrimitiveMethod(self.primitiveYourself, '(SelfType => SelfType)')
-        self.methodDict[Symbol.intern('__type__')] = TypeSchemaPrimitiveMethod(self.getTypeFromValue, '(SelfType => SelfType __type__)')
+        self.methodDict[Symbol.intern('shallowCopy')] = TypeSchemaPrimitiveMethod.makeFunction(self.primitiveShallowCopy, '(SelfType => SelfType)')
+        self.methodDict[Symbol.intern('yourself')] = TypeSchemaPrimitiveMethod.makeFunction(self.primitiveYourself, '(SelfType => SelfType)')
+        self.methodDict[Symbol.intern('__type__')] = TypeSchemaPrimitiveMethod.makeFunction(self.getTypeFromValue, '(SelfType => SelfType __type__)')
 
     def lookupPrimitiveWithSelector(self, selector):
         if selector in self.methodDict:
@@ -832,7 +802,7 @@ class EmptyTypeSchema(TypeSchema):
         return True
 
     def buildPrimitiveMethodDictionary(self):
-        self.metaTypeMethodDict[Symbol.intern('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew, '{:(SelfType)self :: self}')
+        self.metaTypeMethodDict[Symbol.intern('basicNew')] = TypeSchemaPrimitiveMethod.makeFunction(self.basicNew, '{:(SelfType)self :: self}')
         return super().buildPrimitiveMethodDictionary()
 
     def basicNew(self, valueType):
@@ -944,8 +914,8 @@ class PrimitiveNumberTypeSchema(PrimitiveTypeSchema):
         return True
 
     def buildPrimitiveMethodDictionary(self):
-        self.metaTypeMethodDict[Symbol.intern('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew, '{:(SelfType)self :: self}')
-        self.metaTypeMethodDict[Symbol.intern('basicNew:')] = TypeSchemaPrimitiveMethod(self.basicNewWithValue, '{:(SelfType)self :(AnyValue)value :: self}')
+        self.metaTypeMethodDict[Symbol.intern('basicNew')] = TypeSchemaPrimitiveMethod.makeFunction(self.basicNew, '{:(SelfType)self :: self}')
+        self.metaTypeMethodDict[Symbol.intern('basicNew:')] = TypeSchemaPrimitiveMethod.makeFunction(self.basicNewWithValue, '{:(SelfType)self :(AnyValue)value :: self}')
         return super().buildPrimitiveMethodDictionary()
 
     def basicNew(self, valueType):
@@ -1037,12 +1007,12 @@ class SumTypeSchema(TypeSchema):
         return self.elementTypes[0].isDefaultConstructible()
 
     def buildPrimitiveMethodDictionary(self):
-        self.methodDict[Symbol.intern('__typeSelector__')] = TypeSchemaPrimitiveMethod(self.getTypeSelector, '(SelfType) => Size')
-        self.methodDict[Symbol.intern('get:')] = TypeSchemaPrimitiveMethod(self.getWithType, '{:(SelfType)self :(Type)expectedType :: expectedType}')
-        self.methodDict[Symbol.intern('is:')] = TypeSchemaPrimitiveMethod(self.isWithType, '{:(SelfType)self :(Type)expectedType :: Boolean}')
-        self.metaTypeMethodDict[Symbol.intern('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew, '{:(SelfType)self :: self}')
-        self.metaTypeMethodDict[Symbol.intern('basicNew:')] = TypeSchemaPrimitiveMethod(self.basicNewWithValue, '{:(SelfType)self :(AnyValue)initialValue :: self}')
-        self.metaTypeMethodDict[Symbol.intern('basicNew:typeSelector:')] = TypeSchemaPrimitiveMethod(self.basicNewWithValueTypeSelector, '{:(SelfType)self :(AnyValue)initialValue :(Size)typeSelector :: self}')
+        self.methodDict[Symbol.intern('__typeSelector__')] = TypeSchemaPrimitiveMethod.makeFunction(self.getTypeSelector, '(SelfType) => Size')
+        self.methodDict[Symbol.intern('get:')] = TypeSchemaPrimitiveMethod.makeFunction(self.getWithType, '{:(SelfType)self :(Type)expectedType :: expectedType}')
+        self.methodDict[Symbol.intern('is:')] = TypeSchemaPrimitiveMethod.makeFunction(self.isWithType, '{:(SelfType)self :(Type)expectedType :: Boolean}')
+        self.metaTypeMethodDict[Symbol.intern('basicNew')] = TypeSchemaPrimitiveMethod.makeFunction(self.basicNew, '{:(SelfType)self :: self}')
+        self.metaTypeMethodDict[Symbol.intern('basicNew:')] = TypeSchemaPrimitiveMethod.makeFunction(self.basicNewWithValue, '{:(SelfType)self :(AnyValue)initialValue :: self}')
+        self.metaTypeMethodDict[Symbol.intern('basicNew:typeSelector:')] = TypeSchemaPrimitiveMethod.makeFunction(self.basicNewWithValueTypeSelector, '{:(SelfType)self :(AnyValue)initialValue :(Size)typeSelector :: self}')
         return super().buildPrimitiveMethodDictionary()
 
     def getTypeSelector(self, sumValue):
@@ -1161,8 +1131,8 @@ class ProductTypeSchema(TypeSchema):
         return self.elementTypes[slotIndex]
 
     def buildPrimitiveMethodDictionary(self):
-        self.metaTypeMethodDict[Symbol.intern('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew, '{:(SelfType)self :: self}')
-        self.metaTypeMethodDict[Symbol.intern('basicNewWithSlots:')] = TypeSchemaPrimitiveMethod(self.basicNewWithSequentialSlots, '{:(SelfType)self :(AnyValue)sequentialSlots :: self}')
+        self.metaTypeMethodDict[Symbol.intern('basicNew')] = TypeSchemaPrimitiveMethod.makeFunction(self.basicNew, '{:(SelfType)self :: self}')
+        self.metaTypeMethodDict[Symbol.intern('basicNewWithSlots:')] = TypeSchemaPrimitiveMethod.makeFunction(self.basicNewWithSequentialSlots, '{:(SelfType)self :(AnyValue)sequentialSlots :: self}')
         return super().buildPrimitiveMethodDictionary()
 
     def basicNew(self, productType):
@@ -1222,17 +1192,17 @@ class RecordTypeSchema(ProductTypeSchema):
         return self.slotNameDictionary[slotName]
 
     def buildPrimitiveMethodDictionary(self):
-        self.metaTypeMethodDict[Symbol.intern('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew, '{:(SelfType)self :: self}')
-        self.metaTypeMethodDict[Symbol.intern('basicNewWithSlots:')] = TypeSchemaPrimitiveMethod(self.basicNewWithSequentialSlots, '{:(SelfType)self :(AnyValue)slots :: self}')
-        self.metaTypeMethodDict[Symbol.intern('basicNewWithNamedSlots:')] = TypeSchemaPrimitiveMethod(self.basicNewWithNamedSlots, '{:(SelfType)self :(AnyValue)slots :: self}')
+        self.metaTypeMethodDict[Symbol.intern('basicNew')] = TypeSchemaPrimitiveMethod.makeFunction(self.basicNew, '{:(SelfType)self :: self}')
+        self.metaTypeMethodDict[Symbol.intern('basicNewWithSlots:')] = TypeSchemaPrimitiveMethod.makeFunction(self.basicNewWithSequentialSlots, '{:(SelfType)self :(AnyValue)slots :: self}')
+        self.metaTypeMethodDict[Symbol.intern('basicNewWithNamedSlots:')] = TypeSchemaPrimitiveMethod.makeFunction(self.basicNewWithNamedSlots, '{:(SelfType)self :(AnyValue)slots :: self}')
         for slotIndex in range(len(self.slots)):
             slotAssociation = self.slots[slotIndex]
             slotName = slotAssociation.key
             getterName = Symbol.intern(slotName)
             setterName = Symbol.intern(slotName + ':')
             slotType = self.allSlots[slotIndex]
-            self.methodDict[getterName] = RecordTypeGetterPrimitiveMethod(getterName, getterName, self.startSlotIndex + slotIndex, slotAssociation.value, (('SelfType'), slotType))
-            self.methodDict[setterName] = RecordTypeSetterPrimitiveMethod(setterName, getterName, self.startSlotIndex + slotIndex, slotAssociation.value, (('SelfType', slotType), slotType))
+            self.methodDict[getterName] = FunctionTypeValue(None, bootstrapImplementation = RecordTypeGetterPrimitiveMethod(getterName, getterName, self.startSlotIndex + slotIndex, slotAssociation.value), functionTypeSpec = (('SelfType'), slotType))
+            self.methodDict[setterName] = FunctionTypeValue(None, bootstrapImplementation = RecordTypeSetterPrimitiveMethod(setterName, getterName, self.startSlotIndex + slotIndex, slotAssociation.value), functionTypeSpec = (('SelfType', slotType), slotType))
         return super().buildPrimitiveMethodDictionary()
 
     def basicNewWithNamedSlots(self, recordType, namedSlots):
@@ -1283,8 +1253,8 @@ class ArrayTypeSchema(TypeSchema):
         return self.elementType
 
     def buildPrimitiveMethodDictionary(self):
-        self.metaTypeMethodDict[Symbol.intern('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew, '{:(SelfType)self :: self}')
-        self.metaTypeMethodDict[Symbol.intern('basicNewWithSlots:')] = TypeSchemaPrimitiveMethod(self.basicNewWithSequentialSlots, '{:(SelfType)self :(AnyValue)slots :: self}')
+        self.metaTypeMethodDict[Symbol.intern('basicNew')] = TypeSchemaPrimitiveMethod.makeFunction(self.basicNew, '{:(SelfType)self :: self}')
+        self.metaTypeMethodDict[Symbol.intern('basicNewWithSlots:')] = TypeSchemaPrimitiveMethod.makeFunction(self.basicNewWithSequentialSlots, '{:(SelfType)self :(AnyValue)slots :: self}')
         return super().buildPrimitiveMethodDictionary()
 
     def basicNew(self, valueType):
@@ -1373,8 +1343,8 @@ class PointerTypeSchema(PointerLikeTypeSchema):
         return True
 
     def buildPrimitiveMethodDictionary(self):
-        self.metaTypeMethodDict[Symbol.intern('basicNew')] = TypeSchemaPrimitiveMethod(self.basicNew, '{:(SelfType)self :: self}')
-        self.metaTypeMethodDict[Symbol.intern('basicNew:')] = TypeSchemaPrimitiveMethod(self.basicNewWithValue, '{:(SelfType)self :(AnyValue)value :: self}')
+        self.metaTypeMethodDict[Symbol.intern('basicNew')] = TypeSchemaPrimitiveMethod.makeFunction(self.basicNew, '{:(SelfType)self :: self}')
+        self.metaTypeMethodDict[Symbol.intern('basicNew:')] = TypeSchemaPrimitiveMethod.makeFunction(self.basicNewWithValue, '{:(SelfType)self :(AnyValue)value :: self}')
         return super().buildPrimitiveMethodDictionary()
 
     def basicNew(self, valueType):
@@ -1742,7 +1712,7 @@ class BehaviorType(ProgramEntity, TypeInterface):
 
     def addPrimitiveMethodsWithSelectors(self, methodsWithSelector):
         for method, selector, functionTypeSpec in methodsWithSelector:
-            self.addMethodWithSelector(PrimitiveMethod(method, functionTypeSpec), Symbol.intern(selector))
+            self.addMethodWithSelector(PrimitiveMethod.makeFunction(method, functionTypeSpec), Symbol.intern(selector))
 
     def getName(self):
         if self.name is not None:
@@ -2045,6 +2015,69 @@ class SimpleFunctionSignatureAnalyzer(FunctionSignatureAnalyzer):
             return getBasicTypeNamed('CompilationError')
         return self.functionType.canonicalResultType
 
+class AbstractMemoizedFunctionTypeValue(FunctionTypeValue):
+    def __init__(self, baseFunctionTypeValue):
+        super().__init__(baseFunctionTypeValue.type, bootstrapImplementation = baseFunctionTypeValue.bootstrapImplementation, implementation = baseFunctionTypeValue.implementation)
+        self.memoizationTable = {}
+
+    def evaluateWithArguments(self, machine, arguments):
+        allArguments = tuple(arguments)
+        if allArguments in self.memoizationTable:
+            return self.memoizationTable[allArguments]
+
+        result = super().evaluateWithArguments(machine, arguments)
+        self.applyNameToResult(machine, allArguments, result)
+        self.memoizationTable[allArguments] = result
+        return result
+
+    def applyNameToResult(self, machine, arguments, result):
+        pass
+
+class MemoizedFunctionTypeValue(AbstractMemoizedFunctionTypeValue):
+    def asMemoizedFunction(self):
+        return self
+
+class TemplatedFunctionTypeValue(AbstractMemoizedFunctionTypeValue):
+    def __init__(self, baseFunctionTypeValue):
+        super().__init__(baseFunctionTypeValue)
+        self.resultExtensionList = []
+
+    def asTemplatedFunction(self):
+        return self
+
+    def applyResultTransform(self, machine, result):
+        callSymbol = Symbol.intern('()')
+        callArguments = (result,)
+        for resultExtension in self.resultExtensionList:
+            resultExtension.performWithArguments(machine, callSymbol, callArguments)
+        return result
+
+    def extendWith(self, machine, extension):
+        callSymbol = Symbol.intern('()')
+        for arguments, result in self.memoizationTable.items():
+            extension.performWithArguments(machine, callSymbol, (result,))
+        self.resultExtensionList.append(extension)
+
+    def performWithArguments(self, machine, selector, arguments):
+        if selector == 'extendWith:':
+            return self.extendWith(machine, arguments[0])
+        return super().performWithArguments(machine, selector, arguments)
+
+    def applyNameToResult(self, machine, arguments, result):
+        if self.name is None:
+            return
+
+        valueName = self.name + '('
+        i = 0
+        for arg in arguments:
+            if i > 0:
+                valueName += ', '
+            valueName += repr(arg)
+            i += 1
+        valueName += ')'
+        result.setConstructionTemplateAndArguments(self, arguments)
+        result.onGlobalBindingWithSymbolAdded(Symbol.intern(valueName))
+
 class FunctionType(SimpleType):
     def __init__(self):
         self.isDependentFunctionType = False
@@ -2059,6 +2092,13 @@ class FunctionType(SimpleType):
         self.hasForAllArgument = False
         self.argumentCount = 0
         super().__init__(supertype = getBasicTypeNamed('Function'))
+
+    def newWithBootstrapImplementation(self, bootstrapImplementation):
+        return FunctionTypeValue(self, bootstrapImplementation = bootstrapImplementation)
+
+    @primitiveNamed("function.newWithImplementation")
+    def newWithImplementation(self, implementation):
+        return FunctionTypeValue(self, implementation = implementation)
 
     @classmethod
     def makeSimpleFunctionType(cls, argumentTypes, resultType):
@@ -2381,3 +2421,14 @@ class PointerPrimitives:
     def primitivePointerBasicAtPut(self, index, value):
         self[index.asInteger()] = value
         return self[index.asInteger()]
+
+class TypePrimitives:
+    @primitiveNamed('type.newSimpleFunctionType')
+    def newSimpleFunctionTypeWithArgumentsAndResultType(self, argumentsTypes, resultType):
+        return FunctionType.makeSimpleFunctionType(tuple(list(argumentsTypes)), resultType)
+
+
+class FunctionPrimitives:
+    @primitiveNamed('function.hasMethodFlag')
+    def hasMethodFlag(self, methodFlag):
+        return self.hasMethodFlag(methodFlag)

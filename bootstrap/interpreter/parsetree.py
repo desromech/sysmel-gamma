@@ -648,7 +648,8 @@ class PTBlockClosure(PTNode):
         return FunctionType.makeDependentFunctionType(environment, list(map(lambda arg: arg.asFunctionTypeArgument(), self.arguments)), FunctionTypeResult(self.resultType))
 
     def doEvaluateWithEnvironment(self, machine, environment):
-        return BlockClosure(self, environment, primitiveName = self.primitiveName, methodFlags = self.methodFlags)
+        functionType = self.constructFunctionTypeWithEnvironment(environment)
+        return functionType.newWithBootstrapImplementation(BlockClosure(self, functionType = functionType, environment = environment, primitiveName = self.primitiveName, methodFlags = self.methodFlags))
 
     def evaluateClosureWithEnvironmentAndArguments(self, machine, closureEnvironment, arguments):
         if len(arguments) != self.expectedArgumentCount:
