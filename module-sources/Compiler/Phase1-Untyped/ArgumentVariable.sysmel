@@ -1,7 +1,7 @@
 __BootstrapCompiler__
     enterTopLevelNamespace;
     enterNamespaceNamed: #Reflection;
-    addBindingNamed: #ArgumentVariable with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection Variable publicSlots: #{
+    addBindingNamed: #ArgumentVariable with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection FunctionVariable publicSlots: #{
         isAnalyzingSignature: Boolean.
         hasDependentTypeAccess: Boolean.
     });
@@ -15,6 +15,18 @@ __BootstrapCompiler__
         analyzedVariable: Reflection ArgumentVariable optional.
         isGenericForallArgument: Boolean.
     }).
+
+Reflection ArgumentVariable
+    withSelector: #analyzeIdentifierReferenceNode:with: addMethod: {:(Reflection ArgumentVariable)self :(Reflection AST IdentifierReferenceNode)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+        if: self isAnalyzingSignature then: {
+            self hasDependentTypeAccess: true
+        } else: {void}.
+
+        Reflection AST FunctionVariableReferenceNode basicNewWithNamedSlots: #{
+            binding: self.
+            analyzedType: self referenceType
+        }
+    }.
 
 Reflection AST ArgumentDefinitionNode
     withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST ArgumentDefinitionNode)self :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
@@ -48,7 +60,8 @@ Reflection AST ArgumentDefinitionNode
             if: errorNode _ isNotNil then: {
                 errorNode _ _
             } else: {
-                let: #argumentVariableType with: Void.
+                let: #argumentVariableType with: (analyzedNode computeArgumentVariableAnalysisTypeWith: analyzer).
+
                 let: #argumentVariable with: (Reflection ArgumentVariable basicNewWithNamedSlots: #{
                     name: sanitizedName.
                     valueType: argumentVariableType.
@@ -64,6 +77,14 @@ Reflection AST ArgumentDefinitionNode
                     yourself
             }.
         }.
+    };
+    withSelector: #computeArgumentVariableAnalysisTypeWith: addMethod: {:(Reflection AST ArgumentDefinitionNode)self :(Reflection Semantic ASTAnalyzer)analyzer :: Type |
+        if: (self analyzedTypeExpression _ isCompileTimeDirectlyEvaluableWith: analyzer environment) then: {
+            self analyzedTypeExpression: (self analyzedTypeExpression _ optimizeViaCompileTimeEvaluationWith: analyzer environment).
+            self analyzedTypeExpression _ evaluateNodeWith: analyzer environment
+        } else: {
+            AnyValue
+        }
     };
     withSelector: #getArgumentVariable addMethod: {:(Reflection AST ArgumentDefinitionNode)self :: Reflection ArgumentVariable |
         self analyzedVariable _

@@ -15,6 +15,7 @@ python3 bootstrap/interpreter/sysmelbi.py \
     module-sources/Compiler/Phase1-Untyped/ProgramEntity.sysmel \
     module-sources/Compiler/Phase1-Untyped/Namespace.sysmel \
     module-sources/Compiler/Phase1-Untyped/Variable.sysmel \
+    module-sources/Compiler/Phase1-Untyped/FunctionVariable.sysmel \
     module-sources/Compiler/Phase1-Untyped/ArgumentVariable.sysmel \
     module-sources/Compiler/Phase1-Untyped/BlockClosure.sysmel \
     module-sources/Compiler/Phase1-Untyped/LocalVariable.sysmel \

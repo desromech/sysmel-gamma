@@ -6,17 +6,20 @@ __BootstrapCompiler__
         arguments: Reflection AST Node sharedArraySlice.
         resultTypeExpression: Reflection AST Node optional.
         body: Reflection AST Node.
+        analyzedBody: Reflection AST Node optional.
         analyzedResultTypeExpression: Reflection AST Node optional.
+        analyzedResultType: Type optional.
         argumentAnalysisScope: Reflection Semantic LexicalScope optional.
         hasGenericForAllArguments: Boolean.
         hasDependentArguments: Boolean.
         hasCompileTimeDefinedType: Boolean.
+        hasLazyBodyAnalysis: Boolean.
     }).
 
 Reflection BlockClosure
     definePublicSlots: #{
         functionType: Function __type__ optional.
-        node: Reflection AST BlockClosureNode.
+        node: Reflection AST BlockClosureNode optional.
         environment: Reflection Semantic EvaluationEnvironment.
     }.
 
@@ -59,14 +62,28 @@ Reflection AST BlockClosureNode
 
         if: hasError _ then: {
             analyzedNode
+                argumentAnalysisScope: argumentAnalysisScope;
                 analyzedType: CompilationError;
                 yourself
         } else: {
             analyzedNode
+                argumentAnalysisScope: argumentAnalysisScope;
                 analyzeCompileTimeTypeConstraintsWith: argumentAnalysisEnvironment;
                 analyzedType: (analyzedNode computeFunctionTypeWith: argumentAnalysisEnvironment).
+
+            if: self hasLazyBodyAnalysis not then: {
+                analyzedNode ensureBodyAnalysis.
+            } else: { void }.
+
             analyzedNode
         }.
+    };
+    withSelector: #ensureBodyAnalysis addMethod: {:(Reflection AST BlockClosureNode)self :: Void |
+        if: (if: self hasCompileTimeDefinedType then: self analyzedBody isNil else: false) then: {
+            let: #analyzer with: (Reflection Semantic ASTAnalyzer forEnvironment: (Reflection Semantic EvaluationEnvironment forLexicalScope: self argumentAnalysisScope _)).
+            self analyzedBody: (analyzer analyzeNodeIfNeeded: self body withExpectedType: self analyzedResultType _).
+            void
+        } else: { void }
     };
     withSelector: #analyzeCompileTimeTypeConstraintsWith: addMethod: {:(Reflection AST BlockClosureNode)self :(Reflection EvaluationEnvironment)environment :: Void |
         self
@@ -110,7 +127,7 @@ Reflection AST BlockClosureNode
             }).
 
             let: #resultType with: (self analyzedResultTypeExpression _ evaluateNodeWith: environment).
-
+            self analyzedResultType: resultType.
             Function newSimpleFunctionTypeWithArguments: argumentTypes resultType: resultType
         } else: {
             Function newDependentFunctionTypeWithEnvironment: environment arguments: self arguments resultType: self analyzedResultTypeExpression.
@@ -124,6 +141,44 @@ Reflection AST BlockClosureNode
         }).
 
         self analyzedType _ newWithImplementation: blockClosure
+    };
+    withSelector: #evaluateWithEnvironment:arguments: addMethod: {:(Reflection AST BlockClosureNode)self :(Reflection Semantic EvaluationEnvironment)environment :(AnyValue arraySlice)arguments :: AnyValue |
+        self ensureBodyAnalysis.
+
+        if: self analyzedBody isNotNil then: {
+            let: #evaluationScope with: environment lexicalScope makeChildLexicalScope.
+            let: #evaluationEnvironment with: (environment copyWithLexicalScope: evaluationScope) copyWithEmptyCleanUpScope.
+            let: #currentArgumentIndex with: (Size valueBox with: 0sz).
+
+            self arguments do: {:(Reflection AST Node)argumentNode :: Void |
+                let: #argumentVariable with: argumentNode getArgumentVariable.
+
+                if: argumentNode isGenericForallArgument then: {
+                    void.
+                } else: {
+                    if: currentArgumentIndex _ < arguments size then: {
+                        let: #argumentValue with: (arguments basicAt: currentArgumentIndex _).
+                        evaluationScope setSymbol: argumentVariable immutableValue: argumentValue.
+                        currentArgumentIndex _: currentArgumentIndex _ + 1sz
+                    } else: {
+                        __BootstrapCompiler__ error: "Missing arguments required for function evaluation."
+                    }
+                }.
+                void
+            }.
+
+            if: currentArgumentIndex _ < arguments size then: {
+                __BootstrapCompiler__ error: "Excessive arguments passed to function evaluation."
+            } else: {
+                void
+            }.
+
+            self analyzedBody _ evaluateNodeWith: evaluationEnvironment
+        } else: {
+            __BootstrapCompiler__ print: "TODO: BlockClosureNode evaluateWithEnvironment:arguments: handle generic case generic case and or dependent case.".
+            __BootstrapCompiler__ print: arguments.
+            __BootstrapCompiler__ primitiveFailed
+        }.
     }.
 
 Reflection BlockClosure
@@ -135,7 +190,5 @@ Reflection BlockClosure
         __BootstrapCompiler__ primitiveFailed
     };
     withSelector: #evaluateWithArguments: addMethod: {:(Reflection BlockClosure)self :(AnyValue arraySlice)arguments :: AnyValue |
-        __BootstrapCompiler__ print: "TODO: BlockClosure evaluateWithArguments:".
-        __BootstrapCompiler__ print: arguments.
-        __BootstrapCompiler__ primitiveFailed
+        self node _ evaluateWithEnvironment: self environment arguments: arguments
     }.

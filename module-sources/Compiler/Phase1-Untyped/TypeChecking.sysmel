@@ -47,12 +47,12 @@ Type
     };
     withSelector: #analyzeUnboundOrDynamicMessageSendNode:with: addMethod: {:(Type)self :(Reflection AST MessageSendNode)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
         if: self hasAnyValueFlag then: {
-            self analyzeDynamicMessageSendNode: node with: analyzerx
+            self analyzeDynamicMessageSendNode: node with: analyzer
         } else: {
             __BootstrapCompiler__ print: "Selector node".
             __BootstrapCompiler__ print: node selector.
             __BootstrapCompiler__ print: "Receiver type".
-            __BootstrapCompiler__ print: node receiver _ analyzedType.
+            __BootstrapCompiler__ print: node receiver _ analyzedType _.
             analyzer makeSemanticAnalysisError: "Unsupported dynamic message send." at: node sourcePosition
         }
     };

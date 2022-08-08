@@ -149,6 +149,7 @@ class BootstrapCompiler(BehaviorTypedObject):
             (cls.getTopLevelNamespace, 'getTopLevelEnvironment', '(SelfType) => Reflection Namespace'),
             (cls.getTopLevelEnvironment, 'getTopLevelEnvironment', '(SelfType) => Reflection Semantic IdentifierLookupScoe'),
 
+            (cls.error, 'error:', '(SelfType -- String) => Void'),
             (cls.parseErrorAt, 'parseError:at:', '(SelfType -- String -- AnyValue) => Void'),
             (cls.semanticAnalysisErrorAt, 'semanticAnalysisError:at:', '(SelfType -- String -- AnyValue) => Void'),
 
@@ -268,6 +269,9 @@ class BootstrapCompiler(BehaviorTypedObject):
 
     def print(self, string):
         print(string)
+
+    def error(self, message):
+        raise InterpreterError(message)
 
     def subclassResponsibility(self):
         raise SubclassResponsibility('Subclass responsibility')

@@ -1,0 +1,21 @@
+__BootstrapCompiler__
+    enterTopLevelNamespace;
+    enterNamespaceNamed: #Reflection;
+    addBindingNamed: #FunctionVariable with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection Variable publicSlots: #{});
+
+    enterNamespaceNamed: #AST;
+    addBindingNamed: #FunctionVariableReferenceNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST VariableReferenceNode publicSlots: #{}).
+
+Reflection FunctionVariable
+    withSelector: #analyzeIdentifierReferenceNode:with: addMethod: {:(Reflection FunctionVariable)self :(Reflection AST IdentifierReferenceNode)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+        Reflection AST FunctionVariableReferenceNode basicNewWithNamedSlots: #{
+            binding: self.
+            analyzedType: self referenceType
+        }
+    }.
+
+Reflection AST FunctionVariableReferenceNode
+    withSelector: #evaluateNodeWith: addMethod: {:(Reflection AST LocalVariableReferenceNode)self :(Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+        (evaluationEnvironment lexicalScope lookupSymbolRecursively: self binding) _ 
+            evaluateBindingWithEnvironment: evaluationEnvironment
+    }.

@@ -20,6 +20,9 @@ __BootstrapCompiler__
         analyzedExpectedValueType: Type optional.
         analyzedVariable: Reflection Variable optional.
     });
+    addBindingNamed: #VariableReferenceNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
+        binding: Reflection Variable.
+    });
 
     enterTopLevelNamespace;
     enterNamespaceNamed: #Reflection;

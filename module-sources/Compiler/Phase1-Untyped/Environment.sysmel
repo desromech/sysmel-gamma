@@ -101,6 +101,12 @@ Reflection Semantic EvaluationEnvironment __type__
             lexicalScope: scope.
             cleanUpScope: Reflection Semantic CleanUpScope basicNew.
         }
+    };
+    withSelector: #forLexicalScope: addMethod: {:(Reflection Semantic EvaluationEnvironment __type__)self :(Reflection Semantic LexicalScope)scope :: self |
+        self basicNewWithNamedSlots: #{
+            lexicalScope: scope.
+            cleanUpScope: Reflection Semantic CleanUpScope basicNew.
+        }
     }.
 
 Reflection Semantic EvaluationEnvironment

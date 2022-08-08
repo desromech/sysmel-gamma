@@ -1,22 +1,11 @@
 __BootstrapCompiler__
     enterTopLevelNamespace;
     enterNamespaceNamed: #Reflection;
-    addBindingNamed: #LocalVariable with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection Variable publicSlots: #{});
+    addBindingNamed: #LocalVariable with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection FunctionVariable publicSlots: #{});
 
     enterNamespaceNamed: #AST;
     addBindingNamed: #LocalVariableDefinitionNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST VariableDefinitionNode publicSlots: #{
-    });
-    addBindingNamed: #LocalVariableReferenceNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
-        binding: Reflection LocalVariable.
     }).
-
-Reflection LocalVariable
-    withSelector: #analyzeIdentifierReferenceNode:with: addMethod: {:(Reflection SymbolBinding)self :(Reflection AST IdentifierReferenceNode)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
-        Reflection AST LocalVariableReferenceNode basicNewWithNamedSlots: #{
-            binding: self.
-            analyzedType: self referenceType
-        }
-    }.
 
 Reflection AST LocalVariableDefinitionNode
     withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST LocalVariableDefinitionNode)self :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
@@ -100,10 +89,4 @@ Reflection AST LocalVariableDefinitionNode
         evaluationEnvironment lexicalScope setSymbol: self analyzedVariable _ immutableValue: bindingValue.
         
         bindingValue
-    }.
-
-Reflection AST LocalVariableReferenceNode
-    withSelector: #evaluateNodeWith: addMethod: {:(Reflection AST LocalVariableReferenceNode)self :(Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
-        (evaluationEnvironment lexicalScope lookupSymbolRecursively: self binding) _ 
-            evaluateBindingWithEnvironment: evaluationEnvironment
     }.
