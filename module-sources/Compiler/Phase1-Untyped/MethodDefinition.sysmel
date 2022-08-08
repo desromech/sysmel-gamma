@@ -1,0 +1,20 @@
+__BootstrapCompiler__
+    enterTopLevelNamespace;
+    enterNamespaceNamed: #Reflection;
+    enterNamespaceNamed: #AST;
+    addBindingNamed: #MethodDefinitionNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST ProgramEntityDefinitionNode publicSlots: #{
+        selectorExpression: Reflection AST Node optional.
+        bodyExpression: Reflection AST Node optional.
+        visibility: Reflection ProgramEntityVisibility.
+        analyzedSelector: Object optional.
+    }).
+
+Reflection AST MethodDefinitionNode
+    withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST TypeDefinitionNode)self :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+        __BootstrapCompiler__ print: "Reflection AST MethodDefinitionNode analyzeNodeWith:".
+        __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #evaluateNodeWith: addMethod: {:(Reflection AST TypeDefinitionNode)self :(Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+        __BootstrapCompiler__ print: "Reflection AST MethodDefinitionNode evaluateNodeWith:".
+        __BootstrapCompiler__ primitiveFailed
+    }.

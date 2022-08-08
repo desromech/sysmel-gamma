@@ -20,12 +20,14 @@ python3 bootstrap/interpreter/sysmelbi.py \
     module-sources/Compiler/Phase1-Untyped/BlockClosure.sysmel \
     module-sources/Compiler/Phase1-Untyped/LocalVariable.sysmel \
     module-sources/Compiler/Phase1-Untyped/TypeDefinition.sysmel \
+    module-sources/Compiler/Phase1-Untyped/MethodDefinition.sysmel \
     module-sources/Compiler/Phase1-Untyped/StructureDefinition.sysmel \
     module-sources/Compiler/Phase1-Untyped/Macros.sysmel \
     module-sources/Compiler/Phase1-Untyped/MetaBuilder.sysmel \
     module-sources/Compiler/Phase1-Untyped/FlagMetaBuilder.sysmel \
     module-sources/Compiler/Phase1-Untyped/LetMetaBuilder.sysmel \
     module-sources/Compiler/Phase1-Untyped/NamespaceMetaBuilder.sysmel \
+    module-sources/Compiler/Phase1-Untyped/MethodDefinitionMetaBuilder.sysmel \
     module-sources/Compiler/Phase1-Untyped/TypeDefinitionMetaBuilder.sysmel \
     module-sources/Compiler/Phase1-Untyped/StructureDefinitionMetaBuilder.sysmel \
     module-sources/Compiler/Phase1-Untyped/ParseTreeMapping.sysmel \

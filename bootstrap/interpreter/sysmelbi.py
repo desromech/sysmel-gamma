@@ -30,7 +30,6 @@ def sysmelbiMain():
     if len(scriptsToEvaluate) == 0:
         return printHelp()
     
-    
     #print(scriptsToEvaluate)
     bootstrapCompiler = BootstrapCompiler()
     bootstrapCompiler.activate()
@@ -49,10 +48,10 @@ def sysmelbiMain():
                 scriptDirectory = os.path.dirname(scriptFilename)
                 with open(scriptFilename, 'r') as scriptFile:
                     scriptEnvironment.evaluateScriptFile(evaluationMachine, scriptFile, scriptFilename, scriptDirectory)
+        evaluationMachine.finishPendingEvaluations()
     except InterpreterError as error:
         print(error)
         sys.exit(1)
-    evaluationMachine.finishPendingEvaluations()
 
 if __name__ == '__main__':
     sysmelbiMain()

@@ -4,6 +4,11 @@ public struct TestStruct definition: {
     public struct InnerStruct definition: {
         __BootstrapCompiler__ print: "InnerStruct body".
     }.
+
+    public method add: (a: Int32) with: (b: Int32) ::=> Int32 := a + b
+
 }.
+
+##function add(a: Int32, b: Int32) => Int32 := a + b.
 
 TestStruct

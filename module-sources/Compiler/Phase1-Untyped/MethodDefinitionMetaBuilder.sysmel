@@ -1,0 +1,25 @@
+## Type definition builder.
+__BootstrapCompiler__
+    enterTopLevelNamespace;
+    enterNamespaceNamed: #MetaProgramming;
+    addBindingNamed: #MethodDefinitionMetaBuilder with: (__TypeBuilder__ newGCClassWithSuperclass: MetaProgramming MetaBuilder slots: #{
+        selectorExpression: Reflection AST Node optional.
+        bodyExpression: Reflection AST Node optional.
+    }).
+
+MetaProgramming MethodDefinitionMetaBuilder
+    withSelector: #concretizeMetaBuilder addMethod: {:(MetaProgramming NamespaceMetaBuilder)self :: Reflection AST Node |
+        (Reflection AST MethodDefinitionNode basicNewWithNamedSlots: #{
+            sourcePosition: self metaContext sourcePosition.
+            selectorExpression: self selectorExpression.
+            bodyExpression: self bodyExpression.
+            visibility: self programEntityAttributes visibility.
+        })
+    }.
+
+MetaProgramming FlagMetaBuilder
+    withSelector: #method addMethod: {:(MetaProgramming FlagMetaBuilder)self :: Void |
+        <metaBuilder>
+        self delegateToMetaBuilderClass: MetaProgramming MethodDefinitionMetaBuilder.
+        void
+    }.
