@@ -28,6 +28,16 @@ Reflection ArgumentVariable
         }
     }.
 
+Reflection AST Node
+    withSelector: #parseAsArgumentDefinitionNode addMethod: {:(Reflection AST Node)self :: Reflection AST Node |
+        Reflection AST SemanticErrorNode basicNewWithNamedSlots: #{
+            analyzedType: CompilationError.
+            sourcePosition: self sourcePosition.
+            message: "Expression cannot be interpred as an argument definition node.".
+            innerNode: self
+        }.
+    }.
+
 Reflection AST ArgumentDefinitionNode
     withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST ArgumentDefinitionNode)self :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
         if: self nameExpression isNil & self typeExpression isNil then: {
@@ -88,4 +98,39 @@ Reflection AST ArgumentDefinitionNode
     };
     withSelector: #getArgumentVariable addMethod: {:(Reflection AST ArgumentDefinitionNode)self :: Reflection ArgumentVariable |
         self analyzedVariable _
+    };
+    withSelector: #parseAsArgumentDefinitionNode addMethod: {:(Reflection AST ArgumentDefinitionNode)self :: Reflection AST Node |
+        self
+    }.
+
+
+Reflection AST IdentifierReferenceNode
+    withSelector: #parseAsArgumentDefinitionNode addMethod: {:(Reflection AST IdentifierReferenceNode)self :: Reflection AST Node |
+        Reflection AST ArgumentDefinitionNode basicNewWithNamedSlots: #{
+            nameExpression: self asLiteralSymbolNode.
+        }.
+    }.
+
+Reflection AST LiteralValueNode
+    withSelector: #convertSelectorToArgumentName addMethod: {:(Reflection AST LiteralValueNode)self :: Reflection AST Node |
+        self shallowCopy
+            value: (self value withoutSuffix: ":");
+            yourself
+    }.
+
+Reflection AST MessageSendNode
+    withSelector: #parseAsArgumentDefinitionNode addMethod: {:(Reflection AST MessageSendNode)self :: Reflection AST Node |
+        if: self receiver isNil & (self arguments size = 1sz) & self selector isLiteralValueNode then: {
+            Reflection AST ArgumentDefinitionNode basicNewWithNamedSlots: #{
+                nameExpression: self selector convertSelectorToArgumentName.
+                typeExpression: (self arguments basicAt: 0)
+            }
+        } else: {
+            Reflection AST SemanticErrorNode basicNewWithNamedSlots: #{
+                analyzedType: CompilationError.
+                sourcePosition: self sourcePosition.
+                message: "Message send expression is not valid argument definition".
+                innerNode: self
+            }.
+        }.
     }.

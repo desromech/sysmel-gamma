@@ -3,16 +3,44 @@ __BootstrapCompiler__
     enterTopLevelNamespace;
     enterNamespaceNamed: #MetaProgramming;
     addBindingNamed: #MethodDefinitionMetaBuilder with: (__TypeBuilder__ newGCClassWithSuperclass: MetaProgramming MetaBuilder slots: #{
+        hasSeenMethodPrototype: Boolean.
         selectorExpression: Reflection AST Node optional.
+        arguments: Reflection AST Node sharedArraySlice.
+        resultTypeExpression: Reflection AST Node optional.
         bodyExpression: Reflection AST Node optional.
     }).
 
 MetaProgramming MethodDefinitionMetaBuilder
-    withSelector: #concretizeMetaBuilder addMethod: {:(MetaProgramming NamespaceMetaBuilder)self :: Reflection AST Node |
+    withSelector: #analyzeMessageSendNode:with: addMethod: {:(MetaProgramming MethodDefinitionMetaBuilder)self :(Reflection AST MessageSendNode)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+        if: self hasSeenMethodPrototype not then: {
+            self
+                hasSeenMethodPrototype: true;
+                selectorExpression: node selector;
+                arguments: (node arguments collect: {:(Reflection AST Node)argumentNode :: Reflection AST Node |
+                    argumentNode parseAsArgumentDefinitionNode
+                }).
+            node receiver _
+        } else: {
+            self analyzeMetaBuilderDirectMessageNode: node with: analyzer
+        }
+    };
+    withSelector: #=> addMethod: {:(MetaProgramming MethodDefinitionMetaBuilder)self :(Reflection AST Node)resultTypeExpression :: Void |
+        <metaBuilder>
+        self resultTypeExpression: resultTypeExpression.
+        void
+    };
+    withSelector: #":=" addMethod: {:(MetaProgramming MethodDefinitionMetaBuilder)self :(Reflection AST Node)bodyExpression :: Void |
+        <metaBuilder>
+        self bodyExpression: bodyExpression.
+        self finish.
+    };
+    withSelector: #concretizeMetaBuilder addMethod: {:(MetaProgramming MethodDefinitionMetaBuilder)self :: Reflection AST Node |
         (Reflection AST MethodDefinitionNode basicNewWithNamedSlots: #{
             sourcePosition: self metaContext sourcePosition.
             selectorExpression: self selectorExpression.
+            resultTypeExpression: self resultTypeExpression.
             bodyExpression: self bodyExpression.
+            arguments: self arguments.
             visibility: self programEntityAttributes visibility.
         })
     }.

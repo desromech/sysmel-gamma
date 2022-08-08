@@ -9,12 +9,12 @@ __BootstrapCompiler__
     }).
 
 MetaProgramming TypeDefinitionMetaBuilder
-    withSelector: #"supertype:" addMethod: {:(MetaProgramming NamespaceMetaBuilder)self :(Reflection AST Node)supertypeExpression :: Void |
+    withSelector: #supertype: addMethod: {:(MetaProgramming NamespaceMetaBuilder)self :(Reflection AST Node)supertypeExpression :: Void |
         <metaBuilder>
         self supertypeExpression: supertypeExpression.
         void
     };
-    withSelector: #"definition:" addMethod: {:(MetaProgramming NamespaceMetaBuilder)self :(Reflection AST Node)bodyExpression :: Void |
+    withSelector: #definition: addMethod: {:(MetaProgramming NamespaceMetaBuilder)self :(Reflection AST Node)bodyExpression :: Void |
         <metaBuilder>
         self bodyExpression: bodyExpression.
         self finish.

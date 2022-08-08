@@ -675,18 +675,29 @@ String
         <pure>
         <primitive: #"string.conversion.printString">
         self
+    };
+    withSelector: #withoutSuffix: addMethod: {:(Symbol)self :(String)suffix :: String |
+        <pure>
+        <primitive: #"string.manipulations.withoutSuffix">
+        __BootstrapCompiler__ primitiveFailed
     }.
 
+
 Symbol
-    withSelector: #asString addMethod: {:(Integer)self :: String |
+    withSelector: #asString addMethod: {:(Symbol)self :: String |
         <pure>
         <primitive: #"symbol.conversion.toString">
         __BootstrapCompiler__ primitiveFailed
     };
-    withSelector: #printString addMethod: {:(Integer)self :: String |
+    withSelector: #printString addMethod: {:(Symbol)self :: String |
         <pure>
         <primitive: #"symbol.conversion.printString">
         __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #withoutSuffix: addMethod: {:(Symbol)self :(String)suffix :: Symbol |
+        <pure>
+        <primitive: #"symbol.manipulations.withoutSuffix:">
+        (self asString withoutSuffix: suffix) asSymbol
     }.
 
 ## Basic type system methods.

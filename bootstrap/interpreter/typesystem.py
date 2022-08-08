@@ -513,6 +513,12 @@ class String(str, TypedValue):
     def asInteger(self):
         return Integer(self)
 
+    @primitiveNamed('string.manipulations.withoutSuffix')
+    def primitiveWithoutSuffix(self, suffix):
+        if len(self) >= len(suffix) and self[-len(suffix):] == suffix:
+            return String(self[0:-len(suffix)])
+        return self
+
 InternedSymbolTable = {}
 
 class Symbol(str, TypedValue):

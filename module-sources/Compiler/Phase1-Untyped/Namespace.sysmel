@@ -8,7 +8,6 @@ __BootstrapCompiler__
         bodyLexicalScope: Reflection Semantic LexicalScope optional
     }).
 
-
 Reflection ProgramEntity
     withSelector: #getOrCreateChildNamespaceNamed: addMethod: {:(Reflection ProgramEntity)self :(Object)name :: Reflection Namespace |
         __BootstrapCompiler__ subclassResponsibility
