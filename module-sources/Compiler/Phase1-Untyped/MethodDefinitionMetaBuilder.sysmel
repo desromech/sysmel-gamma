@@ -7,7 +7,7 @@ __BootstrapCompiler__
         selectorExpression: Reflection AST Node optional.
         arguments: Reflection AST Node sharedArraySlice.
         resultTypeExpression: Reflection AST Node optional.
-        bodyExpression: Reflection AST Node optional.
+        body: Reflection AST Node optional.
     }).
 
 MetaProgramming MethodDefinitionMetaBuilder
@@ -29,18 +29,18 @@ MetaProgramming MethodDefinitionMetaBuilder
         self resultTypeExpression: resultTypeExpression.
         void
     };
-    withSelector: #":=" addMethod: {:(MetaProgramming MethodDefinitionMetaBuilder)self :(Reflection AST Node)bodyExpression :: Void |
+    withSelector: #":=" addMethod: {:(MetaProgramming MethodDefinitionMetaBuilder)self :(Reflection AST Node)body :: Void |
         <metaBuilder>
-        self bodyExpression: bodyExpression.
+        self body: body.
         self finish.
     };
     withSelector: #concretizeMetaBuilder addMethod: {:(MetaProgramming MethodDefinitionMetaBuilder)self :: Reflection AST Node |
         (Reflection AST MethodDefinitionNode basicNewWithNamedSlots: #{
             sourcePosition: self metaContext sourcePosition.
             selectorExpression: self selectorExpression.
-            resultTypeExpression: self resultTypeExpression.
-            bodyExpression: self bodyExpression.
             arguments: self arguments.
+            resultTypeExpression: self resultTypeExpression.
+            body: self body.
             visibility: self programEntityAttributes visibility.
         })
     }.

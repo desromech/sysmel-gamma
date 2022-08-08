@@ -5,27 +5,46 @@ __BootstrapCompiler__
     addBindingNamed: #MethodDefinitionNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST ProgramEntityDefinitionNode publicSlots: #{
         selectorExpression: Reflection AST Node optional.
         resultTypeExpression: Reflection AST Node optional.
-        bodyExpression: Reflection AST Node optional.
+        body: Reflection AST Node optional.
         arguments: Reflection AST Node sharedArraySlice.
         visibility: Reflection ProgramEntityVisibility.
         analyzedSelector: Object optional.
+        analyzedOwnerProgramEntity: Reflection ProgramEntity optional.
+        analyzedBlockClosureNode: Reflection AST Node optional.
     }).
 
 Reflection AST MethodDefinitionNode
-    withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST TypeDefinitionNode)self :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
-        __BootstrapCompiler__ print: "Reflection AST MethodDefinitionNode analyzeNodeWith:".
-        __BootstrapCompiler__ print: self selectorExpression.
-        __BootstrapCompiler__ print: self resultTypeExpression.
-        __BootstrapCompiler__ print: self arguments.
-        self arguments do: {:(Reflection AST Node)argumentNode :: Void |
-            __BootstrapCompiler__ print: argumentNode.
-            void
+    withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST MethodDefinitionNode)self :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+        let: #ownerProgramEntity with: (analyzer environment lexicalScope lookupCurrentProgramEntity).
+        let: #hasValidOwner with: (if: ownerProgramEntity isNotNil then: ownerProgramEntity _ canHaveMethods else: false).
+
+        let: #selector with: (if: self selectorExpression isNotNil
+            then: (self selectorExpression _ analyzeAndEvaluateNodeWith: analyzer)
+            else: (AnonymousSymbol basicNewWithNamedSlots: #{
+                sourcePosition: self sourcePosition
+            })
+        ).
+
+        if: hasValidOwner then: {
+            let: #analyzedNode with: self shallowCopy.
+            let: #blockClosureNode with: (Reflection AST BlockClosureNode basicNewWithNamedSlots: #{
+                arguments: self arguments.
+                resultTypeExpression: self resultTypeExpression.
+                body: self body _.
+                hasLazyBodyAnalysis: true.
+            }).
+            analyzedNode
+                analyzedSelector: selector;
+                analyzedOwnerProgramEntity: ownerProgramEntity;
+                analyzedBlockClosureNode: (analyzer analyzeNodeIfNeededWithAutoType: blockClosureNode);
+                analyzedType: analyzedNode analyzedBlockClosureNode _ analyzedType.
+            analyzedNode
+        } else: {
+            analyzer makeSemanticAnalysisError: "Methods cannot be defined in this context." at: self sourcePosition
         }.
-        __BootstrapCompiler__ print: self visibility.
-        __BootstrapCompiler__ print: self analyzedSelector.
-        __BootstrapCompiler__ primitiveFailed
     };
-    withSelector: #evaluateNodeWith: addMethod: {:(Reflection AST TypeDefinitionNode)self :(Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
-        __BootstrapCompiler__ print: "Reflection AST MethodDefinitionNode evaluateNodeWith:".
-        __BootstrapCompiler__ primitiveFailed
+    withSelector: #evaluateNodeWith: addMethod: {:(Reflection AST MethodDefinitionNode)self :(Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+        let: #blockClosure with: (self analyzedBlockClosureNode _ evaluateNodeWith: evaluationEnvironment).
+        self analyzedOwnerProgramEntity _ withSelector: self analyzedSelector _ addMethod: blockClosure.
+        blockClosure
     }.

@@ -723,9 +723,9 @@ class TypeSchema(TypedValue):
         return False
 
     def installedInType(self, type):
-        for method in self.methodDict:
+        for method in self.methodDict.values():
             method.installedInType(type)
-        for method in self.metaTypeMethodDict:
+        for method in self.metaTypeMethodDict.values():
             method.installedInMetaTypeOf(type)
 
     def buildPrimitiveMethodDictionary(self):
@@ -817,7 +817,7 @@ class EmptyTypeSchema(TypeSchema):
         return True
 
     def buildPrimitiveMethodDictionary(self):
-        self.metaTypeMethodDict[Symbol.intern('basicNew')] = TypeSchemaPrimitiveMethod.makeFunction(self.basicNew, '{:(SelfType)self :: self}')
+        self.metaTypeMethodDict[Symbol.intern('basicNew')] = TypeSchemaPrimitiveMethod.makeFunction(self.basicNew, '{:(SelfType)self :: self |}')
         return super().buildPrimitiveMethodDictionary()
 
     def basicNew(self, valueType):
@@ -929,8 +929,8 @@ class PrimitiveNumberTypeSchema(PrimitiveTypeSchema):
         return True
 
     def buildPrimitiveMethodDictionary(self):
-        self.metaTypeMethodDict[Symbol.intern('basicNew')] = TypeSchemaPrimitiveMethod.makeFunction(self.basicNew, '{:(SelfType)self :: self}')
-        self.metaTypeMethodDict[Symbol.intern('basicNew:')] = TypeSchemaPrimitiveMethod.makeFunction(self.basicNewWithValue, '{:(SelfType)self :(AnyValue)value :: self}')
+        self.metaTypeMethodDict[Symbol.intern('basicNew')] = TypeSchemaPrimitiveMethod.makeFunction(self.basicNew, '{:(SelfType)self :: self |}')
+        self.metaTypeMethodDict[Symbol.intern('basicNew:')] = TypeSchemaPrimitiveMethod.makeFunction(self.basicNewWithValue, '{:(SelfType)self :(AnyValue)value :: self |}')
         return super().buildPrimitiveMethodDictionary()
 
     def basicNew(self, valueType):
@@ -1023,11 +1023,11 @@ class SumTypeSchema(TypeSchema):
 
     def buildPrimitiveMethodDictionary(self):
         self.methodDict[Symbol.intern('__typeSelector__')] = TypeSchemaPrimitiveMethod.makeFunction(self.getTypeSelector, '(SelfType) => Size')
-        self.methodDict[Symbol.intern('get:')] = TypeSchemaPrimitiveMethod.makeFunction(self.getWithType, '{:(SelfType)self :(Type)expectedType :: expectedType}')
-        self.methodDict[Symbol.intern('is:')] = TypeSchemaPrimitiveMethod.makeFunction(self.isWithType, '{:(SelfType)self :(Type)expectedType :: Boolean}')
-        self.metaTypeMethodDict[Symbol.intern('basicNew')] = TypeSchemaPrimitiveMethod.makeFunction(self.basicNew, '{:(SelfType)self :: self}')
-        self.metaTypeMethodDict[Symbol.intern('basicNew:')] = TypeSchemaPrimitiveMethod.makeFunction(self.basicNewWithValue, '{:(SelfType)self :(AnyValue)initialValue :: self}')
-        self.metaTypeMethodDict[Symbol.intern('basicNew:typeSelector:')] = TypeSchemaPrimitiveMethod.makeFunction(self.basicNewWithValueTypeSelector, '{:(SelfType)self :(AnyValue)initialValue :(Size)typeSelector :: self}')
+        self.methodDict[Symbol.intern('get:')] = TypeSchemaPrimitiveMethod.makeFunction(self.getWithType, '{:(SelfType)self :(Type)expectedType :: expectedType |}')
+        self.methodDict[Symbol.intern('is:')] = TypeSchemaPrimitiveMethod.makeFunction(self.isWithType, '{:(SelfType)self :(Type)expectedType :: Boolean |}')
+        self.metaTypeMethodDict[Symbol.intern('basicNew')] = TypeSchemaPrimitiveMethod.makeFunction(self.basicNew, '{:(SelfType)self :: self |}')
+        self.metaTypeMethodDict[Symbol.intern('basicNew:')] = TypeSchemaPrimitiveMethod.makeFunction(self.basicNewWithValue, '{:(SelfType)self :(AnyValue)initialValue :: self |}')
+        self.metaTypeMethodDict[Symbol.intern('basicNew:typeSelector:')] = TypeSchemaPrimitiveMethod.makeFunction(self.basicNewWithValueTypeSelector, '{:(SelfType)self :(AnyValue)initialValue :(Size)typeSelector :: self |}')
         return super().buildPrimitiveMethodDictionary()
 
     def getTypeSelector(self, sumValue):
@@ -1207,9 +1207,9 @@ class RecordTypeSchema(ProductTypeSchema):
         return self.slotNameDictionary[slotName]
 
     def buildPrimitiveMethodDictionary(self):
-        self.metaTypeMethodDict[Symbol.intern('basicNew')] = TypeSchemaPrimitiveMethod.makeFunction(self.basicNew, '{:(SelfType)self :: self}')
-        self.metaTypeMethodDict[Symbol.intern('basicNewWithSlots:')] = TypeSchemaPrimitiveMethod.makeFunction(self.basicNewWithSequentialSlots, '{:(SelfType)self :(AnyValue)slots :: self}')
-        self.metaTypeMethodDict[Symbol.intern('basicNewWithNamedSlots:')] = TypeSchemaPrimitiveMethod.makeFunction(self.basicNewWithNamedSlots, '{:(SelfType)self :(AnyValue)slots :: self}')
+        self.metaTypeMethodDict[Symbol.intern('basicNew')] = TypeSchemaPrimitiveMethod.makeFunction(self.basicNew, '{:(SelfType)self :: self |}')
+        self.metaTypeMethodDict[Symbol.intern('basicNewWithSlots:')] = TypeSchemaPrimitiveMethod.makeFunction(self.basicNewWithSequentialSlots, '{:(SelfType)self :(AnyValue)slots :: self |}')
+        self.metaTypeMethodDict[Symbol.intern('basicNewWithNamedSlots:')] = TypeSchemaPrimitiveMethod.makeFunction(self.basicNewWithNamedSlots, '{:(SelfType)self :(AnyValue)slots :: self |}')
         for slotIndex in range(len(self.slots)):
             slotAssociation = self.slots[slotIndex]
             slotName = slotAssociation.key
@@ -1268,8 +1268,8 @@ class ArrayTypeSchema(TypeSchema):
         return self.elementType
 
     def buildPrimitiveMethodDictionary(self):
-        self.metaTypeMethodDict[Symbol.intern('basicNew')] = TypeSchemaPrimitiveMethod.makeFunction(self.basicNew, '{:(SelfType)self :: self}')
-        self.metaTypeMethodDict[Symbol.intern('basicNewWithSlots:')] = TypeSchemaPrimitiveMethod.makeFunction(self.basicNewWithSequentialSlots, '{:(SelfType)self :(AnyValue)slots :: self}')
+        self.metaTypeMethodDict[Symbol.intern('basicNew')] = TypeSchemaPrimitiveMethod.makeFunction(self.basicNew, '{:(SelfType)self :: self |}')
+        self.metaTypeMethodDict[Symbol.intern('basicNewWithSlots:')] = TypeSchemaPrimitiveMethod.makeFunction(self.basicNewWithSequentialSlots, '{:(SelfType)self :(AnyValue)slots :: self |}')
         return super().buildPrimitiveMethodDictionary()
 
     def basicNew(self, valueType):
@@ -1360,8 +1360,8 @@ class PointerTypeSchema(PointerLikeTypeSchema):
         return True
 
     def buildPrimitiveMethodDictionary(self):
-        self.metaTypeMethodDict[Symbol.intern('basicNew')] = TypeSchemaPrimitiveMethod.makeFunction(self.basicNew, '{:(SelfType)self :: self}')
-        self.metaTypeMethodDict[Symbol.intern('basicNew:')] = TypeSchemaPrimitiveMethod.makeFunction(self.basicNewWithValue, '{:(SelfType)self :(AnyValue)value :: self}')
+        self.metaTypeMethodDict[Symbol.intern('basicNew')] = TypeSchemaPrimitiveMethod.makeFunction(self.basicNew, '{:(SelfType)self :: self |}')
+        self.metaTypeMethodDict[Symbol.intern('basicNew:')] = TypeSchemaPrimitiveMethod.makeFunction(self.basicNewWithValue, '{:(SelfType)self :(AnyValue)value :: self |}')
         return super().buildPrimitiveMethodDictionary()
 
     def basicNew(self, valueType):
@@ -2157,15 +2157,14 @@ class FunctionType(SimpleType):
         environment = cls.constructTypeSpecParsingEnvironmentForType(ownerType)
         parsedTypeSpec = parseString(functionSpec)
         evaluatedTypeSpec = parsedTypeSpec.evaluateWithEnvironment(EvaluationMachine.getActive(), environment)
-        if isinstance(evaluatedTypeSpec, BlockClosure):
+        if isinstance(evaluatedTypeSpec, FunctionTypeValue):
             return evaluatedTypeSpec.getType()
         return evaluatedTypeSpec
 
     @classmethod
     def constructTypeSpecParsingEnvironmentForType(cls, ownerType):
-        environment = ActiveBootstrapCompiler.getTopLevelEnvironment()
+        environment = ActiveBootstrapCompiler.getTopLevelEnvironment().makeChildLexicalScope()
         if ownerType is not None:
-            environment = environment.makeChildLexicalScope()
             environment.setSymbolImmutableValue(Symbol.intern('SelfType'), ownerType)
         return environment
 

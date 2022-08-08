@@ -12,6 +12,9 @@ Type
     withSelector: #canHaveTypes addMethod: {:(Reflection Namespace)self :: Boolean |
         true
     };
+    withSelector: #canHaveMethods addMethod: {:(Reflection Namespace)self :: Boolean |
+        true
+    };
     withSelector: #lookupPublicSymbol: addMethod: {:(Type)self :(Object)symbol :: Reflection SymbolBinding optional |
         self symbolTable lookupSymbol: symbol
     };
