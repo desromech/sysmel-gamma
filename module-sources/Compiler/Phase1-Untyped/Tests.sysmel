@@ -71,7 +71,9 @@ __BootstrapCompiler__
 
     print: (`'{:(Int32)a :(Int32)b :: Int32 | a + b } analyzeNodeIfNeededWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
     print: (`'{:(Int32)a :(Int32)b :: Int32 | a + b } analyzeAndEvaluateNodeWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
-    print: (`'{:(Int32)a :(Int32)b :: Int32 | a + b } analyzeAndEvaluateNodeWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment)(1i32, 2i32).
+    print: (`'{:(Int32)a :(Int32)b :: Int32 | a + b } analyzeAndEvaluateNodeWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment)(1i32, 2i32);
+
+    print: (`'(struct testStruct) analyzeNodeIfNeededWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment).
 
 if: true then: {
     __BootstrapCompiler__ print: "then branch"

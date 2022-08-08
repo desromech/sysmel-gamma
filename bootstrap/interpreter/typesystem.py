@@ -1294,6 +1294,8 @@ class PointerTypeValue(TypedValue):
         return self.type
 
     def defaultPrintString(self):
+        if self.value is None:
+            return str(self.type) + '(nil)'
         return '%s(0x%x:%d)' % (str(self.type), self.value.identityHash(), self.baseIndex)
 
     def __getitem__(self, index):
@@ -1357,7 +1359,7 @@ class PointerTypeSchema(PointerLikeTypeSchema):
         return super().buildPrimitiveMethodDictionary()
 
     def basicNew(self, valueType):
-        return PointerTypeValue(valueType, 0)
+        return PointerTypeValue(valueType, None)
 
     def basicNewWithValue(self, valueType, initialValue):
         return PointerTypeValue(valueType, initialValue)
