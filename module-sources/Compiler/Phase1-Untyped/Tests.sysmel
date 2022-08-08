@@ -1,83 +1,83 @@
 if: true then: {
 __BootstrapCompiler__
-    print: false;
-    print: true;
-    print: nil;
-    print: Boolean basicNew;
-    print: (Boolean basicNew: false);
-    print: (Boolean basicNew: true);
+    printLine: false;
+    printLine: true;
+    printLine: nil;
+    printLine: Boolean basicNew;
+    printLine: (Boolean basicNew: false);
+    printLine: (Boolean basicNew: true);
 
-    print: 1 + 1;
-    print: 2 * 3;
-    print: 6 // 3;
+    printLine: 1 + 1;
+    printLine: 2 * 3;
+    printLine: 6 // 3;
 
-    print: 2 = 2;
+    printLine: 2 = 2;
 
-    print: Int32 -- Int32;
-    print: Int32 -- Int32 -- Int32;
-    print: Void => Void;
-    print: (Int32 -- Int32) => Void;
-    print: (Int32 -- Int32 -- Int32) => Void;
-    print: Float32 -- Int32 -- Float64;
+    printLine: Int32 -- Int32;
+    printLine: Int32 -- Int32 -- Int32;
+    printLine: Void => Void;
+    printLine: (Int32 -- Int32) => Void;
+    printLine: (Int32 -- Int32 -- Int32) => Void;
+    printLine: Float32 -- Int32 -- Float64;
 
-    print: "Some number: " -- 1 asString;
-    print: ("Some number: {0} " format: (1 asString,));
+    printLine: "Some number: " -- 1 asString;
+    printLine: ("Some number: {0} " format: (1 asString,));
 
-    print: ((Integer array: 3sz) basicNewWithSlots: (1, 2, 3)) asArraySlice;
-    print: (((Integer array: 3sz) basicNewWithSlots: (1, 2, 3)) asArraySlice collect: {:(Integer)x :: Size |
+    printLine: ((Integer array: 3sz) basicNewWithSlots: (1, 2, 3)) asArraySlice;
+    printLine: (((Integer array: 3sz) basicNewWithSlots: (1, 2, 3)) asArraySlice collect: {:(Integer)x :: Size |
         x sz
     });
-    print: (((Integer array: 3sz) basicNewWithSlots: (1, 2, 3)) asArraySlice collectWithIndex: {:(Integer)x :(Size)index :: Size |
+    printLine: (((Integer array: 3sz) basicNewWithSlots: (1, 2, 3)) asArraySlice collectWithIndex: {:(Integer)x :(Size)index :: Size |
         index
     });
 
-    print: Reflection SourcePosition basicNew;
-    print: (Reflection AST Node basicNewWithNamedSlots: #{
+    printLine: Reflection SourcePosition basicNew;
+    printLine: (Reflection AST Node basicNewWithNamedSlots: #{
         sourcePosition: Reflection SourcePosition basicNew
     });
-    print: Int32 basicNew;
-    print: (Int32 basicNew: -42);
-    print: Reflection Semantic ASTAnalyzer __type__;
+    printLine: Int32 basicNew;
+    printLine: (Int32 basicNew: -42);
+    printLine: Reflection Semantic ASTAnalyzer __type__;
 
-    print: (`'1 analyzeNodeIfNeededWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
-    print: (`'1 analyzeAndEvaluateNodeWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
+    printLine: (`'1 analyzeNodeIfNeededWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
+    printLine: (`'1 analyzeAndEvaluateNodeWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
 
-    print: (`'(1 + 1) analyzeNodeIfNeededWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
-    print: (`'(1 + 1) analyzeAndEvaluateNodeWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
+    printLine: (`'(1 + 1) analyzeNodeIfNeededWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
+    printLine: (`'(1 + 1) analyzeAndEvaluateNodeWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
 
-    print: (`'{} analyzeNodeIfNeededWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
-    print: (`'{} analyzeAndEvaluateNodeWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
+    printLine: (`'{} analyzeNodeIfNeededWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
+    printLine: (`'{} analyzeAndEvaluateNodeWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
 
-    print: (`'{1 . 1 + 1} analyzeNodeIfNeededWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
-    print: (`'{1 . 1 + 1} analyzeAndEvaluateNodeWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
+    printLine: (`'{1 . 1 + 1} analyzeNodeIfNeededWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
+    printLine: (`'{1 . 1 + 1} analyzeAndEvaluateNodeWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
 
-    print: (`'(1 negated) analyzeNodeIfNeededWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
+    printLine: (`'(1 negated) analyzeNodeIfNeededWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
 
-    print: (`'(if: true then: 1 else: 2) analyzeNodeIfNeededWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
-    print: (`'(if: true then: 1 else: 2) analyzeAndEvaluateNodeWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
-    print: (`'(if: false then: 1 else: 2) analyzeAndEvaluateNodeWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
+    printLine: (`'(if: true then: 1 else: 2) analyzeNodeIfNeededWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
+    printLine: (`'(if: true then: 1 else: 2) analyzeAndEvaluateNodeWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
+    printLine: (`'(if: false then: 1 else: 2) analyzeAndEvaluateNodeWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
 
-    print: (`'(if: true then: 1) analyzeNodeIfNeededWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
-    print: (`'(if: false then: 1) analyzeAndEvaluateNodeWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
+    printLine: (`'(if: true then: 1) analyzeNodeIfNeededWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
+    printLine: (`'(if: false then: 1) analyzeAndEvaluateNodeWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
 
-    print: (`'{let: #testVar with: 1 . testVar} analyzeNodeIfNeededWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
-    print: (`'{let: #testVar with: 1 . testVar} analyzeAndEvaluateNodeWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
-    ##print: (`'(let: #testVar type: Int32 with: 1s32) analyzeNodeIfNeededWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
+    printLine: (`'{let: #testVar with: 1 . testVar} analyzeNodeIfNeededWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
+    printLine: (`'{let: #testVar with: 1 . testVar} analyzeAndEvaluateNodeWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
+    ##printLine: (`'(let: #testVar type: Int32 with: 1s32) analyzeNodeIfNeededWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
 
-    print: (`'(let testVar := 42) analyzeNodeIfNeededWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
+    printLine: (`'(let testVar := 42) analyzeNodeIfNeededWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
 
-    print: nil isNil;
-    print: nil isNotNil;
+    printLine: nil isNil;
+    printLine: nil isNotNil;
 
-    print: (`'{:(Int32)a :(Int32)b :: Int32 | a + b } analyzeNodeIfNeededWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
-    print: (`'{:(Int32)a :(Int32)b :: Int32 | a + b } analyzeAndEvaluateNodeWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
-    print: (`'{:(Int32)a :(Int32)b :: Int32 | a + b } analyzeAndEvaluateNodeWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment)(1i32, 2i32);
+    printLine: (`'{:(Int32)a :(Int32)b :: Int32 | a + b } analyzeNodeIfNeededWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
+    printLine: (`'{:(Int32)a :(Int32)b :: Int32 | a + b } analyzeAndEvaluateNodeWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
+    printLine: (`'{:(Int32)a :(Int32)b :: Int32 | a + b } analyzeAndEvaluateNodeWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment)(1i32, 2i32);
 
-    print: (`'(struct testStruct) analyzeNodeIfNeededWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment).
+    printLine: (`'(struct testStruct) analyzeNodeIfNeededWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment).
 
 if: true then: {
-    __BootstrapCompiler__ print: "then branch"
+    __BootstrapCompiler__ printLine: "then branch"
 } else: {
-    __BootstrapCompiler__ print: "else branch"
+    __BootstrapCompiler__ printLine: "else branch"
 }.
 } else: {}.

@@ -55,10 +55,10 @@ Type
         if: self hasAnyValueFlag then: {
             self analyzeDynamicMessageSendNode: node with: analyzer
         } else: {
-            __BootstrapCompiler__ print: "Selector node".
-            __BootstrapCompiler__ print: node selector.
-            __BootstrapCompiler__ print: "Receiver type".
-            __BootstrapCompiler__ print: node receiver _ analyzedType _.
+            __BootstrapCompiler__ printLine: "Selector node".
+            __BootstrapCompiler__ printLine: node selector.
+            __BootstrapCompiler__ printLine: "Receiver type".
+            __BootstrapCompiler__ printLine: node receiver _ analyzedType _.
             analyzer makeSemanticAnalysisError: "Unsupported dynamic message send." at: node sourcePosition
         }
     };

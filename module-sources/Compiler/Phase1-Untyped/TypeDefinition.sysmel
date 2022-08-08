@@ -93,7 +93,7 @@ Reflection AST TypeDefinitionNode
                         analyzedType: typeInstance __type__;
                         isAnalyzedLocalDefinition: false.
                 } else: {
-                    __BootstrapCompiler__ print: "TODO: check existent binding compatibility.".
+                    __BootstrapCompiler__ printLine: "TODO: check existent binding compatibility.".
                 }.
             } else: {
                 errorNode _: (analyzer makeSemanticAnalysisError: "Non-lexical scoped type definition is not inside a program entity with visibility." at: node sourcePosition)

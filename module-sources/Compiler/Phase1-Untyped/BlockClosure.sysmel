@@ -175,18 +175,18 @@ Reflection AST BlockClosureNode
 
             self analyzedBody _ evaluateNodeWith: evaluationEnvironment
         } else: {
-            __BootstrapCompiler__ print: "TODO: BlockClosureNode evaluateWithEnvironment:arguments: handle generic case generic case and or dependent case.".
-            __BootstrapCompiler__ print: arguments.
+            __BootstrapCompiler__ printLine: "TODO: BlockClosureNode evaluateWithEnvironment:arguments: handle generic case generic case and or dependent case.".
+            __BootstrapCompiler__ printLine: arguments.
             __BootstrapCompiler__ primitiveFailed
         }.
     }.
 
 Reflection BlockClosure
     withSelector: #run:with:in: addMethod: {:(Reflection BlockClosure)self :(AnyValue)selector :(AnyValue arraySlice)arguments :(AnyValue)receiver :: AnyValue |
-        __BootstrapCompiler__ print: "TODO: BlockClosure evaluateWithArguments:".
-        __BootstrapCompiler__ print: selector.
-        __BootstrapCompiler__ print: arguments.
-        __BootstrapCompiler__ print: receiver.
+        __BootstrapCompiler__ printLine: "TODO: BlockClosure evaluateWithArguments:".
+        __BootstrapCompiler__ printLine: selector.
+        __BootstrapCompiler__ printLine: arguments.
+        __BootstrapCompiler__ printLine: receiver.
         __BootstrapCompiler__ primitiveFailed
     };
     withSelector: #evaluateWithArguments: addMethod: {:(Reflection BlockClosure)self :(AnyValue arraySlice)arguments :: AnyValue |

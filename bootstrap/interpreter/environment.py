@@ -157,7 +157,8 @@ class BootstrapCompiler(BehaviorTypedObject):
             (cls.getPointerSize, 'getPointerSize', '(SelfType) => Integer'),
 
             ## Utility
-            (cls.print, 'print:', '(SelfType -- AnyValue) => Void')
+            (cls.print, 'print:', '(SelfType -- AnyValue) => Void'),
+            (cls.printLine, 'printLine:', '(SelfType -- AnyValue) => Void')
         ])
 
     def getEmptySourcePosition(self):
@@ -267,8 +268,11 @@ class BootstrapCompiler(BehaviorTypedObject):
     def enableTypeSystem(self):
         self.isTypeSystemEnabled = True
 
-    def print(self, string):
+    def printLine(self, string):
         print(string)
+
+    def print(self, string):
+        print(string, end='')
 
     def error(self, message):
         raise InterpreterError(message)

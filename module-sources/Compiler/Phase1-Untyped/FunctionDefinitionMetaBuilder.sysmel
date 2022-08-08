@@ -1,0 +1,56 @@
+## Type definition builder.
+__BootstrapCompiler__
+    enterTopLevelNamespace;
+    enterNamespaceNamed: #MetaProgramming;
+    addBindingNamed: #FunctionDefinitionMetaBuilder with: (__TypeBuilder__ newGCClassWithSuperclass: MetaProgramming NamedMetaBuilder slots: #{
+        arguments: Reflection AST Node sharedArraySlice.
+        resultTypeExpression: Reflection AST Node optional.
+        body: Reflection AST Node optional.
+    }).
+
+MetaProgramming FunctionDefinitionMetaBuilder
+    withSelector: #"()" addMethod: {:(MetaProgramming MethodDefinitionMetaBuilder)self :: Void |
+        <metaBuilder>
+        self arguments: Reflection AST Node sharedArraySlice basicNew.
+        void
+    };
+    withSelector: #"():" addMethod: {:(MetaProgramming MethodDefinitionMetaBuilder)self :(Reflection AST Node)argumentsNode :: Void |
+        <metaBuilder>
+        self arguments: argumentsNode parseAsArgumentDefinitionNodes.
+        void
+    };
+    withSelector: #=> addMethod: {:(MetaProgramming MethodDefinitionMetaBuilder)self :(Reflection AST Node)resultTypeExpression :: Void |
+        <metaBuilder>
+        self resultTypeExpression: resultTypeExpression.
+        void
+    };
+    withSelector: #":=" addMethod: {:(MetaProgramming MethodDefinitionMetaBuilder)self :(Reflection AST Node)body :: Void |
+        <metaBuilder>
+        self body: body.
+        self finish.
+    };
+    withSelector: #concretizeMetaBuilder addMethod: {:(MetaProgramming MethodDefinitionMetaBuilder)self :: Reflection AST Node |
+        (Reflection AST FunctionDefinitionNode basicNewWithNamedSlots: #{
+            sourcePosition: self metaContext sourcePosition.
+            nameExpression: self nameExpression.
+            arguments: self arguments.
+            resultTypeExpression: self resultTypeExpression.
+            body: self body.
+            visibility: self programEntityAttributes visibility.
+        })
+    }.
+
+MetaProgramming FlagMetaBuilder
+    withSelector: #function addMethod: {:(MetaProgramming FlagMetaBuilder)self :: Void |
+        <metaBuilder>
+        self delegateToMetaBuilderClass: MetaProgramming FunctionDefinitionMetaBuilder.
+        void
+    }.
+
+__BootstrapCompiler__
+    enterTopLevelNamespace;
+    addBindingNamed: #function with: {:(MacroInvocationContext)macroSelf :: Reflection AST MetaBuilderInstanceNode |
+        <macro>
+        <messageMethod>
+        MetaProgramming FunctionDefinitionMetaBuilder nodeWithContext: macroSelf
+    }.

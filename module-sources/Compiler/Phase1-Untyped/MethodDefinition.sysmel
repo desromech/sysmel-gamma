@@ -4,9 +4,9 @@ __BootstrapCompiler__
     enterNamespaceNamed: #AST;
     addBindingNamed: #MethodDefinitionNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST ProgramEntityDefinitionNode publicSlots: #{
         selectorExpression: Reflection AST Node optional.
+        arguments: Reflection AST Node sharedArraySlice.
         resultTypeExpression: Reflection AST Node optional.
         body: Reflection AST Node optional.
-        arguments: Reflection AST Node sharedArraySlice.
         visibility: Reflection ProgramEntityVisibility.
         analyzedSelector: Object optional.
         analyzedOwnerProgramEntity: Reflection ProgramEntity optional.

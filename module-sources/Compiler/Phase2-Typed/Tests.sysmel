@@ -1,8 +1,8 @@
 public struct TestStruct definition: {
-    __BootstrapCompiler__ print: "TestStruct body".
+    __BootstrapCompiler__ printLine: "TestStruct body".
 
     public struct InnerStruct definition: {
-        __BootstrapCompiler__ print: "InnerStruct body".
+        __BootstrapCompiler__ printLine: "InnerStruct body".
     }.
 
     public method add: (a: Int32) with: (b: Int32) ::=> Int32 := a + b
@@ -11,6 +11,6 @@ public struct TestStruct definition: {
 
 ##function one() => Int32 := 1i32.
 ##function negate(x: Int32) => Int32 := x negated.
-##function add(a: Int32, b: Int32) => Int32 := a + b.
+function add(a: Int32, b: Int32) => Int32 := a + b.
 
 ##TestStruct basicNew add: 1i32 with: 2i32.

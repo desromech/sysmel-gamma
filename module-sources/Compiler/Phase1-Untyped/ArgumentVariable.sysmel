@@ -37,6 +37,9 @@ Reflection AST Node
             message: "Expression cannot be interpred as an argument definition node.".
             innerNode: self
         }.
+    };
+    withSelector: #parseAsArgumentDefinitionNodes addMethod: {:(Reflection AST Node)self :: Reflection AST Node sharedArraySlice |
+        Reflection AST Node sharedArraySlice with: self parseAsArgumentDefinitionNode
     }.
 
 Reflection AST ArgumentDefinitionNode __type__
@@ -73,7 +76,7 @@ Reflection AST ArgumentDefinitionNode
             if: analyzedNode typeExpression isNotNil then: {
                 analyzedNode analyzedTypeExpression: (analyzer analyzeNodeIfNeeded: analyzedNode typeExpression _ withExpectedType: Type)
             } else: {
-                __BootstrapCompiler__ print: "TODO: infer or set block closure default argument type.".
+                __BootstrapCompiler__ printLine: "TODO: infer or set block closure default argument type.".
                 __BootstrapCompiler__ primitiveFailed
             }.
 
@@ -143,4 +146,11 @@ Reflection AST MessageSendNode
                 innerNode: self
             }.
         }.
+    }.
+
+Reflection AST MakeTupleNode
+    withSelector: #parseAsArgumentDefinitionNodes addMethod: {:(Reflection AST MakeTupleNode)self :: Reflection AST Node sharedArraySlice |
+        self elements collect: {:(Reflection AST Node)node :: Reflection AST Node |
+            node parseAsArgumentDefinitionNode
+        }
     }.

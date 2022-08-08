@@ -1,0 +1,27 @@
+__BootstrapCompiler__
+    enterTopLevelNamespace;
+    enterNamespaceNamed: #Reflection;
+    enterNamespaceNamed: #AST;
+    addBindingNamed: #FunctionDefinitionNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST ProgramEntityDefinitionNode publicSlots: #{
+        nameExpression: Reflection AST Node optional.
+        arguments: Reflection AST Node sharedArraySlice.
+        resultTypeExpression: Reflection AST Node optional.
+        body: Reflection AST Node optional.
+        visibility: Reflection ProgramEntityVisibility.
+        analyzedName: Object optional.
+        analyzedOwnerProgramEntity: Reflection ProgramEntity optional.
+        analyzedBlockClosureNode: Reflection AST Node optional.
+    }).
+
+Reflection AST FunctionDefinitionNode
+    withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST FunctionDefinitionNode)self :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+        __BootstrapCompiler__
+            print: "name "; printLine: self nameExpression;
+            print: "arguments "; printLine: self arguments;
+            print: "resultTypeExpression "; printLine: self resultTypeExpression;
+            print: "body "; printLine: self body.
+        __BootstrapCompiler__ error: "TODO: FunctionDefinitionNode >> analyzeNodeWith: ".
+    };
+    withSelector: #evaluateNodeWith: addMethod: {:(Reflection AST FunctionDefinitionNode)self :(Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+        __BootstrapCompiler__ error: "TODO: FunctionDefinitionNode >> evaluateNodeWith: ".
+    }.
