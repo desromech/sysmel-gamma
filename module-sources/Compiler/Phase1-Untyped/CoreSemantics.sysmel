@@ -308,6 +308,16 @@ Reflection AST SequenceNode
         }.
 
         result _
+    };
+    withSelector: #analyzeAndEvaluateNodeWith: addMethod: {:(Reflection AST Node)self :(Reflection Semantic ASTAnalyzer)analyzer :: AnyValue |
+        let: #result with: (AnyValue valueBox with: void).
+        
+        self expressions do: {:(Reflection AST Node)node |
+            result _: (node analyzeAndEvaluateNodeWith: analyzer).
+            void
+        }.
+
+        result _
     }.
 
 Reflection AST IdentifierReferenceNode

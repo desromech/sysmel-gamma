@@ -191,4 +191,7 @@ Reflection BlockClosure
     };
     withSelector: #evaluateWithArguments: addMethod: {:(Reflection BlockClosure)self :(AnyValue arraySlice)arguments :: AnyValue |
         self node _ evaluateWithEnvironment: self environment arguments: arguments
+    };
+    withSelector: #hasMethodFlag: addMethod: {:(Reflection BlockClosure)self :(Symbol)flag :: Boolean |
+        false
     }.

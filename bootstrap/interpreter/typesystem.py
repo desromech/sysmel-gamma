@@ -195,7 +195,7 @@ class FunctionTypeValue(TypedValue):
         if self.bootstrapImplementation is not None:
             return self.bootstrapImplementation.hasMethodFlag(methodFlag)
         else:
-            return self.bootstrapImplementation.hasMethodFlag(methodFlag)
+            return self.implementation.performWithArguments(EvaluationMachine.getActive(), Symbol.intern('hasMethodFlag:'), (methodFlag,))
 
     def performWithArguments(self, machine, selector, arguments):
         if selector == '()':

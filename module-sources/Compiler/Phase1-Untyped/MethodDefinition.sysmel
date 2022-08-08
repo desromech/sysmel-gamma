@@ -27,6 +27,7 @@ Reflection AST MethodDefinitionNode
 
         if: hasValidOwner then: {
             let: #analyzedNode with: self shallowCopy.
+
             let: #blockClosureNode with: (Reflection AST BlockClosureNode basicNewWithNamedSlots: #{
                 arguments: self arguments.
                 resultTypeExpression: self resultTypeExpression.
