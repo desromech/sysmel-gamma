@@ -14,6 +14,7 @@ __BootstrapCompiler__
         analyzedTypeExpression: Reflection AST Node optional.
         analyzedVariable: Reflection ArgumentVariable optional.
         isGenericForallArgument: Boolean.
+        isImplicitArgument: Boolean.
     }).
 
 Reflection ArgumentVariable
@@ -36,6 +37,15 @@ Reflection AST Node
             message: "Expression cannot be interpred as an argument definition node.".
             innerNode: self
         }.
+    }.
+
+Reflection AST ArgumentDefinitionNode __type__
+    withSelector: #withName:type:at: addMethod: {:(Reflection AST ArgumentDefinitionNode)self :(Object)name :(Type)type :(Reflection AST SourcePosition)sourcePosition :: self |
+        self basicNewWithNamedSlots: #{
+            sourcePosition: sourcePosition.
+            nameExpression: (Reflection AST LiteralValueNode withValue: name at: sourcePosition).
+            typeExpression: (Reflection AST LiteralValueNode withValue: type at: sourcePosition)
+        }
     }.
 
 Reflection AST ArgumentDefinitionNode

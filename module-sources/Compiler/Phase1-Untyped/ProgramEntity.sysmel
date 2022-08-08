@@ -22,6 +22,9 @@ Reflection ProgramEntity
     withSelector: #lookupScopeSymbol: addMethod: {:(Reflection ProgramEntity)self :(Object)symbol :: Reflection SymbolBinding optional |
         nil
     };
+    withSelector: #asReceiverType addMethod: {:(Reflection ProgramEntity)self :: Type optional |
+        nil
+    };
     withSelector: #setSymbol:visibility:immutableValue: addMethod: {:(Reflection ProgramEntity)self :(Object)symbol :(Reflection ProgramEntityVisibility)visibility :(AnyValue)immutableValue :: Void |
         __BootstrapCompiler__ subclassResponsibility
     }.

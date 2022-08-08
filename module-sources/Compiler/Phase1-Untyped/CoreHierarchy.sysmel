@@ -539,6 +539,21 @@ __BootstrapCompiler__
                     block(self basicAt: index _).
                 } continueWith: (index _: index _ + 1sz).
                 void
+            };
+            withSelector: #-- addMethod: {:(arraySliceType)self :(arraySliceType)other :: SharedArraySlice(elementType) |
+                <pure>
+                let: #result with: (SharedArraySlice(elementType) allocate: self size + other size).
+                let: #index with: (Size valueBox with: 0sz).                
+                while: index _ < self size do: {
+                    result basicAt: index _ put: (self basicAt: index _)
+                } continueWith: (index _: index _ + 1sz).
+
+                index _: 0sz.
+                while: index _ < other size do: {
+                    result basicAt: self size + index _ put: (other basicAt: index _)
+                } continueWith: (index _: index _ + 1sz).
+
+                result
             }.
         arraySliceType
     } templated;
@@ -563,9 +578,9 @@ __BootstrapCompiler__
             };
             withSelector: #with: addMethod: {:(sharedArraySliceType)self :(elementType)first :: sharedArraySliceType |
                 <pure>
-                let: #result with: (storagePointerType allocate: 1sz).
+                let: #result with: (self allocate: 1sz).
                 result
-                    at: 0sz put: first;
+                    basicAt: 0sz put: first;
                     yourself
             };
             withSelector: #with:with: addMethod: {:(sharedArraySliceType)self :(elementType)first :(elementType)second :: sharedArraySliceType |

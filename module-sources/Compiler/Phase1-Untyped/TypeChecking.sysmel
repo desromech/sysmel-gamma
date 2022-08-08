@@ -15,6 +15,9 @@ Type
     withSelector: #canHaveMethods addMethod: {:(Reflection Namespace)self :: Boolean |
         true
     };
+    withSelector: #asReceiverType addMethod: {:(Reflection ProgramEntity)self :: Type optional |
+        self
+    };
     withSelector: #lookupPublicSymbol: addMethod: {:(Type)self :(Object)symbol :: Reflection SymbolBinding optional |
         self symbolTable lookupSymbol: symbol
     };

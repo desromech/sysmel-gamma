@@ -213,6 +213,14 @@ Reflection SourceStringPosition
         )
     }.
 
+Reflection AST LiteralValueNode __type__
+    withSelector: #withValue:at: addMethod: {:(Reflection AST LiteralValueNode __type__)self :(AnyValue)value :(Reflection AST SourcePosition)sourcePosition :: self |
+        self basicNewWithNamedSlots: #{
+            sourcePosition: sourcePosition.
+            value: value
+        }
+    }.
+
 Reflection AST LiteralValueNode
     withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST LiteralValueNode)self :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
         self shallowCopy

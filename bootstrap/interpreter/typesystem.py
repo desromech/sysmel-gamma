@@ -2431,7 +2431,7 @@ class PointerPrimitives:
             return self.basicNew()
 
         pointedType = self.schema.elementType
-        return self.basicNewWithValue([None] * count)
+        return self.basicNewWithValue(ListValueMock([None] * count))
 
     @primitiveNamed('pointer.basicAt')
     def primitivePointerBasicAt(self, index):
