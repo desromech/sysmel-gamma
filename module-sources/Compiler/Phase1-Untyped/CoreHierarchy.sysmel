@@ -741,7 +741,7 @@ Type
         <pure>
         Array(self, 0)
     };
-    withSelector: #"[]" addMethod: {:(Type)self :(Size)bounds :: Type |
+    withSelector: #"[]:" addMethod: {:(Type)self :(Size)bounds :: Type |
         <pure>
         Array(self, bounds)
     };

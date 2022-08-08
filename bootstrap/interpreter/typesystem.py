@@ -199,7 +199,9 @@ class FunctionTypeValue(TypedValue):
 
     def performWithArguments(self, machine, selector, arguments):
         if selector == '()':
-            return self.evaluateWithArguments(machine, arguments)
+            return self.evaluateWithArguments(machine, ())
+        elif selector == '():':
+            return self.evaluateWithArguments(machine, arguments[0])
         elif selector == 'memoized':
             return self.asMemoizedFunction()
         elif selector == 'templated':
@@ -641,6 +643,12 @@ def getTupleTypeWithElements(tupleElements):
     elementsArray.elementType = getBasicTypeNamed(Symbol.intern('Type'))
     return getBasicTypeNamed(Symbol.intern('Tuple'))(elementsArray)
 
+def getEmptyTupleType():
+    return getTupleTypeWithElements(())
+
+def getEmptyTuple():
+    return getEmptyTupleType().basicNew()
+
 class Tuple(tuple, TypedValue):
     def getType(self):
         if not hasattr(self, 'type'):
@@ -651,8 +659,11 @@ class TypeSchemaPrimitiveMethod(PrimitiveMethod):
     def getType(self):
         return getBasicTypeNamed(Symbol.intern('TypeSchemaPrimitiveMethod'))
 
+    def evaluateWithArguments(self, machine, arguments):
+        return self.method(*arguments)
+
     def runWithIn(self, machine, selector, arguments, receiver):
-        return self.method(receiver, *arguments)
+        return self.evaluateWithArguments([receiver] + list(*arguments))
 
 class RecordTypeAccessorPrimitiveMethod(PrimitiveMethod):
     def __init__(self, selector, slotName, slotIndex, slotType):
@@ -662,16 +673,13 @@ class RecordTypeAccessorPrimitiveMethod(PrimitiveMethod):
         self.slotIndex = slotIndex
         self.slotType = slotType
 
-    def evaluateWithArguments(self, machine, arguments):
-        return self.runWithIn(machine, Symbol.intern('()'), arguments[1:], arguments[0])
-
 class RecordTypeGetterPrimitiveMethod(RecordTypeAccessorPrimitiveMethod):
-    def runWithIn(self, machine, selector, arguments, receiver):
-        return self.slotType.coerceValue(coerceNoneToNil(receiver.getSlotWithIndexAndName(self.slotIndex, self.slotName)))
+    def evaluateWithArguments(self, machine, arguments):
+        return self.slotType.coerceValue(coerceNoneToNil(arguments[0].getSlotWithIndexAndName(self.slotIndex, self.slotName)))
 
 class RecordTypeSetterPrimitiveMethod(RecordTypeAccessorPrimitiveMethod):
-    def runWithIn(self, machine, selector, arguments, receiver):
-        return receiver.setSlotWithIndexAndName(self.slotIndex, self.slotName, arguments[0])
+    def evaluateWithArguments(self, machine, arguments):
+        return arguments[0].setSlotWithIndexAndName(self.slotIndex, self.slotName, arguments[1])
 
 class BlockClosure(TypedValue):
     def __init__(self, node, environment, functionType, primitiveName = None, methodFlags = []):
@@ -700,7 +708,7 @@ class BlockClosure(TypedValue):
     def evaluateWithArguments(self, machine, arguments):
         if self.primitiveName is not None and self.primitiveName in PrimitiveMethodTable:
             return self.node.evaluateClosureResultCoercionWithEnvironmentAndArguments(machine, self.environment, arguments,
-                PrimitiveMethodTable[self.primitiveName].runWithIn(machine, Symbol.intern('()'), arguments[1:], arguments[0]))
+                PrimitiveMethodTable[self.primitiveName].evaluateWithArguments(machine, arguments))
         else:
             return self.node.evaluateClosureWithEnvironmentAndArguments(machine, self.environment, arguments)
 
@@ -800,6 +808,9 @@ class TrivialTypedValue(TypedValue):
         if self.globalBindingName is not None:
             return self.globalBindingName
         return str(self.type) + '()'
+
+    def __iter__(self):
+        return iter([])
 
 class OpaqueTypeSchema(TypeSchema):
     def getType(self):
@@ -2063,16 +2074,14 @@ class TemplatedFunctionTypeValue(AbstractMemoizedFunctionTypeValue):
         return self
 
     def applyResultTransform(self, machine, result):
-        callSymbol = Symbol.intern('()')
         callArguments = (result,)
         for resultExtension in self.resultExtensionList:
-            resultExtension.performWithArguments(machine, callSymbol, callArguments)
+            resultExtension.evaluateWithArguments(machine, callArguments)
         return result
 
     def extendWith(self, machine, extension):
-        callSymbol = Symbol.intern('()')
         for arguments, result in self.memoizationTable.items():
-            extension.performWithArguments(machine, callSymbol, (result,))
+            extension.evaluateWithArguments(machine, arguments)
         self.resultExtensionList.append(extension)
 
     def performWithArguments(self, machine, selector, arguments):

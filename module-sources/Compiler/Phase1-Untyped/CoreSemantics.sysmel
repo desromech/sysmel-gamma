@@ -80,6 +80,9 @@ __BootstrapCompiler__
     addBindingNamed: #MakeDictionaryNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
         elements: Reflection AST Node sharedArraySlice.
     });
+    addBindingNamed: #MakeByteArrayNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
+        elements: Reflection AST Node sharedArraySlice.
+    });
 
     addBindingNamed: #MessageSendNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
         receiver: Reflection AST Node optional.

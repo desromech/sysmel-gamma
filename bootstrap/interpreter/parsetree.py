@@ -1,3 +1,4 @@
+from code import interact
 from source_collection import *
 from errors import *
 from typesystem import *
@@ -514,6 +515,12 @@ class PTMakeTuple(PTNode):
     def isMakeTuple(self):
         return True
 
+    def convertIntoGenericASTWith(self, bootstrapCompiler):
+        return bootstrapCompiler.makeASTNodeWithSlots('MakeTupleNode',
+            sourcePosition = bootstrapCompiler.convertASTSourcePosition(self.sourcePosition),
+            elements = bootstrapCompiler.makeASTNodeArraySlice(list(map(lambda element: element.convertIntoGenericASTWith(bootstrapCompiler), self.elements)))
+        )
+
 class PTCall(PTNode):
     def __init__(self, functional, arguments, tokens):
         PTNode.__init__(self)
@@ -524,14 +531,39 @@ class PTCall(PTNode):
     def isCall(self):
         return True
 
+    def getSelector(self):
+        if self.arguments is not None:
+            return Symbol.intern('():')
+        else:
+            return Symbol.intern('()')
+
     def doEvaluateWithEnvironment(self, machine, environment):
         functional = self.functional.evaluateWithEnvironment(machine, environment)
-        arguments = []
         if self.arguments is not None:
-            arguments = self.arguments.evaluateWithEnvironment(machine, environment)
-            if not isinstance(arguments, tuple):
-                arguments = (arguments,)
-        return functional.performWithArguments(machine, Symbol.intern('()'), arguments)
+            rawArguments = self.arguments.evaluateWithEnvironment(machine, environment)
+            if not isinstance(rawArguments, tuple):
+                rawArguments = (rawArguments,)
+            arguments = (rawArguments,)
+        else:
+            arguments = ()
+        return functional.performWithArguments(machine, self.getSelector(), arguments)
+
+    def convertIntoGenericASTWith(self, bootstrapCompiler):
+        sourcePosition = bootstrapCompiler.convertASTSourcePosition(self.sourcePosition)
+        if self.arguments is not None:
+            convertedArguments = [self.arguments.convertIntoGenericASTWith(bootstrapCompiler)]
+        else:
+            convertedArguments = []
+
+        return bootstrapCompiler.makeASTNodeWithSlots('MessageSendNode',
+            sourcePosition = sourcePosition,
+            selector = bootstrapCompiler.makeASTNodeWithSlots('LiteralValueNode',
+                sourcePosition = sourcePosition,
+                value = self.getSelector()
+            ),
+            receiver = self.functional.convertIntoGenericASTWith(bootstrapCompiler),
+            arguments = bootstrapCompiler.makeASTNodeArraySlice(convertedArguments)
+        )
 
 class PTSubscript(PTNode):
     def __init__(self, sequenceable, indices, tokens):
@@ -543,28 +575,80 @@ class PTSubscript(PTNode):
     def isSubscript(self):
         return True
 
+    def getSelector(self):
+        if self.arguments is not None:
+            return Symbol.intern('[]:')
+        else:
+            return Symbol.intern('[]')
+
     def doEvaluateWithEnvironment(self, machine, environment):
         sequenceable = self.sequenceable.evaluateWithEnvironment(machine, environment)
         indices = []
         if self.indices is not None:
             indices = [self.indices.evaluateWithEnvironment(machine, environment)]
-        return sequenceable.performWithArguments(machine, Symbol.intern('[]'), indices)
+        return sequenceable.performWithArguments(machine, self.getSelector(), indices)
+
+    def convertIntoGenericASTWith(self, bootstrapCompiler):
+        sourcePosition = bootstrapCompiler.convertASTSourcePosition(self.sourcePosition)
+        if self.indices is not None:
+            convertedIndices = [self.indices.convertIntoGenericASTWith(bootstrapCompiler)]
+        else:
+            convertedIndices = []
+
+        return bootstrapCompiler.makeASTNodeWithSlots('MessageSendNode',
+            sourcePosition = sourcePosition,
+            selector = bootstrapCompiler.makeASTNodeWithSlots('LiteralValueNode',
+                sourcePosition = sourcePosition,
+                value = self.getSelector()
+            ),
+            receiver = self.sequenceable.convertIntoGenericASTWith(bootstrapCompiler),
+            arguments = bootstrapCompiler.makeASTNodeArraySlice(convertedIndices)
+        )
 
 class PTApplyBlock(PTNode):
     def __init__(self, entity, block):
         PTNode.__init__(self)
         self.entity = entity
         self.block = block
+        self.sourcePosition = sourcePositionFromList([entity, block])
 
     def isApplyBlock(self):
         return True
 
     def doEvaluateWithEnvironment(self, machine, environment):
         entity = self.entity.evaluateWithEnvironment(machine, environment)
-        block = None
-        if self.entity is not None:
-            block = self.block.evaluateWithEnvironment(machine, block)
-        return entity.performWithArguments(Symbol.intern('{}'), [block])
+        block = self.block.evaluateWithEnvironment(machine, environment)
+        return entity.performWithArguments(Symbol.intern('{}:'), [block])
+
+class PTApplyDictionary(PTNode):
+    def __init__(self, entity, dictionary):
+        PTNode.__init__(self)
+        self.entity = entity
+        self.dictionary = dictionary
+        self.sourcePosition = sourcePositionFromList([entity, dictionary])
+
+    def isApplyBlockDictionary(self):
+        return True
+
+    def doEvaluateWithEnvironment(self, machine, environment):
+        entity = self.entity.evaluateWithEnvironment(machine, environment)
+        dictionary = self.dictionary.evaluateWithEnvironment(machine, environment)
+        return entity.performWithArguments(Symbol.intern('#{}:'), [dictionary])
+
+class PTApplyByteArray(PTNode):
+    def __init__(self, entity, byteArray):
+        PTNode.__init__(self)
+        self.entity = entity
+        self.byteArray = byteArray
+        self.sourcePosition = sourcePositionFromList([entity, byteArray])
+
+    def isApplyBlockDictionary(self):
+        return True
+
+    def doEvaluateWithEnvironment(self, machine, environment):
+        entity = self.entity.evaluateWithEnvironment(machine, environment)
+        byteArray = self.byteArray.evaluateWithEnvironment(machine, environment)
+        return entity.performWithArguments(Symbol.intern('#[]:'), [byteArray])
 
 class PTIdentifierReference(PTNode):
     def __init__(self, identifier):
@@ -936,6 +1020,12 @@ class PTMakeDictionary(PTNode):
     def isMakeDictionary(self):
         return True
 
+    def convertIntoGenericASTWith(self, bootstrapCompiler):
+        return bootstrapCompiler.makeASTNodeWithSlots('MakeDictionaryNode',
+            sourcePosition = bootstrapCompiler.convertASTSourcePosition(self.sourcePosition),
+            elements = bootstrapCompiler.makeASTNodeArraySlice(list(map(lambda element: element.convertIntoGenericASTWith(bootstrapCompiler), self.elements)))
+        )
+
 class PTDictionaryKeyValue(PTNode):
     def __init__(self, key, value):
         PTNode.__init__(self)
@@ -954,6 +1044,17 @@ class PTDictionaryKeyValue(PTNode):
     def isDictionaryKeyValue(self):
         return True
 
+    def convertIntoGenericASTWith(self, bootstrapCompiler):
+        convertedValue = None
+        if self.value is not None:
+            convertedValue = self.value.convertIntoGenericASTWith(bootstrapCompiler)
+
+        return bootstrapCompiler.makeASTNodeWithSlots('MakeAssociationNode',
+            sourcePosition = bootstrapCompiler.convertASTSourcePosition(self.sourcePosition),
+            key = self.key.convertIntoGenericASTWith(bootstrapCompiler),
+            value = convertedValue
+        )
+
 class PTMakeByteArray(PTNode):
     def __init__(self, expressions, tokens):
         PTNode.__init__(self)
@@ -962,6 +1063,12 @@ class PTMakeByteArray(PTNode):
 
     def isMakeByteArray(self):
         return True
+
+    def convertIntoGenericASTWith(self, bootstrapCompiler):
+        return bootstrapCompiler.makeASTNodeWithSlots('MakeByteArrayNode',
+            sourcePosition = bootstrapCompiler.convertASTSourcePosition(self.sourcePosition),
+            elements = bootstrapCompiler.makeASTNodeArraySlice(list(map(lambda element: element.convertIntoGenericASTWith(bootstrapCompiler), self.elements)))
+        )
 
 class PTError(PTNode):
     def __init__(self):

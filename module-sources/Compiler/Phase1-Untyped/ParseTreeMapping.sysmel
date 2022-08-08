@@ -19,6 +19,7 @@ __BootstrapCompiler__ setParseTreeASTMaping: #{
     MakeAssociationNode: Reflection AST MakeAssociationNode.
     MakeDictionaryNode: Reflection AST MakeDictionaryNode.
     MakeTupleNode: Reflection AST MakeTupleNode.
+    MakeByteArrayNode: Reflection AST MakeByteArrayNode.
     MessageSendNode: Reflection AST MessageSendNode.
     MessageChainNode: Reflection AST MessageChainNode.
     QuoteNode: Reflection AST QuoteNode.
