@@ -11,17 +11,105 @@ __BootstrapCompiler__
         analyzedName: Object optional.
         analyzedOwnerProgramEntity: Reflection ProgramEntity optional.
         analyzedBlockClosureNode: Reflection AST Node optional.
+        isAnalyzedLocalDefinition: Boolean.
+        localDefinitionVariable: Reflection LocalVariable optional.
     }).
 
 Reflection AST FunctionDefinitionNode
     withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST FunctionDefinitionNode)self :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
-        __BootstrapCompiler__
-            print: "name "; printLine: self nameExpression;
-            print: "arguments "; printLine: self arguments;
-            print: "resultTypeExpression "; printLine: self resultTypeExpression;
-            print: "body "; printLine: self body.
-        __BootstrapCompiler__ error: "TODO: FunctionDefinitionNode >> analyzeNodeWith: ".
+        let: #analyzedNode with: self shallowCopy.
+        if: (analyzedNode visibility is: Undefined) then: {
+            analyzedNode visibility: Reflection LexicalScopeVisibility basicNew
+        } else: { void }.
+
+        ## Check the name.
+        let: #name with: (if: self nameExpression isNotNil
+            then: (self nameExpression _ analyzeAndEvaluateNodeWith: analyzer)
+            else: (Reflection AnonymousSymbol basicNewWithNamedSlots: #{
+                sourcePosition: self sourcePosition
+            })
+        ).
+        let: #sanitizedName with: (name asSanitizedNameSymbolFor: self sourcePosition).
+        analyzedNode analyzedName: sanitizedName.
+
+        let: #blockClosureNode with: (Reflection AST BlockClosureNode basicNewWithNamedSlots: #{
+            arguments: self arguments.
+            resultTypeExpression: self resultTypeExpression.
+            body: self body _.
+            hasLazyBodyAnalysis: true.
+        }).
+
+        let: #analyzedBlockClosureNode with: (analyzer analyzeNodeIfNeededWithAutoType: blockClosureNode).
+        let: #functionType with: analyzedBlockClosureNode analyzedType _.
+
+        analyzedNode
+            analyzedBlockClosureNode: analyzedBlockClosureNode;
+            analyzedType: functionType.
+
+        ## Make sure the name is not duplicated.
+        let: #errorNode with: (Reflection AST Node optional valueBox with: nil).
+        if: (analyzedNode visibility is: Reflection LexicalScopeVisibility) then: {
+            let: #existentBinding with: (analyzer environment lexicalScope lookupSymbol: sanitizedName).
+
+            if: existentBinding isNil then: {
+                let: #variable with: (Reflection LocalVariable basicNewWithNamedSlots: #{
+                    name: sanitizedName.
+                    valueType: functionType.
+                    referenceType: functionType.
+                }).
+
+                analyzer environment lexicalScope setSymbol: sanitizedName variableBinding: variable.
+                
+                analyzedNode
+                    isAnalyzedLocalDefinition: true;
+                    localDefinitionVariable: variable.
+                analyzedBlockClosureNode ensureBodyAnalysis.
+            } else: {
+                analyzer makeSemanticAnalysisError: "Non-lexical scoped function definition is not inside a program entity with visibility." at: node sourcePosition
+            }.
+        } else: {
+            __BootstrapCompiler__ error: "TODO: FunctionDefinitionNode >> analyzeNodeWith: for owner program entity".
+            #*let: #ownerProgramEntity with: (analyzer environment lexicalScope lookupCurrentProgramEntity).
+            let: #hasValidOwner with: (if: ownerProgramEntity isNotNil then: ownerProgramEntity _ canHaveTypes else: false).
+            
+            if: hasValidOwner then: {
+                let: #existentBinding with: (ownerProgramEntity _ lookupScopeSymbol: sanitizedName).
+
+                if: existentBinding isNil then: {
+                    let: #typeInstance with: analyzedNode constructTypeInstance.
+                    typeInstance name: sanitizedName.
+
+                    if: sanitizedName isAnonymousSymbol not then: {
+                        ownerProgramEntity _ setSymbol: sanitizedName visibility: analyzedNode visibility immutableValue: typeInstance
+                    } else: {void}.
+
+                    analyzedNode
+                        analyzedName: sanitizedName;
+                        analyzedProgramEntity: typeInstance;
+                        analyzedType: typeInstance __type__;
+                        isAnalyzedLocalDefinition: false.
+                } else: {
+                    __BootstrapCompiler__ printLine: "TODO: check existent binding compatibility.".
+                }.
+            } else: {
+                errorNode _: (analyzer makeSemanticAnalysisError: "Non-lexical scoped type definition is not inside a program entity with visibility." at: node sourcePosition)
+            }.*#
+        }.
+
+        if: errorNode _ isNotNil then: {
+            errorNode _ _
+        } else: {
+            analyzedNode
+        }
     };
     withSelector: #evaluateNodeWith: addMethod: {:(Reflection AST FunctionDefinitionNode)self :(Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
-        __BootstrapCompiler__ error: "TODO: FunctionDefinitionNode >> evaluateNodeWith: ".
+        let: #blockClosure with: (self analyzedBlockClosureNode _ evaluateNodeWith: evaluationEnvironment).
+
+        if: self isAnalyzedLocalDefinition then: {
+            evaluationEnvironment lexicalScope setSymbol: self localDefinitionVariable _ immutableValue: blockClosure.
+        } else: {
+            __BootstrapCompiler__ error: "TODO: Reflection AST FunctionDefinitionNode >> evaluateNodeWith: non local definition."
+        }.
+
+        blockClosure
     }.

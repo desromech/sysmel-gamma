@@ -172,6 +172,9 @@ Reflection AST Node
     withSelector: #analyzeAndEvaluateNodeWith: addMethod: {:(Reflection AST Node)self :(Reflection Semantic ASTAnalyzer)analyzer :: AnyValue |
         (self analyzeNodeIfNeededWith: analyzer) evaluateNodeWith: analyzer environment
     };
+    withSelector: #analyzeAndEvaluateNodeWith:expectedType: addMethod: {:(Reflection AST Node)self :(Reflection Semantic ASTAnalyzer)analyzer :(Type)expectedType :: AnyValue |
+        self analyzeAndEvaluateNodeWith: (analyzer copyWithExpectedType: expectedType)
+    };
     withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST Node)self :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
         __BootstrapCompiler__ subclassResponsibility
     };
@@ -322,9 +325,14 @@ Reflection AST SequenceNode
     };
     withSelector: #analyzeAndEvaluateNodeWith: addMethod: {:(Reflection AST Node)self :(Reflection Semantic ASTAnalyzer)analyzer :: AnyValue |
         let: #result with: (AnyValue valueBox with: void).
+        let: #expressionCount with: self expressions size.
         
-        self expressions do: {:(Reflection AST Node)node |
-            result _: (node analyzeAndEvaluateNodeWith: analyzer).
+        self expressions doWithIndex: {:(Reflection AST Node)node :(Size)index |
+            if: index + 1sz = expressionCount then: {
+                result _: (node analyzeAndEvaluateNodeWith: analyzer).
+            } else: {
+                node analyzeAndEvaluateNodeWith: analyzer expectedType: Void
+            }.
             void
         }.
 

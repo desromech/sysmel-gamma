@@ -34,7 +34,7 @@ Reflection AST Node
         Reflection AST SemanticErrorNode basicNewWithNamedSlots: #{
             analyzedType: CompilationError.
             sourcePosition: self sourcePosition.
-            message: "Expression cannot be interpred as an argument definition node.".
+            message: "Expression cannot be interpreted as an argument definition node.".
             innerNode: self
         }.
     };
@@ -142,10 +142,24 @@ Reflection AST MessageSendNode
             Reflection AST SemanticErrorNode basicNewWithNamedSlots: #{
                 analyzedType: CompilationError.
                 sourcePosition: self sourcePosition.
-                message: "Message send expression is not valid argument definition".
+                message: "Message send expression is not valid argument definition.".
                 innerNode: self
             }.
         }.
+    }.
+
+Reflection AST SequenceNode
+    withSelector: #parseAsArgumentDefinitionNodes addMethod: {:(Reflection AST SequenceNode)self :: Reflection AST Node sharedArraySlice |
+        if: self expressions size = 1sz & self pragmas isEmpty then: {
+            (self expressions basicAt: 0sz) parseAsArgumentDefinitionNodes
+        } else: {
+            Reflection AST Node sharedArraySlice with: (Reflection AST SemanticErrorNode basicNewWithNamedSlots: #{
+                analyzedType: CompilationError.
+                sourcePosition: self sourcePosition.
+                message: "Sequence node is not valid arguments definitions.".
+                innerNode: self
+            })
+        }
     }.
 
 Reflection AST MakeTupleNode

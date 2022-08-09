@@ -9,8 +9,13 @@ public struct TestStruct definition: {
 
 }.
 
-##function one() => Int32 := 1i32.
-##function negate(x: Int32) => Int32 := x negated.
+function one() => Int32 := 1i32.
+function negate(x: Int32) => Int32 := x negated.
 function add(a: Int32, b: Int32) => Int32 := a + b.
 
 ##TestStruct basicNew add: 1i32 with: 2i32.
+##one().
+##negate(1i32).
+##add(1i32, 2i32).
+
+function() => Int32 := 1i32.

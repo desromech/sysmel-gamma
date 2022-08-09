@@ -11,11 +11,13 @@ __BootstrapCompiler__
 MetaProgramming FunctionDefinitionMetaBuilder
     withSelector: #"()" addMethod: {:(MetaProgramming MethodDefinitionMetaBuilder)self :: Void |
         <metaBuilder>
+        self hasSeenName: true.
         self arguments: Reflection AST Node sharedArraySlice basicNew.
         void
     };
     withSelector: #"():" addMethod: {:(MetaProgramming MethodDefinitionMetaBuilder)self :(Reflection AST Node)argumentsNode :: Void |
         <metaBuilder>
+        self hasSeenName: true.
         self arguments: argumentsNode parseAsArgumentDefinitionNodes.
         void
     };

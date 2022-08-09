@@ -42,4 +42,11 @@ Reflection Semantic ASTAnalyzer
     };
     withSelector: #analyzeNodeIfNeededWithCurrentExpectedType: addMethod: {:(Reflection Semantic ASTAnalyzer)self :(Reflection AST Node)node :: Reflection AST Node |
         self typeInferenceEnvironment solveAnalyzedNodeType: (node analyzeNodeIfNeededWith: self) with: self
-    }.
+    };
+    withSelector: #copyWithExpectedType: addMethod: {:(Reflection Semantic ASTAnalyzer)self :(Type)expectedType |
+        self shallowCopy
+            typeInferenceEnvironment: (Reflection Semantic ExpectedTypeInferenceEnvironment basicNewWithNamedSlots: #{
+                expectedType: expectedType
+            });
+            yourself
+    }

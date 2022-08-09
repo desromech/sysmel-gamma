@@ -20,6 +20,9 @@ Reflection Namespace
     withSelector: #canHaveTypes addMethod: {:(Reflection Namespace)self :: Boolean |
         true
     };
+    withSelector: #canHaveFunctions addMethod: {:(Reflection ProgramEntity)self :: Boolean |
+        true
+    };
     withSelector: #canHaveMethods addMethod: {:(Reflection Namespace)self :: Boolean |
         true
     };

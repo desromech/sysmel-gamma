@@ -540,6 +540,14 @@ __BootstrapCompiler__
                 } continueWith: (index _: index _ + 1sz).
                 void
             };
+            withSelector: #doWithIndex: addMethod: {:(arraySliceType)self :((elementType -- Size) => Void)block :: Void |
+                <pure>
+                let: #index with: (Size valueBox with: 0sz).                
+                while: index _ < self size do: {
+                    block(self basicAt: index _, index _).
+                } continueWith: (index _: index _ + 1sz).
+                void
+            };
             withSelector: #-- addMethod: {:(arraySliceType)self :(arraySliceType)other :: SharedArraySlice(elementType) |
                 <pure>
                 let: #result with: (SharedArraySlice(elementType) allocate: self size + other size).
