@@ -1,10 +1,16 @@
 Function __type__
+    #*
     withSelector: #canonicalArgumentTypes addMethod: {:(Function __type__)self :: Type arraySlice |
         <primitive: #"functionType.getCanonicalArgumentTypes">
         __BootstrapCompiler__ primitiveFailed
     };
     withSelector: #canonicalResultType addMethod: {:(Function __type__)self :: Type |
         <primitive: #"functionType.getCanonicalResultType">
+        __BootstrapCompiler__ primitiveFailed
+    };
+    *#
+    withSelector: #argumentCount addMethod: {:(Function __type__)self :: Size |
+        <primitive: #"functionType.getArgumentCount">
         __BootstrapCompiler__ primitiveFailed
     };
     withSelector: #makeFunctionSignatureAnalyzer addMethod: {:(Function __type__)self :: Reflection Semantic FunctionSignatureAnalyzer |
@@ -106,8 +112,8 @@ Function
             } else: {void}.
 
             analyzedNode
-                arguments: (node arguments collect: {:(Reflection AST Node)node :: Reflection AST Node |
-                    signatureAnalyzer analyzeArgumentNode: node with: analyzer
+                arguments: (node arguments collect: {:(Reflection AST Node)argumentNode :: Reflection AST Node |
+                    signatureAnalyzer analyzeArgumentNode: argumentNode with: analyzer
                 });
                 analyzedType: signatureAnalyzer computeResultType;
                 boundMethod: self;

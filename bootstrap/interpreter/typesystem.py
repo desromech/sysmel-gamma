@@ -882,7 +882,7 @@ class PrimitiveBooleanTypeValue(PrimitiveNumberTypeValue):
 
 class PrimitiveIntegerTypeValue(PrimitiveNumberTypeValue):
     @primitiveNamed('primitiveInteger.arithmetic.neg')
-    def primitiveNegated(self, other):
+    def primitiveNegated(self):
         return self.type.basicNewWithValue(-self.value)
 
     @primitiveNamed('primitiveInteger.arithmetic.add')
@@ -2346,6 +2346,10 @@ class FunctionType(SimpleType):
         if self.canonicalArgumentsArraySlice is None:
             self.canonicalArgumentsArraySlice = getBasicTypeNamed('ArraySlice')(getBasicTypeNamed('Type')).basicNewWithSequentialSlots(self.getCanonicalArgumentTypes())
         return self.canonicalArgumentsArraySlice
+
+    @primitiveNamed('functionType.getArgumentCount')
+    def primitiveGetArgumentCount(self):
+        return getSizeValue(self.argumentCount)
 
     @primitiveNamed('functionType.makeFunctionSignatureAnalyzer')
     def makeFunctionSignatureAnalyzer(self):

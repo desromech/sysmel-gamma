@@ -9,6 +9,78 @@ __BootstrapCompiler__
         analyzedArgumentUnpackExpressions: Reflection AST Node sharedArraySlice.
     }).
 
+Reflection AST Node
+    withSelector: #isDirectlyUnpackableArgumentList addMethod: {:(Reflection AST Node)self :: Boolean |
+        false
+    };
+    withSelector: #asDirectlyUnpackedArgumentList addMethod: {:(Reflection AST Node)self :: Reflection AST Node sharedArraySlice |
+        __BootstrapCompiler__ subclassResponsibility
+    }.
+
+Reflection AST SequenceNode
+    withSelector: #isDirectlyUnpackableArgumentList addMethod: {:(Reflection AST SequenceNode)self :: Boolean |
+        if: self expressions size = 1sz & self pragmas isEmpty then: {
+            (self expressions basicAt: 0sz) isDirectlyUnpackableArgumentList
+        } else: {
+            false
+        }
+    };
+    withSelector: #asDirectlyUnpackedArgumentList addMethod: {:(Reflection AST SequenceNode)self :: Reflection AST Node sharedArraySlice |
+         (self expressions basicAt: 0sz) asDirectlyUnpackedArgumentList
+    }.
+
+Reflection AST MakeTupleNode
+    withSelector: #isDirectlyUnpackableArgumentList addMethod: {:(Reflection AST MakeTupleNode)self :: Boolean |
+        true
+    };
+    withSelector: #asDirectlyUnpackedArgumentList addMethod: {:(Reflection AST MakeTupleNode)self :: Reflection AST Node sharedArraySlice |
+        self elements
+    }.
+
+Reflection AST FunctionCallNode
+    withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST FunctionCallNode)self :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+        let: #analyzedNode with: (self shallowCopy).
+
+        analyzedNode functionExpression: (analyzer analyzeNodeIfNeededWithAutoType: analyzedNode functionExpression).
+        
+        let: #functionType with: analyzedNode functionExpression analyzedType _.
+        let: #signatureAnalyzer with: functionType makeFunctionSignatureAnalyzer.
+
+        if: analyzedNode argumentsExpression isNil then: {
+            ## Nothing is required here.
+        } else: {
+            let: #argumentsExpression with: analyzedNode argumentsExpression.
+            if: functionType argumentCount > 1sz then: {
+                if: argumentsExpression _ isDirectlyUnpackableArgumentList then: {
+                    analyzedNode analyzedArgumentUnpackExpressions: (argumentsExpression _ asDirectlyUnpackedArgumentList collect: {:(Reflection AST Node)argumentNode :: Reflection AST Node |
+                        signatureAnalyzer analyzeArgumentNode: argumentNode with: analyzer
+                    })
+                } else: {
+                    __BootstrapCompiler__ error: "TODO: Setup and unpack call expression."
+                }
+            } else: {
+                analyzedNode analyzedArgumentUnpackExpressions: (Reflection AST Node sharedArraySlice with:
+                    (signatureAnalyzer analyzeArgumentNode: argumentsExpression _ with: analyzer)
+                )
+            }.
+        }.
+
+        analyzedNode analyzedType: signatureAnalyzer computeResultType.
+        signatureAnalyzer annotateExtraSemanticAnalysisErrorsOn: analyzedNode with: analyzer.
+    };
+    withSelector: #evaluateNodeWith: addMethod: {:(Reflection AST FunctionCallNode)self :(Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+        let: #function with: (self functionExpression evaluateNodeWith: evaluationEnvironment).
+
+        if: self analyzedArgumentSetupExpression isNotNil then: {
+            self analyzedArgumentSetupExpression _ evaluateNodeWith: evaluationEnvironment.
+        } else: { void }.
+
+        function evaluateWithArguments: (self analyzedArgumentUnpackExpressions collect: {:(Reflection AST Node)argumentNode :: AnyValue |
+            argumentNode evaluateNodeWith: evaluationEnvironment
+        })
+    }.
+    .
+
 Function
     withSelector: #"()" addMacroMethod: {:(MacroInvocationContext)macroSelf :: Reflection AST FunctionCallNode |
         <macro>
