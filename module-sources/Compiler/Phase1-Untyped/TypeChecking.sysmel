@@ -56,7 +56,7 @@ Type
                 if: result isNotNil then: {
                     result
                 } else: {
-                    self lookupSelector: selector withExpansionLevel: (Reflection AST MessageSendExpansionLevel basicNew: Reflection AST MessageSendExpansionLevel Method basicNew)
+                    self lookupSelector: selector withExpansionLevel: (Reflection AST MessageSendExpansionLevel basicNew: Reflection AST MessageSendExpansionLevel MacroFallbackMethod basicNew)
                 }.
             } else: {
                 self lookupMacroFallbackSelector: selector
