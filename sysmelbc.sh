@@ -20,7 +20,9 @@ python3 bootstrap/interpreter/sysmelbi.py \
     module-sources/Compiler/Phase1-Untyped/BlockClosure.sysmel \
     module-sources/Compiler/Phase1-Untyped/LocalVariable.sysmel \
     module-sources/Compiler/Phase1-Untyped/TypeDefinition.sysmel \
+    module-sources/Compiler/Phase1-Untyped/FunctionCall.sysmel \
     module-sources/Compiler/Phase1-Untyped/FunctionDefinition.sysmel \
+    module-sources/Compiler/Phase1-Untyped/FunctionType.sysmel \
     module-sources/Compiler/Phase1-Untyped/MethodDefinition.sysmel \
     module-sources/Compiler/Phase1-Untyped/StructureDefinition.sysmel \
     module-sources/Compiler/Phase1-Untyped/Macros.sysmel \

@@ -343,13 +343,29 @@ class TypeInterface:
     def runWithIn(self, machine, selector, arguments, receiver):
         raise NotImplementedError()
 
-    @primitiveNamed('type.lookupSelector')
-    def primitiveLookupSelector(self, selector):
-        return self.lookupSelector(selector)
+    @primitiveNamed('type.lookupLocalMacroSelector')
+    def primitiveLookupLocalMacroSelector(self, selector):
+        return self.lookupLocalMacroSelector(selector)
+
+    @primitiveNamed('type.lookupMacroSelector')
+    def primitiveLookupMacroSelector(self, selector):
+        return self.lookupMacroSelector(selector)
 
     @primitiveNamed('type.lookupLocalSelector')
     def primitiveLookupLocalSelector(self, selector):
         return self.lookupLocalSelector(selector)
+
+    @primitiveNamed('type.lookupSelector')
+    def primitiveLookupSelector(self, selector):
+        return self.lookupSelector(selector)
+
+    @primitiveNamed('type.lookupLocalMacroFallbakSelector')
+    def primitiveLookupLocalMacroFallbackSelector(self, selector):
+        return self.lookupLocalMacroFallbackSelector(selector)
+
+    @primitiveNamed('type.lookupMacroFallbackSelector')
+    def primitiveLookupMacroFallbackSelector(self, selector):
+        return self.lookupMacroFallbackSelector(selector)
 
     @primitiveNamed('type.supportsDynamicDispatch')
     def primitiveSupportsDynamicDispatch(self):
@@ -1548,10 +1564,12 @@ class Namespace(ProgramEntity):
         return childNamespace
 
 class BehaviorType(ProgramEntity, TypeInterface):
-    def __init__(self, name = None, supertype = None, traits = [], schema = EmptyTypeSchema(), methodDict = {}):
+    def __init__(self, name = None, supertype = None, traits = [], schema = EmptyTypeSchema(), macroMethodDict = {}, methodDict = {}, macroFallbackMethodDict = {}):
         super().__init__(name = None)
         self.symbolTable = SymbolTable()
+        self.macroMethodDict = dict(macroMethodDict)
         self.methodDict = dict(methodDict)
+        self.macroFallbackMethodDict = dict(macroFallbackMethodDict)
         self.implicitConversionMethods = []
         self.explicitConversionMethods = []
         self.implicitConstructionMethods = []
@@ -1591,6 +1609,12 @@ class BehaviorType(ProgramEntity, TypeInterface):
             return self.schema.coerceValueOfTypeIntoType(value, valueType, self)
 
         return super().coerceValue(value)
+
+    def lookupScopeSymbol(self, selector):
+        return self.symbolTable.lookupSymbol(selector)
+
+    def lookupPublicSymbol(self, selector):
+        return self.symbolTable.lookupSymbol(selector)
 
     @primitiveNamed('type.addPendingSupertypeExpression')
     def addPendingSupertypeExpression(self, supertypeExpression):
@@ -1680,6 +1704,37 @@ class BehaviorType(ProgramEntity, TypeInterface):
             return found
         return None
 
+    def lookupLocalMacroSelector(self, selector):
+        self.evaluatePendingBodyExpressions()
+        found = self.macroMethodDict.get(selector, None)
+        if found is not None:
+            return found
+        return None
+
+    def lookupLocalMacroFallbackSelector(self, selector):
+        self.evaluatePendingBodyExpressions()
+        found = self.macroFallbackMethodDict.get(selector, None)
+        if found is not None:
+            return found
+        return None
+
+    def lookupMacroSelector(self, selector):
+        ## Check in the local method dictionary.
+        found = self.lookupLocalMacroSelector(selector)
+        if found is not None:
+            return found
+
+        ## Find in a direct trait.
+        for trait in self.directTraits():
+            found = trait.lookupLocalMacroSelector(found)
+            if found is not None:
+                return found
+
+        ##  Find in the supertype.
+        if self.supertype is not None:
+            return self.supertype.lookupLocalMacroSelector(selector)
+        return None
+
     def lookupSelector(self, selector):
         ## Check in the local method dictionary.
         found = self.lookupLocalSelector(selector)
@@ -1697,6 +1752,23 @@ class BehaviorType(ProgramEntity, TypeInterface):
             return self.supertype.lookupSelector(selector)
         return None
 
+    def lookupMacroFallbackSelector(self, selector):
+        ## Check in the local method dictionary.
+        found = self.lookupLocalMacroFallbackSelector(selector)
+        if found is not None:
+            return found
+
+        ## Find in a direct trait.
+        for trait in self.directTraits():
+            found = trait.lookupLocalMacroFallbackSelector(found)
+            if found is not None:
+                return found
+
+        ##  Find in the supertype.
+        if self.supertype is not None:
+            return self.supertype.lookupLocalMacroFallbackSelector(selector)
+        return None
+
     def runWithIn(self, machine, selector, arguments, receiver):
         method = self.lookupSelector(selector)
         if method is None:
@@ -1705,6 +1777,17 @@ class BehaviorType(ProgramEntity, TypeInterface):
 
     def addMethodWithSelector(self, method, selector):
         self.methodDict[selector] = method
+        self.registerInstalledMethod(method)
+
+    def addMacroMethodWithSelector(self, method, selector):
+        self.macroMethodDict[selector] = method
+        self.registerInstalledMethod(method)
+
+    def addMacroFallbackMethodWithSelector(self, method, selector):
+        self.macroMethodDict[selector] = method
+        self.registerInstalledMethod(method)
+
+    def registerInstalledMethod(self, method):
         method.installedInType(self)
 
         if method.isConversionMethod():
@@ -1718,9 +1801,21 @@ class BehaviorType(ProgramEntity, TypeInterface):
             else:
                 self.explicitConstructionMethods.append(method)
 
+    def setSymbolValueBinding(self, symbol, value):
+        self.symbolTable.setSymbolValueBinding(symbol, value)
+        value.onGlobalBindingWithSymbolAdded(symbol)
+
     @primitiveNamed('type.withSelectorAddMethod')
     def withSelectorAddMethod(self, selector, method):
         self.addMethodWithSelector(method, selector)
+
+    @primitiveNamed('type.withSelectorAddMacroMethod')
+    def withSelectorAddMacroMethod(self, selector, method):
+        self.addMacroMethodWithSelector(method, selector)
+
+    @primitiveNamed('type.withSelectorAddMacroFallbackMethod')
+    def withSelectorAddMacroFallbackMethod(self, selector, method):
+        self.addMacroFallbackMethodWithSelector(method, selector)
 
     @primitiveNamed('type.addFlag')
     def addTypeFlag(self, flagName):
@@ -1778,6 +1873,8 @@ class BehaviorType(ProgramEntity, TypeInterface):
         cls = self.__class__
         self.addPrimitiveMethodsWithSelectors([
             (cls.withSelectorAddMethod, 'withSelector:addMethod:', '(AnyValue -- AnyValue) => AnyValue'),
+            (cls.withSelectorAddMacroMethod, 'withSelector:addMacroMethod:', '(AnyValue -- AnyValue) => AnyValue'),
+            (cls.withSelectorAddMacroFallbackMethod, 'withSelector:addMacroFallbackMethod:', '(AnyValue -- AnyValue) => AnyValue'),
             (cls.addTypeFlag, 'addTypeFlag:', 'AnyValue => AnyValue'),
             (cls.definePublicSlots, 'definePublicSlots:', '(SelfType -- AnyValue) => Type'),
         ])
@@ -2269,6 +2366,7 @@ class TypeBuilder(BehaviorTypedObject):
             (cls.newTrivialType, 'newTrivialType', '(SelfType) => Type'),
             (cls.newProductType, 'newProductTypeWith:', '(SelfType -- AnyValue) => Type'),
             (cls.newSumTypeWith, 'newSumTypeWith:', '(SelfType -- AnyValue) => Type'),
+            (cls.newEnumTypeWith, 'newEnumTypeWith:', '(SelfType -- AnyValue) => Type'),
             (cls.newRecordTypeWithSupertypeWith, 'newRecordTypeWithSupertype:with:', '(SelfType -- Type -- AnyValue) => Type'),
             (cls.newRecordTypeWith, 'newRecordTypeWith:', '(SelfType -- AnyValue) => Type'),
             (cls.newArrayTypeForWithBounds, 'newArrayTypeFor:withBounds:', '(SelfType -- Type -- Integer) => Type'),
@@ -2308,6 +2406,20 @@ class TypeBuilder(BehaviorTypedObject):
     def newSumTypeWith(self, elementTypes):
         elementTypeList = list(elementTypes)
         return SimpleType(schema = SumTypeSchema(elementTypeList))
+
+    def newEnumTypeWith(self, memberValueDictionary):
+        elementTypeList = []
+
+        for assoc in memberValueDictionary:
+            symbolValue = assoc.getValue()
+            elementTypeList.append(symbolValue)
+
+        sumType = SimpleType(schema = SumTypeSchema(elementTypeList))
+        for assoc in memberValueDictionary:
+            symbolName = assoc.getKey()
+            symbolValue = assoc.getValue()
+            sumType.setSymbolValueBinding(symbolName, symbolValue)
+        return sumType
 
     def newRecordTypeWithSupertypeWith(self, supertype, slots):
         return SimpleType(supertype = supertype, schema = RecordTypeSchema(slots, supertypeSchema = supertype.schema))

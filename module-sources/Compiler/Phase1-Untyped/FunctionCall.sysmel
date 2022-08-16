@@ -1,0 +1,29 @@
+__BootstrapCompiler__
+    enterTopLevelNamespace;
+    enterNamespaceNamed: #Reflection;
+    enterNamespaceNamed: #AST;
+    addBindingNamed: #FunctionCallNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST ProgramEntityDefinitionNode publicSlots: #{
+        functionExpression: Reflection AST Node.
+        argumentsExpression: Reflection AST Node optional.
+        analyzedArgumentSetupExpression: Reflection AST Node optional.
+        analyzedArgumentUnpackExpressions: Reflection AST Node sharedArraySlice.
+    }).
+
+Function
+    withSelector: #"()" addMacroMethod: {:(MacroInvocationContext)macroSelf :: Reflection AST FunctionCallNode |
+        <macro>
+        <messageMethod>
+        Reflection AST FunctionCallNode basicNewWithNamedSlots: #{
+            sourcePosition: macroSelf sourcePosition.
+            functionExpression: macroSelf selfNode _.
+        }.
+    };
+    withSelector: #"():" addMacroMethod: {:(MacroInvocationContext)macroSelf :(Reflection AST Node)arguments :: Reflection AST FunctionCallNode |
+        <macro>
+        <messageMethod>
+        Reflection AST FunctionCallNode basicNewWithNamedSlots: #{
+            sourcePosition: macroSelf sourcePosition.
+            functionExpression: macroSelf selfNode _.
+            argumentsExpression: arguments.
+        }.
+    }.

@@ -22,7 +22,7 @@ Reflection Semantic ASTAnalyzer
             selfType: (if: node receiver isNil then: {
                 Void
             } else: {
-                if: node receiver _ analyzedType isNil then: Void then: node receiver _ analyzedType
+                if: node receiver _ analyzedType isNil then: Void else: node receiver _ analyzedType _
             }).
             astAnalyzer: self
         }

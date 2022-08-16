@@ -22,12 +22,14 @@ __BootstrapCompiler__
 
     enterTopLevelNamespace;
     enterNamespaceNamed: #Reflection;
-    addBasicTypeNamed: #LexicalScopeVisibility with: __TypeBuilder__ newTrivialType;
-    addBasicTypeNamed: #PublicVisibility with: __TypeBuilder__ newTrivialType;
-    addBasicTypeNamed: #ProtectedVisibility with: __TypeBuilder__ newTrivialType;
-    addBasicTypeNamed: #PrivateVisibility with: __TypeBuilder__ newTrivialType;
-    addBasicTypeNamed: #InternalVisibility with: __TypeBuilder__ newTrivialType;
-    addBasicTypeNamed: #ProgramEntityVisibility with: (__TypeBuilder__ newSumTypeWith: (Undefined, Reflection LexicalScopeVisibility, Reflection PublicVisibility, Reflection ProtectedVisibility, Reflection PrivateVisibility, Reflection InternalVisibility));
+    addBasicTypeNamed: #ProgramEntityVisibility with: (__TypeBuilder__ newEnumTypeWith: #{
+        Undefined: Undefined.
+        LexicalScope: __TypeBuilder__ newTrivialType.
+        Public: __TypeBuilder__ newTrivialType.
+        Protected: __TypeBuilder__ newTrivialType.
+        Private: __TypeBuilder__ newTrivialType.
+        Internal: __TypeBuilder__ newTrivialType.
+    });
 
     addBasicTypeNamed: #SymbolBinding with: (__TypeBuilder__ newGCClassWithSuperclass: Object publicSlots: #{});
     addBasicTypeNamed: #SymbolTable with: (__TypeBuilder__ newGCClassWithSuperclass: Object publicSlots: #{});

@@ -45,6 +45,12 @@ __BootstrapCompiler__
 
     enterNamespaceNamed: #AST;
 
+    addBindingNamed: #MessageSendExpansionLevel with: (__TypeBuilder__ newEnumTypeWith: #{
+        Macro: __TypeBuilder__ newTrivialType.
+        Method: __TypeBuilder__ newTrivialType.
+        MacroFallbackMethod: __TypeBuilder__ newTrivialType.
+    });
+
     addBindingNamed: #Node with: (__TypeBuilder__ newGCClassWithSuperclass: Object publicSlots: #{
         sourcePosition: Reflection SourcePosition.
         analyzedType: Type optional
@@ -88,6 +94,7 @@ __BootstrapCompiler__
         receiver: Reflection AST Node optional.
         selector: Reflection AST Node.
         arguments: Reflection AST Node sharedArraySlice.
+        expansionLevel: Reflection AST MessageSendExpansionLevel.
         boundMethod: Object optional.
         usesDynamicDispatch: Boolean.
     });

@@ -37,7 +37,7 @@ Reflection AST TypeDefinitionNode
     withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST TypeDefinitionNode)self :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
         let: #analyzedNode with: self shallowCopy.
         if: (analyzedNode visibility is: Undefined) then: {
-            analyzedNode visibility: Reflection LexicalScopeVisibility basicNew
+            analyzedNode visibility: Reflection ProgramEntityVisibility LexicalScope basicNew
         } else: { void }.
 
         ## Check the name.
@@ -52,7 +52,7 @@ Reflection AST TypeDefinitionNode
 
         ## Make sure the name is not duplicated.
         let: #errorNode with: (Reflection AST Node optional valueBox with: nil).
-        if: (analyzedNode visibility is: Reflection LexicalScopeVisibility) then: {
+        if: (analyzedNode visibility is: Reflection ProgramEntityVisibility LexicalScope) then: {
             let: #existentBinding with: (analyzer environment lexicalScope lookupSymbol: sanitizedName).
 
             if: existentBinding isNil then: {

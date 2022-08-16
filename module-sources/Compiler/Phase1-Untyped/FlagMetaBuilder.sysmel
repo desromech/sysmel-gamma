@@ -11,7 +11,7 @@ __BootstrapCompiler__
         <messageMethod>
         (MetaProgramming FlagMetaBuilder withContext: macroSelf)
             programEntityAttributes: (MetaProgramming ProgramEntityMetaBuilderAttributes basicNewWithNamedSlots: #{
-                visibility: Reflection PublicVisibility basicNew
+                visibility: Reflection ProgramEntityVisibility Public basicNew
             });
             makeInstanceNode
     }.
