@@ -1,0 +1,41 @@
+## Let meta builder.
+__BootstrapCompiler__
+    enterTopLevelNamespace;
+    enterNamespaceNamed: #MetaProgramming;
+    addBindingNamed: #FieldMetaBuilder with: (__TypeBuilder__ newGCClassWithSuperclass: MetaProgramming NamedMetaBuilder slots: #{
+        typeExpression: Reflection AST Node optional.
+        initialValueExpression: Reflection AST Node optional.
+    }).
+
+MetaProgramming FieldMetaBuilder
+    withSelector: #type addMethod: {:(MetaProgramming LetMetaBuilder)self :(Reflection AST Node)typeExpression :: Void |
+        <metaBuilder>
+        self typeExpression: typeExpression.
+        void
+    };
+    withSelector: #=> addMethod: {:(MetaProgramming LetMetaBuilder)self :(Reflection AST Node)typeExpression :: Void |
+        <metaBuilder>
+        self typeExpression: typeExpression.
+        void
+    };
+    withSelector: #":=" addMethod: {:(MetaProgramming LetMetaBuilder)self :(Reflection AST Node)initialValueExpression :: Void |
+        <metaBuilder>
+        self initialValueExpression: initialValueExpression.
+        self finish.
+        void
+    };
+    withSelector: #concretizeMetaBuilder addMethod: {:(MetaProgramming LetMetaBuilder)self :: Reflection AST Node |
+        (Reflection AST FieldVariableDefinitionNode basicNewWithNamedSlots: #{
+            sourcePosition: self metaContext sourcePosition.
+            nameExpression: self nameExpression.
+            typeExpression: self typeExpression.
+            initialValueExpression: self initialValueExpression.
+        })
+    }.
+
+MetaProgramming FlagMetaBuilder
+    withSelector: #field addMethod: {:(MetaProgramming FlagMetaBuilder)self :: Void |
+        <metaBuilder>
+        self delegateToMetaBuilderClass: MetaProgramming FieldMetaBuilder.
+        void
+    }.

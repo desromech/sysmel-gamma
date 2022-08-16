@@ -1,5 +1,8 @@
 public struct TestStruct definition: {
-    __BootstrapCompiler__ printLine: "TestStruct body".
+    public field first => Int32.
+    public field second => Size.
+ 
+     __BootstrapCompiler__ printLine: "TestStruct body".
 
     public struct InnerStruct definition: {
         __BootstrapCompiler__ printLine: "InnerStruct body".

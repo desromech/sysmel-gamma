@@ -1,0 +1,16 @@
+__BootstrapCompiler__
+    enterTopLevelNamespace;
+    enterNamespaceNamed: #Reflection;
+    addBindingNamed: #FieldVariable with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection FunctionVariable publicSlots: #{});
+
+    enterNamespaceNamed: #AST;
+    addBindingNamed: #FieldVariableDefinitionNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST VariableDefinitionNode publicSlots: #{
+    }).
+
+Reflection AST FieldVariableDefinitionNode
+    withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST FieldVariableDefinitionNode)self :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+        __BootstrapCompiler__ error: "TODO: Reflection AST FieldVariableDefinitionNode >> analyzeNodeWith:"
+    };
+    withSelector: #evaluateNodeWith: addMethod: {:(Reflection AST FieldVariableDefinitionNode)self :(Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+        __BootstrapCompiler__ error: "TODO: Reflection AST FieldVariableDefinitionNode >> evaluateNodeWith:"
+    }.

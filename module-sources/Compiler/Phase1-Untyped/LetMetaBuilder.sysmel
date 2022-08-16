@@ -31,6 +31,11 @@ MetaProgramming LetMetaBuilder
         self typeExpression: typeExpression.
         void
     };
+    withSelector: #=> addMethod: {:(MetaProgramming LetMetaBuilder)self :(Reflection AST Node)typeExpression :: Void |
+        <metaBuilder>
+        self typeExpression: typeExpression.
+        void
+    };
     withSelector: #":=" addMethod: {:(MetaProgramming LetMetaBuilder)self :(Reflection AST Node)initialValueExpression :: Void |
         <metaBuilder>
         self initialValueExpression: initialValueExpression.
