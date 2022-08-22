@@ -12,7 +12,13 @@ Type
     withSelector: #canHaveTypes addMethod: {:(Reflection Namespace)self :: Boolean |
         true
     };
+    withSelector: #canHaveFields addMethod: {:(Reflection ProgramEntity)self :: Boolean |
+        self schema canHaveFields
+    };
     withSelector: #canHaveFunctions addMethod: {:(Reflection ProgramEntity)self :: Boolean |
+        true
+    };
+    withSelector: #canHaveGlobals addMethod: {:(Reflection ProgramEntity)self :: Boolean |
         true
     };
     withSelector: #canHaveMethods addMethod: {:(Reflection Namespace)self :: Boolean |
@@ -179,6 +185,9 @@ Type
     }.
 
 Reflection TypeSchema 
+    withSelector: #canHaveFields addMethod: {:(Reflection TypeSchema)self :: Boolean |
+        false
+    };
     withSelector: #canConstructWithValueOfType: addMethod: {:(TypeSchema)self :(Type)sourceType :: Boolean |
         false
     };
@@ -186,19 +195,24 @@ Reflection TypeSchema
         __BootstrapCompiler__ subclassResponsibility
     }.
 
+Reflection RecordTypeSchema
+    withSelector: #canHaveFields addMethod: {:(Reflection RecordTypeSchema)self :: Boolean |
+        true
+    }.
+
 Reflection SumTypeSchema 
-    withSelector: #containsType: addMethod: {:(SumTypeSchema)self :(Type)typeToCheck :: Boolean |
+    withSelector: #containsType: addMethod: {:(Reflection SumTypeSchema)self :(Type)typeToCheck :: Boolean |
         <primitive: #"sumTypeSchema.containsType" >
         __BootstrapCompiler__ primitiveFailed
     };
-    withSelector: #getTypeSelectorIndexFor: addMethod: {:(SumTypeSchema)self :(Type)elementType :: Size |
+    withSelector: #getTypeSelectorIndexFor: addMethod: {:(Reflection SumTypeSchema)self :(Type)elementType :: Size |
         <primitive: #"sumTypeSchema.getTypeSelectorIndexFor" >
         __BootstrapCompiler__ primitiveFailed
     };
-    withSelector: #canConstructWithValueOfType: addMethod: {:(SumTypeSchema)self :(Type)sourceType :: Boolean |
+    withSelector: #canConstructWithValueOfType: addMethod: {:(Reflection SumTypeSchema)self :(Type)sourceType :: Boolean |
         self containsType: sourceType
     };
-    withSelector: #addConstructionNodeFor:valueType:into:with: addMethod: {:(TypeSchema)self :(Reflection AST Node)node :(Type)sourceType :(Type)targetType :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+    withSelector: #addConstructionNodeFor:valueType:into:with: addMethod: {:(Reflection SumTypeSchema)self :(Reflection AST Node)node :(Type)sourceType :(Type)targetType :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
         Reflection AST WrapValueInSumTypeNode basicNewWithNamedSlots: #{
             sourcePosition: node sourcePosition.
             expression: node.

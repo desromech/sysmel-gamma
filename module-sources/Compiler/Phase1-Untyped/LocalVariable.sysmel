@@ -39,7 +39,7 @@ Reflection AST LocalVariableDefinitionNode
                     analyzedExpectedValueType: analyzedNode initialValueExpression _ analyzedType.
             }.
         } else: {
-            analyzedNode typeExpression: (analyzer analyzeNodeIfNeeded: analyzedNode typeExpression _ withExpectedType: Type)
+            analyzedNode typeExpression: (analyzer analyzeNodeIfNeeded: analyzedNode typeExpression _ withExpectedType: Type).
             let: #typeExpressionValue with: (analyzedNode typeExpression _ evaluateNodeWith: analyzer environment).
             if: (typeExpressionValue __type__ isSubtypeOf: Type) then: {
                 analyzedNode analyzedExpectedValueType: typeExpressionValue.
@@ -58,7 +58,7 @@ Reflection AST LocalVariableDefinitionNode
             let: #variableReferenceType with: valueType.
             let: #variable with: (Reflection LocalVariable basicNewWithNamedSlots: #{
                 name: sanitizedName.
-                valueType: analyzedNode analyzedExpectedValueType _.
+                valueType: valueType.
                 referenceType: variableReferenceType.
             }).
 

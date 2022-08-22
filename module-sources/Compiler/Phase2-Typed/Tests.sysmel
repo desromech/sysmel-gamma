@@ -2,14 +2,13 @@ public struct TestStruct definition: {
     public field first => Int32.
     public field second => Size.
  
-     __BootstrapCompiler__ printLine: "TestStruct body".
+    __BootstrapCompiler__ printLine: "TestStruct body".
 
     public struct InnerStruct definition: {
         __BootstrapCompiler__ printLine: "InnerStruct body".
     }.
 
     public method add: (a: Int32) with: (b: Int32) ::=> Int32 := a + b
-
 }.
 
 function one() => Int32 := 1i32.

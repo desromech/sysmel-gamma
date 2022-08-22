@@ -832,13 +832,13 @@ class OpaqueTypeSchema(TypeSchema):
     def getType(self):
         return getBasicTypeNamed('OpaqueTypeSchema')
 
-class EmptyTypeSchema(TypeSchema):
+class TrivialTypeSchema(TypeSchema):
     def __init__(self):
         super().__init__()
         self.uniqueInstance = None
 
     def getType(self):
-        return getBasicTypeNamed('EmptyTypeSchema')
+        return getBasicTypeNamed('TrivialTypeSchema')
 
     def isDefaultConstructible(self):
         return True
@@ -1173,8 +1173,8 @@ class ProductTypeSchema(TypeSchema):
         return self.elementTypes[slotIndex]
 
     def buildPrimitiveMethodDictionary(self):
-        self.metaTypeMethodDict[Symbol.intern('basicNew')] = TypeSchemaPrimitiveMethod.makeFunction(self.basicNew, '{:(SelfType)self :: self}')
-        self.metaTypeMethodDict[Symbol.intern('basicNewWithSlots:')] = TypeSchemaPrimitiveMethod.makeFunction(self.basicNewWithSequentialSlots, '{:(SelfType)self :(AnyValue)sequentialSlots :: self}')
+        self.metaTypeMethodDict[Symbol.intern('basicNew')] = TypeSchemaPrimitiveMethod.makeFunction(self.basicNew, '{:(SelfType)self :: self|}')
+        self.metaTypeMethodDict[Symbol.intern('basicNewWithSlots:')] = TypeSchemaPrimitiveMethod.makeFunction(self.basicNewWithSequentialSlots, '{:(SelfType)self :(AnyValue)sequentialSlots :: self|}')
         return super().buildPrimitiveMethodDictionary()
 
     def basicNew(self, productType):
@@ -1196,10 +1196,11 @@ class ProductTypeSchema(TypeSchema):
         return ProductTypeValue(productType, list(slots))
 
 class RecordTypeSchema(ProductTypeSchema):
-    def __init__(self, slots, supertypeSchema = None):
+    def __init__(self, slots, supertypeSchema = None, packed = False):
         self.slots = []
         super().__init__([])
         self.supertypeSchema = supertypeSchema
+        self.packed = packed
         self.definePublicSlots(slots)
 
     def setSupertypeSchema(self, newSupertypeSchema):
@@ -1564,7 +1565,7 @@ class Namespace(ProgramEntity):
         return childNamespace
 
 class BehaviorType(ProgramEntity, TypeInterface):
-    def __init__(self, name = None, supertype = None, traits = [], schema = EmptyTypeSchema(), macroMethodDict = {}, methodDict = {}, macroFallbackMethodDict = {}):
+    def __init__(self, name = None, supertype = None, traits = [], schema = TrivialTypeSchema(), macroMethodDict = {}, methodDict = {}, macroFallbackMethodDict = {}):
         super().__init__(name = None)
         self.symbolTable = SymbolTable()
         self.macroMethodDict = dict(macroMethodDict)
@@ -2371,6 +2372,8 @@ class TypeBuilder(BehaviorTypedObject):
             (cls.newProductType, 'newProductTypeWith:', '(SelfType -- AnyValue) => Type'),
             (cls.newSumTypeWith, 'newSumTypeWith:', '(SelfType -- AnyValue) => Type'),
             (cls.newEnumTypeWith, 'newEnumTypeWith:', '(SelfType -- AnyValue) => Type'),
+            (cls.newEmptyPackedRecordType, 'newEmptyPackedRecordType', '(SelfType) => Type'),
+            (cls.newEmptyRecordType, 'newEmptyRecordType', '(SelfType) => Type'),
             (cls.newRecordTypeWithSupertypeWith, 'newRecordTypeWithSupertype:with:', '(SelfType -- Type -- AnyValue) => Type'),
             (cls.newRecordTypeWith, 'newRecordTypeWith:', '(SelfType -- AnyValue) => Type'),
             (cls.newArrayTypeForWithBounds, 'newArrayTypeFor:withBounds:', '(SelfType -- Type -- Integer) => Type'),
@@ -2399,7 +2402,7 @@ class TypeBuilder(BehaviorTypedObject):
         return SimpleType(schema = AbsurdTypeSchema())
 
     def newTrivialType(self):
-        return SimpleType(schema = EmptyTypeSchema())
+        return SimpleType(schema = TrivialTypeSchema())
 
     def newProductType(self, elementTypes):
         elementTypeList = list(elementTypes)
@@ -2424,6 +2427,12 @@ class TypeBuilder(BehaviorTypedObject):
             symbolValue = assoc.getValue()
             sumType.setSymbolValueBinding(symbolName, symbolValue)
         return sumType
+
+    def newEmptyRecordType(self):
+        return SimpleType(schema = RecordTypeSchema([]))
+
+    def newEmptyPackedRecordType(self):
+        return SimpleType(schema = RecordTypeSchema([], packed = True))
 
     def newRecordTypeWithSupertypeWith(self, supertype, slots):
         return SimpleType(supertype = supertype, schema = RecordTypeSchema(slots, supertypeSchema = supertype.schema))

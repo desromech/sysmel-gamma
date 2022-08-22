@@ -9,8 +9,83 @@ __BootstrapCompiler__
 
 Reflection AST FieldVariableDefinitionNode
     withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST FieldVariableDefinitionNode)self :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
-        __BootstrapCompiler__ error: "TODO: Reflection AST FieldVariableDefinitionNode >> analyzeNodeWith:"
+        let: #analyzedNode with: self shallowCopy.
+        let: #name with: (if: self nameExpression isNotNil
+            then: (self nameExpression _ analyzeAndEvaluateNodeWith: analyzer)
+            else: (AnonymousSymbol basicNewWithNamedSlots: #{
+                sourcePosition: self sourcePosition
+            })
+        ).
+        let: #sanitizedName with: (name asSanitizedNameSymbolFor: self sourcePosition).
+        let: #errorNode with: (Reflection AST Node optional valueBox with: nil).
+
+        let: #ownerProgramEntity with: (analyzer environment lexicalScope lookupCurrentProgramEntity).
+        let: #hasValidOwner with: (if: ownerProgramEntity isNotNil then: ownerProgramEntity _ canHaveFields else: false).
+        
+        ## Type expression evaluation, and type checking.
+        if: analyzedNode typeExpression isNil then: {
+            if: analyzedNode initialValueExpression isNil then: {
+                analyzedNode analyzedExpectedValueType: AnyValue
+            } else: {
+                analyzedNode
+                    initialValueExpression: (analyzer analyzeNodeIfNeeded: analyzedNode initialValueExpression _ withTypeInferenceEnvironment: analyzedNode makeValueTypeInferenceEnvironment);
+                    analyzedExpectedValueType: analyzedNode initialValueExpression _ analyzedType.
+            }.
+        } else: {
+            analyzedNode typeExpression: (analyzer analyzeNodeIfNeeded: analyzedNode typeExpression _ withExpectedType: Type).
+            let: #typeExpressionValue with: (analyzedNode typeExpression _ evaluateNodeWith: analyzer environment).
+            if: (typeExpressionValue __type__ isSubtypeOf: Type) then: {
+                analyzedNode analyzedExpectedValueType: typeExpressionValue.
+            } else: {
+                errorNode _: (analyzer makeSemanticAnalysisError: "Expected a type expression." atNode: analyzedNode typeExpression _).
+            }.
+        }.
+
+        if: hasValidOwner then: {
+            let: #existentBinding with: (ownerProgramEntity _ lookupScopeSymbol: sanitizedName).
+
+            if: existentBinding isNil then: {
+                ## Make the variable.
+                let: #valueType with: analyzedNode analyzedExpectedValueType _.
+
+                ## TODO: Add support for mutability.
+                let: #variableReferenceType with: valueType.
+                let: #fieldVariable with: (Reflection FieldVariable basicNewWithNamedSlots: #{
+                    name: sanitizedName.
+                    valueType: valueType.
+                    referenceType: variableReferenceType.
+                }).
+
+                ## Analyze the initial value expression.
+                if: analyzedNode initialValueExpression isNil then: {
+                    void
+                } else: {
+                    analyzedNode initialValueExpression: (analyzer analyzeNodeIfNeeded: analyzedNode initialValueExpression _ withExpectedType: analyzedNode analyzedExpectedValueType _)
+                }.
+
+                analyzedNode
+                    analyzedType: fieldVariable __type__;
+                    analyzedVariable: fieldVariable;
+                    analyzedSymbol: sanitizedName;
+                    analyzedOwnerProgramEntity: ownerProgramEntity.
+
+                analyzedNode
+            } else: {
+                errorNode _: (analyzer makeSemanticAnalysisError: "Field definition is overriding an existent binding." at: analyzedNode sourcePosition)
+            }.
+        } else: {
+            errorNode _: (analyzer makeSemanticAnalysisError: "Field definition is not inside a program entity that can have fields." at: analyzedNode sourcePosition)
+        }.
+
+        if: errorNode _ isNotNil then: {
+            errorNode _ _
+        } else: {
+            analyzedNode
+        }
     };
     withSelector: #evaluateNodeWith: addMethod: {:(Reflection AST FieldVariableDefinitionNode)self :(Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
-        __BootstrapCompiler__ error: "TODO: Reflection AST FieldVariableDefinitionNode >> evaluateNodeWith:"
+        let: #ownerProgramEntity with: self analyzedOwnerProgramEntity _.
+        let: #fieldVariable with: self analyzedVariable _.
+
+        fieldVariable
     }.

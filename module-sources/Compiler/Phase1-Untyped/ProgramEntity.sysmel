@@ -16,6 +16,12 @@ Reflection ProgramEntity
     withSelector: #canHaveFunctions addMethod: {:(Reflection ProgramEntity)self :: Boolean |
         false
     };
+    withSelector: #canHaveFields addMethod: {:(Reflection ProgramEntity)self :: Boolean |
+        false
+    };
+    withSelector: #canHaveGlobals addMethod: {:(Reflection ProgramEntity)self :: Boolean |
+        false
+    };
     withSelector: #canHaveNamespaces addMethod: {:(Reflection ProgramEntity)self :: Boolean |
         false
     };

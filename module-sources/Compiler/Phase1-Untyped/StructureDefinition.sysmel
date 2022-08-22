@@ -5,3 +5,12 @@ __BootstrapCompiler__
     addBindingNamed: #StructureDefinitionNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST TypeDefinitionNode publicSlots: #{
         packed: Boolean optional
     }).
+
+Reflection AST StructureDefinitionNode
+    withSelector: #constructTypeInstance addMethod: {:(Reflection AST StructureDefinitionNode)self :: Type |
+        if: (if: self packed isNotNil then: self packed _ else: false) then: {
+            __TypeBuilder__ newEmptyPackedRecordType
+        } else: {
+            __TypeBuilder__ newEmptyRecordType
+        }.
+    }.
