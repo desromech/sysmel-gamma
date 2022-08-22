@@ -21,6 +21,16 @@ def sysmelbiMain():
         arg = sys.argv[i]
         if arg == '--':
             hasSeenLastInterpreterArgument = True
+        elif arg == '-sources':
+            i += 1
+            listFileName = sys.argv[i]
+            listFileNameDirectory = os.path.dirname(listFileName)
+            with open(listFileName, 'r') as sourceListFile:
+                for fileName in sourceListFile:
+                    fileName = fileName.strip()
+                    if len(fileName) == 0:
+                        continue
+                    scriptsToEvaluate.append(os.path.join(listFileNameDirectory, fileName))
         elif len(arg) and arg.startswith('-'):
             pass
         else:
