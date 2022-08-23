@@ -418,7 +418,7 @@ Reflection AST ChainedMessageNode
 
 Reflection AST MessageChainNode
     withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST SequenceNode)self :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
-        let: #receiverSymbol with: (Reflection Semantic MessageChainReceiverAnonymousSymbol basicNewWithNamedSlots: #{
+        let: #receiverSymbol with: (Reflection MessageChainReceiverAnonymousSymbol basicNewWithNamedSlots: #{
             sourcePosition: self sourcePosition
         }).
         let: #receiverVariable with: (Reflection AST LocalVariableDefinitionNode basicNewWithNamedSlots: #{

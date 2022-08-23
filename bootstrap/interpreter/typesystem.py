@@ -735,6 +735,7 @@ class TypeSchema(TypedValue):
     def __init__(self):
         self.methodDict = {}
         self.metaTypeMethodDict = {}
+        self.ownerType = None
         self.buildPrimitiveMethodDictionary()
 
     def setSupertypeSchema(self, newSupertypeSchema):
@@ -746,11 +747,16 @@ class TypeSchema(TypedValue):
     def isDefaultConstructible(self):
         return False
 
-    def installedInType(self, type):
+    def installedInType(self, ownerType):
+        assert (self.ownerType is None) or (self.ownerType is ownerType)
+        self.ownerType = ownerType
         for method in self.methodDict.values():
-            method.installedInType(type)
+            method.installedInType(ownerType)
         for method in self.metaTypeMethodDict.values():
-            method.installedInMetaTypeOf(type)
+            method.installedInMetaTypeOf(ownerType)
+
+    def finishPendingPrimitiveMethods(self):
+        pass
 
     def buildPrimitiveMethodDictionary(self):
         self.methodDict[Symbol.intern('shallowCopy')] = TypeSchemaPrimitiveMethod.makeFunction(self.primitiveShallowCopy, '(SelfType => SelfType)')
@@ -758,11 +764,13 @@ class TypeSchema(TypedValue):
         self.methodDict[Symbol.intern('__type__')] = TypeSchemaPrimitiveMethod.makeFunction(self.getTypeFromValue, '(SelfType => SelfType __type__)')
 
     def lookupPrimitiveWithSelector(self, selector):
+        self.finishPendingPrimitiveMethods()
         if selector in self.methodDict:
             return self.methodDict[selector]
         return None
 
     def lookupMetaTypePrimitiveWithSelector(self, selector):
+        self.finishPendingPrimitiveMethods()
         if selector in self.metaTypeMethodDict:
             return self.metaTypeMethodDict[selector]
         return None
@@ -1178,6 +1186,8 @@ class ProductTypeSchema(TypeSchema):
         return super().buildPrimitiveMethodDictionary()
 
     def basicNew(self, productType):
+        productType.evaluatePendingBodyExpressions()
+        self.finishPendingPrimitiveMethods()
         return ProductTypeValue(productType, list(map(lambda t: t.basicNew(), self.elementTypes)))
 
     def isDefaultConstructible(self):
@@ -1205,16 +1215,33 @@ class RecordTypeSchema(ProductTypeSchema):
 
     def setSupertypeSchema(self, newSupertypeSchema):
         self.supertypeSchema = newSupertypeSchema
+        self.hasPendingSlotLayoutComputation = True
         self.computeSlotsLayout()
 
     def definePublicSlots(self, slots):
-        self.slots = slots
-        self.allSlots = slots
+        self.slots = list(slots)
+        self.hasPendingSlotLayoutComputation = True
+        self.computeSlotsLayout()
+
+    @primitiveNamed('recordTypeSchema.addSlotWithTypeAndName')
+    def addSlotWithTypeAndName(self, slotType, slotName):
+        self.slots.append(Association(slotName, slotType))
+        self.hasPendingSlotLayoutComputation = True
+        return getVoidValue()
+
+    def finishPendingPrimitiveMethods(self):
+        super().finishPendingPrimitiveMethods()
         self.computeSlotsLayout()
 
     def computeSlotsLayout(self):
+        if not self.hasPendingSlotLayoutComputation:
+            return
+        self.hasPendingSlotLayoutComputation = False
+
         self.startSlotIndex = 0
+        self.allSlots = list(self.slots)
         if self.supertypeSchema is not None:
+            self.supertypeSchema.computeSlotsLayout()
             self.startSlotIndex = len(self.supertypeSchema.allSlots)
             self.allSlots = self.supertypeSchema.allSlots + self.allSlots
         self.slotNameDictionary = {}
@@ -1227,6 +1254,8 @@ class RecordTypeSchema(ProductTypeSchema):
             self.slotNameDictionary[slotName] = slotIndex
             slotIndex += 1
         self.buildPrimitiveMethodDictionary()
+        if self.ownerType is not None:
+            self.installedInType(self.ownerType)
 
     def getType(self):
         return getBasicTypeNamed('RecordTypeSchema')
@@ -1243,12 +1272,14 @@ class RecordTypeSchema(ProductTypeSchema):
             slotName = slotAssociation.key
             getterName = Symbol.intern(slotName)
             setterName = Symbol.intern(slotName + ':')
-            slotType = self.allSlots[slotIndex]
-            self.methodDict[getterName] = FunctionTypeValue(None, bootstrapImplementation = RecordTypeGetterPrimitiveMethod(getterName, getterName, self.startSlotIndex + slotIndex, slotAssociation.value), functionTypeSpec = (('SelfType'), slotType))
-            self.methodDict[setterName] = FunctionTypeValue(None, bootstrapImplementation = RecordTypeSetterPrimitiveMethod(setterName, getterName, self.startSlotIndex + slotIndex, slotAssociation.value), functionTypeSpec = (('SelfType', slotType), slotType))
+            slotType = slotAssociation.getValue()
+            self.methodDict[getterName] = FunctionTypeValue(None, bootstrapImplementation = RecordTypeGetterPrimitiveMethod(getterName, getterName, self.startSlotIndex + slotIndex, slotType), functionTypeSpec = (('SelfType'), slotType))
+            self.methodDict[setterName] = FunctionTypeValue(None, bootstrapImplementation = RecordTypeSetterPrimitiveMethod(setterName, getterName, self.startSlotIndex + slotIndex, slotType), functionTypeSpec = (('SelfType', slotType), slotType))
         return super().buildPrimitiveMethodDictionary()
 
     def basicNewWithNamedSlots(self, recordType, namedSlots):
+        recordType.evaluatePendingBodyExpressions()
+        self.finishPendingPrimitiveMethods()
         linearSlots = [None,] * len(self.allSlots)
         for assoc in namedSlots:
             slotIndex = self.slotNameDictionary[assoc.getKey()]
@@ -1264,10 +1295,9 @@ class RecordTypeSchema(ProductTypeSchema):
 
         return self.basicNewWithSequentialSlots(recordType, linearSlots)
 
-    def basicNewWithArrayListElements(self, recordType, elements):
-        return elements
-
     def basicNewWithArraySliceElements(self, recordType, elements):
+        recordType.evaluatePendingBodyExpressions()
+        self.finishPendingPrimitiveMethods()
         assert len(self.elementTypes) == 2 or len(self.elementTypes) == 3
         if len(self.elementTypes) == 2:
             return self.basicNewWithSequentialSlots(recordType, [
@@ -1565,7 +1595,7 @@ class Namespace(ProgramEntity):
         return childNamespace
 
 class BehaviorType(ProgramEntity, TypeInterface):
-    def __init__(self, name = None, supertype = None, traits = [], schema = TrivialTypeSchema(), macroMethodDict = {}, methodDict = {}, macroFallbackMethodDict = {}):
+    def __init__(self, name = None, supertype = None, traits = [], schema = None, macroMethodDict = {}, methodDict = {}, macroFallbackMethodDict = {}):
         super().__init__(name = None)
         self.symbolTable = SymbolTable()
         self.macroMethodDict = dict(macroMethodDict)
@@ -1899,9 +1929,6 @@ class BehaviorType(ProgramEntity, TypeInterface):
     def basicNewWithNamedSlots(self, namedSlots):
         return self.schema.basicNewWithNamedSlots(self, namedSlots)
 
-    def basicNewWithArrayListElements(self, elements):
-        return self.schema.basicNewWithArrayListElements(self, elements)
-
     def basicNewWithArraySliceElements(self, elements):
         return self.schema.basicNewWithArraySliceElements(self, elements)
 
@@ -1926,7 +1953,7 @@ class BehaviorType(ProgramEntity, TypeInterface):
 class BehaviorTypedObject(TypedValue):
     def __init__(self) -> None:
         super().__init__()
-        self.behaviorType = BehaviorType()
+        self.behaviorType = BehaviorType(schema = TrivialTypeSchema())
         self.__class__.initializeBehaviorType(self.behaviorType)
 
     def getType(self):
@@ -2215,7 +2242,7 @@ class FunctionType(SimpleType):
         self.canonicalArgumentsArraySlice = None
         self.hasForAllArgument = False
         self.argumentCount = 0
-        super().__init__(supertype = getBasicTypeNamed('Function'))
+        super().__init__(schema = TrivialTypeSchema(), supertype = getBasicTypeNamed('Function'))
 
     def newWithBootstrapImplementation(self, bootstrapImplementation):
         return FunctionTypeValue(self, bootstrapImplementation = bootstrapImplementation)
@@ -2226,7 +2253,7 @@ class FunctionType(SimpleType):
 
     @classmethod
     def makeSimpleFunctionType(cls, argumentTypes, resultType):
-        cacheKey = (argumentTypes, resultType)
+        cacheKey = (tuple(argumentTypes), resultType)
         if cacheKey in SimpleFunctionMemoizationTable:
             return SimpleFunctionMemoizationTable[cacheKey]
 
@@ -2267,6 +2294,26 @@ class FunctionType(SimpleType):
         if isinstance(evaluatedTypeSpec, FunctionTypeValue):
             return evaluatedTypeSpec.getType()
         return evaluatedTypeSpec
+
+    @classmethod
+    def constructFromTupleTypeSpec(cls, functionSpec, ownerType):
+        environment = cls.constructTypeSpecParsingEnvironmentForType(ownerType)
+        argumentsSpec, resultTypeSpec = functionSpec
+        if isinstance(argumentsSpec, str):
+            argumentsSpec = (argumentsSpec,)
+
+        argumentTypes = list(map(lambda argSpec: cls.evaluateParameterOrResultSpecWithEnvironment(argSpec, environment), argumentsSpec))
+        resultType = cls.evaluateParameterOrResultSpecWithEnvironment(resultTypeSpec, environment)
+        return cls.makeSimpleFunctionType(argumentTypes, resultType)
+
+    @classmethod
+    def evaluateParameterOrResultSpecWithEnvironment(cls, typespec, environment):
+        if isinstance(typespec, str):
+            from parser import parseString
+            parsedTypeSpec = parseString(typespec)
+            return parsedTypeSpec.evaluateWithEnvironment(EvaluationMachine.getActive(), environment)
+        else:
+            return typespec
 
     @classmethod
     def constructTypeSpecParsingEnvironmentForType(cls, ownerType):
