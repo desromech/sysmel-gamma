@@ -87,5 +87,7 @@ Reflection AST FieldVariableDefinitionNode
         let: #ownerProgramEntity with: self analyzedOwnerProgramEntity _.
         let: #fieldVariable with: self analyzedVariable _.
 
+        ownerProgramEntity addFieldVariable: fieldVariable.
+
         fieldVariable
     }.

@@ -9,23 +9,28 @@ Type
         <primitive: #"type.conversion.toString">
         __BootstrapCompiler__ primitiveFailed
     };
-    withSelector: #canHaveTypes addMethod: {:(Reflection Namespace)self :: Boolean |
+    withSelector: #canHaveTypes addMethod: {:(Type)self :: Boolean |
         true
     };
-    withSelector: #canHaveFields addMethod: {:(Reflection ProgramEntity)self :: Boolean |
+    withSelector: #canHaveFields addMethod: {:(Type)self :: Boolean |
         self schema canHaveFields
     };
-    withSelector: #canHaveFunctions addMethod: {:(Reflection ProgramEntity)self :: Boolean |
+    withSelector: #canHaveFunctions addMethod: {:(Type)self :: Boolean |
         true
     };
-    withSelector: #canHaveGlobals addMethod: {:(Reflection ProgramEntity)self :: Boolean |
+    withSelector: #canHaveGlobals addMethod: {:(Type)self :: Boolean |
         true
     };
-    withSelector: #canHaveMethods addMethod: {:(Reflection Namespace)self :: Boolean |
+    withSelector: #canHaveMethods addMethod: {:(Type)self :: Boolean |
         true
     };
-    withSelector: #asReceiverType addMethod: {:(Reflection ProgramEntity)self :: Type optional |
+    withSelector: #asReceiverType addMethod: {:(Type)self :: Type optional |
         self
+    };
+    withSelector: #addFieldVariable: addMethod: {:(Type)self :(Reflection FieldVariable)fieldVariable :: Void |
+        self schema addFieldVariable: fieldVariable.
+
+        void
     };
     withSelector: #lookupPublicSymbol: addMethod: {:(Type)self :(Object)symbol :: Reflection SymbolBinding optional |
         self symbolTable lookupSymbol: symbol
@@ -191,6 +196,9 @@ Reflection TypeSchema
     withSelector: #canConstructWithValueOfType: addMethod: {:(TypeSchema)self :(Type)sourceType :: Boolean |
         false
     };
+    withSelector: #addFieldVariable: addMethod: {:(TypeSchema)self :(Reflection FieldVariable)fieldVariable :: Void |
+        __BootstrapCompiler__ error: "Type schema does not support field variables."
+    };
     withSelector: #addConstructionNodeFor:valueType:into:with: addMethod: {:(TypeSchema)self :(Reflection AST Node)node :(Type)sourceType :(Type)targetType :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
         __BootstrapCompiler__ subclassResponsibility
     }.
@@ -198,6 +206,13 @@ Reflection TypeSchema
 Reflection RecordTypeSchema
     withSelector: #canHaveFields addMethod: {:(Reflection RecordTypeSchema)self :: Boolean |
         true
+    };
+    withSelector: #addFieldVariable: addMethod: {:(Reflection RecordTypeSchema)self :(Reflection FieldVariable)fieldVariable :: Void |
+        self addSlotWithType: fieldVariable valueType name: fieldVariable name
+    };
+    withSelector: #addSlotWithType:name: addMethod: {:(Reflection RecordTypeSchema)self :(Type)slotType :(AnyValue)slotName :: Void |
+        <primitive: #"recordTypeSchema.addSlotWithTypeAndName">
+        __BootstrapCompiler__ primitiveFailed
     }.
 
 Reflection SumTypeSchema 
