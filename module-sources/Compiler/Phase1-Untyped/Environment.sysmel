@@ -1,23 +1,23 @@
-Reflection SymbolTable
-    withSelector: #lookupSymbol: addMethod: {:(Reflection SymbolTable)self :(Object)symbol :: Reflection SymbolBinding optional |
+Std Reflection SymbolTable
+    withSelector: #lookupSymbol: addMethod: {:(Std Reflection SymbolTable)self :(Object)symbol :: Std Reflection SymbolBinding optional |
         <primitive: #"symbolTable.lookupSymbol">
         __BootstrapCompiler__ primitiveFailed
     };
-    withSelector: #setSymbol:binding: addMethod: {:(Reflection SymbolTable)self :(Object)symbol :(Reflection SymbolBinding)binding :: Void |
+    withSelector: #setSymbol:binding: addMethod: {:(Std Reflection SymbolTable)self :(Object)symbol :(Std Reflection SymbolBinding)binding :: Void |
         <primitive: #"symbolTable.setSymbolBinding">
         __BootstrapCompiler__ primitiveFailed
     };
-    withSelector: #setSymbol:immutableValue: addMethod: {:(Reflection SymbolTable)self :(Object)symbol :(AnyValue)immutableValue :: Void |
+    withSelector: #setSymbol:immutableValue: addMethod: {:(Std Reflection SymbolTable)self :(Object)symbol :(AnyValue)immutableValue :: Void |
         <primitive: #"symbolTable.setSymbolImmutableValue">
         __BootstrapCompiler__ primitiveFailed
     }.
 
-Reflection Semantic IdentifierLookupScope
-    withSelector: #lookupSymbol: addMethod: {:(Reflection Semantic IdentifierLookupScope)self :(Object)symbol :: Reflection SymbolBinding optional |
+Std Reflection Semantic IdentifierLookupScope
+    withSelector: #lookupSymbol: addMethod: {:(Std Reflection Semantic IdentifierLookupScope)self :(Object)symbol :: Std Reflection SymbolBinding optional |
         <virtual>
         __BootstrapCompiler__ subclassResponsibility
     };
-    withSelector: #lookupSymbolRecursively: addMethod: {:(Reflection Semantic IdentifierLookupScope)self :(Object)symbol :: Reflection SymbolBinding optional |
+    withSelector: #lookupSymbolRecursively: addMethod: {:(Std Reflection Semantic IdentifierLookupScope)self :(Object)symbol :: Std Reflection SymbolBinding optional |
         let: #localLookupResult with: (self lookupSymbol: symbol).
         if: localLookupResult isNotNil then: {
             localLookupResult
@@ -29,99 +29,99 @@ Reflection Semantic IdentifierLookupScope
             }
         }
     };
-    withSelector: #lookupCurrentProgramEntity addMethod: {:(Reflection Semantic IdentifierLookupScope)self :: Reflection ProgramEntity optional |
+    withSelector: #lookupCurrentProgramEntity addMethod: {:(Std Reflection Semantic IdentifierLookupScope)self :: Std Reflection ProgramEntity optional |
         if: self parent isNotNil then: {
             self parent _ lookupCurrentProgramEntity
         } else: {
             nil
         }
     };
-    withSelector: #makeChildLexicalScope addMethod: {:(Reflection Semantic IdentifierLookupScope)self :: Reflection Semantic LexicalScope |
+    withSelector: #makeChildLexicalScope addMethod: {:(Std Reflection Semantic IdentifierLookupScope)self :: Std Reflection Semantic LexicalScope |
         <primitive: #"identifierLookupScope.makeChildLexicalScope">
         __BootstrapCompiler__ primitiveFailed
     }.
 
-Reflection Semantic ProgramEntityLookupScope
-    withSelector: #lookupSymbol: addMethod: {:(Reflection Semantic ProgramEntityLookupScope)self :(Object)symbol :: Reflection SymbolBinding optional |
+Std Reflection Semantic ProgramEntityLookupScope
+    withSelector: #lookupSymbol: addMethod: {:(Std Reflection Semantic ProgramEntityLookupScope)self :(Object)symbol :: Std Reflection SymbolBinding optional |
         self programEntity lookupScopeSymbol: symbol
     };
-    withSelector: #lookupCurrentProgramEntity addMethod: {:(Reflection Semantic IdentifierLookupScope)self :: Reflection ProgramEntity optional |
+    withSelector: #lookupCurrentProgramEntity addMethod: {:(Std Reflection Semantic IdentifierLookupScope)self :: Std Reflection ProgramEntity optional |
         self programEntity
     }.
 
-Reflection Semantic LexicalScope
-    withSelector: #lookupSymbol: addMethod: {:(Reflection Semantic LexicalScope)self :(Object)symbol :: Reflection SymbolBinding optional |
+Std Reflection Semantic LexicalScope
+    withSelector: #lookupSymbol: addMethod: {:(Std Reflection Semantic LexicalScope)self :(Object)symbol :: Std Reflection SymbolBinding optional |
         self symbolTable lookupSymbol: symbol
     };
-    withSelector: #setSymbol:binding: addMethod: {:(Reflection Semantic LexicalScope)self :(Object)symbol :(Reflection SymbolBinding)binding :: Void |
+    withSelector: #setSymbol:binding: addMethod: {:(Std Reflection Semantic LexicalScope)self :(Object)symbol :(Std Reflection SymbolBinding)binding :: Void |
         self symbolTable setSymbol: symbol binding: binding
     };
-    withSelector: #setSymbol:immutableValue: addMethod: {:(Reflection Semantic LexicalScope)self :(Object)symbol :(AnyValue)immutableValue :: Void |
+    withSelector: #setSymbol:immutableValue: addMethod: {:(Std Reflection Semantic LexicalScope)self :(Object)symbol :(AnyValue)immutableValue :: Void |
         self symbolTable setSymbol: symbol immutableValue: immutableValue
     }.
 
-Reflection Semantic CleanUpScope
-    withSelector: #makeChildCleanUpScope addMethod: {:(Reflection Semantic CleanUpScope)self :: Reflection Semantic CleanUpScope |
-        Reflection Semantic CleanUpScope basicNewWithNamedSlots: #{
+Std Reflection Semantic CleanUpScope
+    withSelector: #makeChildCleanUpScope addMethod: {:(Std Reflection Semantic CleanUpScope)self :: Std Reflection Semantic CleanUpScope |
+        Std Reflection Semantic CleanUpScope basicNewWithNamedSlots: #{
             parent: self
         }
     }.
 
-Reflection SymbolBinding
-    withSelector: #evaluateBindingWithEnvironment: addMethod: {:(Type)self :(Reflection Semantic EvaluationEnvironment)environment :: AnyValue |
+Std Reflection SymbolBinding
+    withSelector: #evaluateBindingWithEnvironment: addMethod: {:(Type)self :(Std Reflection Semantic EvaluationEnvironment)environment :: AnyValue |
         __BootstrapCompiler__ subclassResponsibility
     };
-    withSelector: #analyzeMessageSendNode:with: addMethod: {:(Type)self :(Reflection AST MessageSendNode)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+    withSelector: #analyzeMessageSendNode:with: addMethod: {:(Type)self :(Std Reflection AST MessageSendNode)node :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
         __BootstrapCompiler__ subclassResponsibility
     };
-    withSelector: #analyzeIdentifierReferenceNode:with: addMethod: {:(Reflection SymbolBinding)self :(Reflection AST IdentifierReferenceNode)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+    withSelector: #analyzeIdentifierReferenceNode:with: addMethod: {:(Std Reflection SymbolBinding)self :(Std Reflection AST IdentifierReferenceNode)node :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
         __BootstrapCompiler__ subclassResponsibility
     }.
 
-Reflection Semantic SymbolValueBinding
-    withSelector: #evaluateBindingWithEnvironment: addMethod: {:(Type)self :(Reflection Semantic EvaluationEnvironment)environment :: AnyValue |
+Std Reflection Semantic SymbolValueBinding
+    withSelector: #evaluateBindingWithEnvironment: addMethod: {:(Type)self :(Std Reflection Semantic EvaluationEnvironment)environment :: AnyValue |
         self value
     };
-    withSelector: #analyzeMessageSendNode:with: addMethod: {:(Type)self :(Reflection AST MessageSendNode)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+    withSelector: #analyzeMessageSendNode:with: addMethod: {:(Type)self :(Std Reflection AST MessageSendNode)node :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
         self value __type__ analyzeMessageSendNode: node with: analyzer valueBinding: self
     };
-    withSelector: #analyzeIdentifierReferenceNode:with: addMethod: {:(Reflection Semantic SymbolValueBinding)self :(Reflection AST IdentifierReferenceNode)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+    withSelector: #analyzeIdentifierReferenceNode:with: addMethod: {:(Std Reflection Semantic SymbolValueBinding)self :(Std Reflection AST IdentifierReferenceNode)node :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
         self value __type__ analyzeIdentifierReferenceNode: node with: analyzer valueBinding: self
     }.
 
-Reflection Semantic EvaluationEnvironment __type__
-    withSelector: #default addMethod: {:(Reflection Semantic EvaluationEnvironment __type__)self :: self |
+Std Reflection Semantic EvaluationEnvironment __type__
+    withSelector: #default addMethod: {:(Std Reflection Semantic EvaluationEnvironment __type__)self :: self |
         self basicNewWithNamedSlots: #{
             lexicalScope: __BootstrapCompiler__ getTopLevelEnvironment makeChildLexicalScope.
-            cleanUpScope: Reflection Semantic CleanUpScope basicNew.
+            cleanUpScope: Std Reflection Semantic CleanUpScope basicNew.
         }
     };
-    withSelector: #forScriptEvaluationScope: addMethod: {:(Reflection Semantic EvaluationEnvironment __type__)self :(Reflection Semantic ScriptEvaluationScope)scope :: self |
+    withSelector: #forScriptEvaluationScope: addMethod: {:(Std Reflection Semantic EvaluationEnvironment __type__)self :(Std Reflection Semantic ScriptEvaluationScope)scope :: self |
         self basicNewWithNamedSlots: #{
             lexicalScope: scope.
-            cleanUpScope: Reflection Semantic CleanUpScope basicNew.
+            cleanUpScope: Std Reflection Semantic CleanUpScope basicNew.
         }
     };
-    withSelector: #forLexicalScope: addMethod: {:(Reflection Semantic EvaluationEnvironment __type__)self :(Reflection Semantic LexicalScope)scope :: self |
+    withSelector: #forLexicalScope: addMethod: {:(Std Reflection Semantic EvaluationEnvironment __type__)self :(Std Reflection Semantic LexicalScope)scope :: self |
         self basicNewWithNamedSlots: #{
             lexicalScope: scope.
-            cleanUpScope: Reflection Semantic CleanUpScope basicNew.
+            cleanUpScope: Std Reflection Semantic CleanUpScope basicNew.
         }
     }.
 
-Reflection Semantic EvaluationEnvironment
-    withSelector: #copyWithLexicalScope: addMethod: {:(Reflection Semantic EvaluationEnvironment)self :(Reflection Semantic LexicalScope)scope :: Reflection Semantic EvaluationEnvironment |
+Std Reflection Semantic EvaluationEnvironment
+    withSelector: #copyWithLexicalScope: addMethod: {:(Std Reflection Semantic EvaluationEnvironment)self :(Std Reflection Semantic LexicalScope)scope :: Std Reflection Semantic EvaluationEnvironment |
         self shallowCopy
             lexicalScope: scope;
             yourself
     };
-    withSelector: #copyWithCleanUpScope: addMethod: {:(Reflection Semantic EvaluationEnvironment)self :(Reflection Semantic CleanUpScope)scope :: Reflection Semantic EvaluationEnvironment |
+    withSelector: #copyWithCleanUpScope: addMethod: {:(Std Reflection Semantic EvaluationEnvironment)self :(Std Reflection Semantic CleanUpScope)scope :: Std Reflection Semantic EvaluationEnvironment |
         self shallowCopy
             cleanUpScope: scope;
             yourself
     };
-    withSelector: #copyWithEmptyCleanUpScope addMethod: {:(Reflection Semantic EvaluationEnvironment)self :: Reflection Semantic EvaluationEnvironment |
+    withSelector: #copyWithEmptyCleanUpScope addMethod: {:(Std Reflection Semantic EvaluationEnvironment)self :: Std Reflection Semantic EvaluationEnvironment |
         self shallowCopy
-            cleanUpScope: Reflection Semantic CleanUpScope basicNew;
+            cleanUpScope: Std Reflection Semantic CleanUpScope basicNew;
             yourself
     }

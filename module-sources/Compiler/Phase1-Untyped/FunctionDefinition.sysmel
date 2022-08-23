@@ -1,38 +1,39 @@
 __BootstrapCompiler__
     enterTopLevelNamespace;
+    enterNamespaceNamed: #Std;
     enterNamespaceNamed: #Reflection;
     enterNamespaceNamed: #AST;
-    addBindingNamed: #FunctionDefinitionNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST ProgramEntityDefinitionNode publicSlots: #{
-        nameExpression: Reflection AST Node optional.
-        arguments: Reflection AST Node sharedArraySlice.
-        resultTypeExpression: Reflection AST Node optional.
-        body: Reflection AST Node optional.
-        visibility: Reflection ProgramEntityVisibility.
+    addBindingNamed: #FunctionDefinitionNode with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection AST ProgramEntityDefinitionNode publicSlots: #{
+        nameExpression: Std Reflection AST Node optional.
+        arguments: Std Reflection AST Node sharedArraySlice.
+        resultTypeExpression: Std Reflection AST Node optional.
+        body: Std Reflection AST Node optional.
+        visibility: Std Reflection ProgramEntityVisibility.
         analyzedName: Object optional.
-        analyzedOwnerProgramEntity: Reflection ProgramEntity optional.
-        analyzedBlockClosureNode: Reflection AST Node optional.
+        analyzedOwnerProgramEntity: Std Reflection ProgramEntity optional.
+        analyzedBlockClosureNode: Std Reflection AST Node optional.
         isAnalyzedLocalDefinition: Boolean.
-        localDefinitionVariable: Reflection LocalVariable optional.
+        localDefinitionVariable: Std Reflection LocalVariable optional.
     }).
 
-Reflection AST FunctionDefinitionNode
-    withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST FunctionDefinitionNode)self :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+Std Reflection AST FunctionDefinitionNode
+    withSelector: #analyzeNodeWith: addMethod: {:(Std Reflection AST FunctionDefinitionNode)self :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
         let: #analyzedNode with: self shallowCopy.
         if: (analyzedNode visibility is: Undefined) then: {
-            analyzedNode visibility: Reflection ProgramEntityVisibility LexicalScope basicNew
+            analyzedNode visibility: Std Reflection ProgramEntityVisibility LexicalScope basicNew
         } else: { void }.
 
         ## Check the name.
         let: #name with: (if: self nameExpression isNotNil
             then: (self nameExpression _ analyzeAndEvaluateNodeWith: analyzer)
-            else: (Reflection AnonymousSymbol basicNewWithNamedSlots: #{
+            else: (Std Reflection AnonymousSymbol basicNewWithNamedSlots: #{
                 sourcePosition: self sourcePosition
             })
         ).
         let: #sanitizedName with: (name asSanitizedNameSymbolFor: self sourcePosition).
         analyzedNode analyzedName: sanitizedName.
 
-        let: #blockClosureNode with: (Reflection AST BlockClosureNode basicNewWithNamedSlots: #{
+        let: #blockClosureNode with: (Std Reflection AST BlockClosureNode basicNewWithNamedSlots: #{
             arguments: self arguments.
             resultTypeExpression: self resultTypeExpression.
             body: self body _.
@@ -47,12 +48,12 @@ Reflection AST FunctionDefinitionNode
             analyzedType: functionType.
 
         ## Make sure the name is not duplicated.
-        let: #errorNode with: (Reflection AST Node optional valueBox with: nil).
-        if: (analyzedNode visibility is: Reflection ProgramEntityVisibility LexicalScope) then: {
+        let: #errorNode with: (Std Reflection AST Node optional valueBox with: nil).
+        if: (analyzedNode visibility is: Std Reflection ProgramEntityVisibility LexicalScope) then: {
             let: #existentBinding with: (analyzer environment lexicalScope lookupSymbol: sanitizedName).
 
             if: existentBinding isNil then: {
-                let: #variable with: (Reflection LocalVariable basicNewWithNamedSlots: #{
+                let: #variable with: (Std Reflection LocalVariable basicNewWithNamedSlots: #{
                     name: sanitizedName.
                     valueType: functionType.
                     referenceType: functionType.
@@ -102,13 +103,13 @@ Reflection AST FunctionDefinitionNode
             analyzedNode
         }
     };
-    withSelector: #evaluateNodeWith: addMethod: {:(Reflection AST FunctionDefinitionNode)self :(Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+    withSelector: #evaluateNodeWith: addMethod: {:(Std Reflection AST FunctionDefinitionNode)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         let: #blockClosure with: (self analyzedBlockClosureNode _ evaluateNodeWith: evaluationEnvironment).
 
         if: self isAnalyzedLocalDefinition then: {
             evaluationEnvironment lexicalScope setSymbol: self localDefinitionVariable _ immutableValue: blockClosure.
         } else: {
-            __BootstrapCompiler__ error: "TODO: Reflection AST FunctionDefinitionNode >> evaluateNodeWith: non local definition."
+            __BootstrapCompiler__ error: "TODO: Std Reflection AST FunctionDefinitionNode >> evaluateNodeWith: non local definition."
         }.
 
         blockClosure

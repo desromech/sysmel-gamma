@@ -1,27 +1,28 @@
 ## Type definition builder.
 __BootstrapCompiler__
     enterTopLevelNamespace;
+    enterNamespaceNamed: #Std;
     enterNamespaceNamed: #MetaProgramming;
-    addBindingNamed: #TypeDefinitionMetaBuilder with: (__TypeBuilder__ newGCClassWithSuperclass: MetaProgramming NamedMetaBuilder slots: #{
-        supertypeExpression: Reflection AST Node optional.
-        traitExpressions: Reflection AST Node arraySlice.
-        bodyExpression: Reflection AST Node optional.
+    addBindingNamed: #TypeDefinitionMetaBuilder with: (__TypeBuilder__ newGCClassWithSuperclass: Std MetaProgramming NamedMetaBuilder slots: #{
+        supertypeExpression: Std Reflection AST Node optional.
+        traitExpressions: Std Reflection AST Node arraySlice.
+        bodyExpression: Std Reflection AST Node optional.
     }).
 
-MetaProgramming TypeDefinitionMetaBuilder
-    withSelector: #supertype: addMethod: {:(MetaProgramming NamespaceMetaBuilder)self :(Reflection AST Node)supertypeExpression :: Void |
+Std MetaProgramming TypeDefinitionMetaBuilder
+    withSelector: #supertype: addMethod: {:(Std MetaProgramming NamespaceMetaBuilder)self :(Std Reflection AST Node)supertypeExpression :: Void |
         <metaBuilder>
         self supertypeExpression: supertypeExpression.
         void
     };
-    withSelector: #definition: addMethod: {:(MetaProgramming NamespaceMetaBuilder)self :(Reflection AST Node)bodyExpression :: Void |
+    withSelector: #definition: addMethod: {:(Std MetaProgramming NamespaceMetaBuilder)self :(Std Reflection AST Node)bodyExpression :: Void |
         <metaBuilder>
         self bodyExpression: bodyExpression.
         self finish.
         void
     };
-    withSelector: #concretizeMetaBuilder addMethod: {:(MetaProgramming NamespaceMetaBuilder)self :: Reflection AST Node |
-        (Reflection AST TypeDefinitionNode basicNewWithNamedSlots: #{
+    withSelector: #concretizeMetaBuilder addMethod: {:(Std MetaProgramming NamespaceMetaBuilder)self :: Std Reflection AST Node |
+        (Std Reflection AST TypeDefinitionNode basicNewWithNamedSlots: #{
             sourcePosition: self metaContext sourcePosition.
             nameExpression: self nameExpression.
             supertypeExpression: self supertypeExpression.

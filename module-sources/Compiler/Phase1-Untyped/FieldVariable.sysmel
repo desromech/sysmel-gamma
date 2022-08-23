@@ -1,14 +1,15 @@
 __BootstrapCompiler__
     enterTopLevelNamespace;
+    enterNamespaceNamed: #Std;
     enterNamespaceNamed: #Reflection;
-    addBindingNamed: #FieldVariable with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection FunctionVariable publicSlots: #{});
+    addBindingNamed: #FieldVariable with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection FunctionVariable publicSlots: #{});
 
     enterNamespaceNamed: #AST;
-    addBindingNamed: #FieldVariableDefinitionNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST VariableDefinitionNode publicSlots: #{
+    addBindingNamed: #FieldVariableDefinitionNode with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection AST VariableDefinitionNode publicSlots: #{
     }).
 
-Reflection AST FieldVariableDefinitionNode
-    withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST FieldVariableDefinitionNode)self :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+Std Reflection AST FieldVariableDefinitionNode
+    withSelector: #analyzeNodeWith: addMethod: {:(Std Reflection AST FieldVariableDefinitionNode)self :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
         let: #analyzedNode with: self shallowCopy.
         let: #name with: (if: self nameExpression isNotNil
             then: (self nameExpression _ analyzeAndEvaluateNodeWith: analyzer)
@@ -17,7 +18,7 @@ Reflection AST FieldVariableDefinitionNode
             })
         ).
         let: #sanitizedName with: (name asSanitizedNameSymbolFor: self sourcePosition).
-        let: #errorNode with: (Reflection AST Node optional valueBox with: nil).
+        let: #errorNode with: (Std Reflection AST Node optional valueBox with: nil).
 
         let: #ownerProgramEntity with: (analyzer environment lexicalScope lookupCurrentProgramEntity).
         let: #hasValidOwner with: (if: ownerProgramEntity isNotNil then: ownerProgramEntity _ canHaveFields else: false).
@@ -50,7 +51,7 @@ Reflection AST FieldVariableDefinitionNode
 
                 ## TODO: Add support for mutability.
                 let: #variableReferenceType with: valueType.
-                let: #fieldVariable with: (Reflection FieldVariable basicNewWithNamedSlots: #{
+                let: #fieldVariable with: (Std Reflection FieldVariable basicNewWithNamedSlots: #{
                     name: sanitizedName.
                     valueType: valueType.
                     referenceType: variableReferenceType.
@@ -83,7 +84,7 @@ Reflection AST FieldVariableDefinitionNode
             analyzedNode
         }
     };
-    withSelector: #evaluateNodeWith: addMethod: {:(Reflection AST FieldVariableDefinitionNode)self :(Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+    withSelector: #evaluateNodeWith: addMethod: {:(Std Reflection AST FieldVariableDefinitionNode)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         let: #ownerProgramEntity with: self analyzedOwnerProgramEntity _.
         let: #fieldVariable with: self analyzedVariable _.
 

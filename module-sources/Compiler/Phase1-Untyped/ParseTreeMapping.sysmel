@@ -1,34 +1,34 @@
 __BootstrapCompiler__ setParseTreeASTMaping: #{
-    SourceCollection: Reflection SourceCollection.
-    SourcePosition: Reflection SourcePosition.
-    SourceStringCollection: Reflection SourceStringCollection.
-    SourceStringPosition: Reflection SourceStringPosition.
-    EmptySourcePosition: Reflection EmptySourcePosition.
+    SourceCollection: Std Reflection SourceCollection.
+    SourcePosition: Std Reflection SourcePosition.
+    SourceStringCollection: Std Reflection SourceStringCollection.
+    SourceStringPosition: Std Reflection SourceStringPosition.
+    EmptySourcePosition: Std Reflection EmptySourcePosition.
 
-    Node: Reflection AST Node.
-    NodeArrayList: Reflection AST Node arrayList.
-    NodeSharedArraySlice: Reflection AST Node sharedArraySlice.
+    Node: Std Reflection AST Node.
+    NodeArrayList: Std Reflection AST Node arrayList.
+    NodeSharedArraySlice: Std Reflection AST Node sharedArraySlice.
 
-    ArgumentDefinitionNode: Reflection AST ArgumentDefinitionNode.
-    BlockClosureNode: Reflection AST BlockClosureNode.
-    ChainedMessageNode: Reflection AST ChainedMessageNode.
-    CleanUpScopeNode: Reflection AST CleanUpScopeNode.
-    IdentifierReferenceNode: Reflection AST IdentifierReferenceNode.
-    LexicalScopeNode: Reflection AST LexicalScopeNode.
-    LiteralValueNode: Reflection AST LiteralValueNode.
-    MakeAssociationNode: Reflection AST MakeAssociationNode.
-    MakeDictionaryNode: Reflection AST MakeDictionaryNode.
-    MakeTupleNode: Reflection AST MakeTupleNode.
-    MakeByteArrayNode: Reflection AST MakeByteArrayNode.
-    MessageSendNode: Reflection AST MessageSendNode.
-    MessageChainNode: Reflection AST MessageChainNode.
-    QuoteNode: Reflection AST QuoteNode.
-    QuasiQuoteNode: Reflection AST QuasiQuoteNode.
-    QuasiUnquoteNode: Reflection AST QuasiUnquoteNode.
-    SequenceNode: Reflection AST SequenceNode.
-    SpliceNode: Reflection AST SpliceNode.
+    ArgumentDefinitionNode: Std Reflection AST ArgumentDefinitionNode.
+    BlockClosureNode: Std Reflection AST BlockClosureNode.
+    ChainedMessageNode: Std Reflection AST ChainedMessageNode.
+    CleanUpScopeNode: Std Reflection AST CleanUpScopeNode.
+    IdentifierReferenceNode: Std Reflection AST IdentifierReferenceNode.
+    LexicalScopeNode: Std Reflection AST LexicalScopeNode.
+    LiteralValueNode: Std Reflection AST LiteralValueNode.
+    MakeAssociationNode: Std Reflection AST MakeAssociationNode.
+    MakeDictionaryNode: Std Reflection AST MakeDictionaryNode.
+    MakeTupleNode: Std Reflection AST MakeTupleNode.
+    MakeByteArrayNode: Std Reflection AST MakeByteArrayNode.
+    MessageSendNode: Std Reflection AST MessageSendNode.
+    MessageChainNode: Std Reflection AST MessageChainNode.
+    QuoteNode: Std Reflection AST QuoteNode.
+    QuasiQuoteNode: Std Reflection AST QuasiQuoteNode.
+    QuasiUnquoteNode: Std Reflection AST QuasiUnquoteNode.
+    SequenceNode: Std Reflection AST SequenceNode.
+    SpliceNode: Std Reflection AST SpliceNode.
 
-    ErrorNode: Reflection AST ErrorNode.
-    ParseErrorNode: Reflection AST ParseErrorNode.
-    SemanticErrorNode: Reflection AST SemanticErrorNode.
+    ErrorNode: Std Reflection AST ErrorNode.
+    ParseErrorNode: Std Reflection AST ParseErrorNode.
+    SemanticErrorNode: Std Reflection AST SemanticErrorNode.
 }.

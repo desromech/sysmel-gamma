@@ -1,21 +1,21 @@
 __BootstrapCompiler__
     enterTopLevelNamespace;
     addBindingNamed: #MacroInvocationContext with: (__TypeBuilder__ newGCClassWithSuperclass: Object publicSlots: #{
-        sourcePosition: Reflection SourcePosition.
-        selfNode: Reflection AST Node optional.
+        sourcePosition: Std Reflection SourcePosition.
+        selfNode: Std Reflection AST Node optional.
         selfType: Type.
-        astAnalyzer: Reflection Semantic ASTAnalyzer.
+        astAnalyzer: Std Reflection Semantic ASTAnalyzer.
     }).
 
-Reflection Semantic ASTAnalyzer
-    withSelector: #makeMacroInvocationContextForIdentifierReferenceNode: addMethod: {:(Reflection Semantic ASTAnalyzer)self :(Reflection AST IdentifierReferenceNode)node :: MacroInvocationContext |
+Std Reflection Semantic ASTAnalyzer
+    withSelector: #makeMacroInvocationContextForIdentifierReferenceNode: addMethod: {:(Std Reflection Semantic ASTAnalyzer)self :(Std Reflection AST IdentifierReferenceNode)node :: MacroInvocationContext |
         MacroInvocationContext basicNewWithNamedSlots: #{
             sourcePosition: node sourcePosition.
             selfType: Void.
             astAnalyzer: self
         }
     };
-    withSelector: #makeMacroInvocationContextForMessageSendNode: addMethod: {:(Reflection Semantic ASTAnalyzer)self :(Reflection AST MessageSendNode)node :: MacroInvocationContext |
+    withSelector: #makeMacroInvocationContextForMessageSendNode: addMethod: {:(Std Reflection Semantic ASTAnalyzer)self :(Std Reflection AST MessageSendNode)node :: MacroInvocationContext |
         MacroInvocationContext basicNewWithNamedSlots: #{
             sourcePosition: node sourcePosition.
             selfNode: node receiver.

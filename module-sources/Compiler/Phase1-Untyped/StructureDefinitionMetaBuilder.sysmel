@@ -1,14 +1,15 @@
 ## Structure definition builder.
 __BootstrapCompiler__
     enterTopLevelNamespace;
+    enterNamespaceNamed: #Std;
     enterNamespaceNamed: #MetaProgramming;
-    addBindingNamed: #StructureDefinitionMetaBuilder with: (__TypeBuilder__ newGCClassWithSuperclass: MetaProgramming TypeDefinitionMetaBuilder slots: #{
+    addBindingNamed: #StructureDefinitionMetaBuilder with: (__TypeBuilder__ newGCClassWithSuperclass: Std MetaProgramming TypeDefinitionMetaBuilder slots: #{
         isPacked: Boolean optional
     }).
 
-MetaProgramming StructureDefinitionMetaBuilder
-    withSelector: #concretizeMetaBuilder addMethod: {:(MetaProgramming NamespaceMetaBuilder)self :: Reflection AST Node |
-        (Reflection AST StructureDefinitionNode basicNewWithNamedSlots: #{
+Std MetaProgramming StructureDefinitionMetaBuilder
+    withSelector: #concretizeMetaBuilder addMethod: {:(Std MetaProgramming NamespaceMetaBuilder)self :: Std Reflection AST Node |
+        (Std Reflection AST StructureDefinitionNode basicNewWithNamedSlots: #{
             sourcePosition: self metaContext sourcePosition.
             nameExpression: self nameExpression.
             supertypeExpression: self supertypeExpression.
@@ -18,22 +19,22 @@ MetaProgramming StructureDefinitionMetaBuilder
             visibility: self programEntityAttributes visibility.
         })
     };
-    withSelector: #packed addMethod: {:(MetaProgramming NamespaceMetaBuilder)self :: Void |
+    withSelector: #packed addMethod: {:(Std MetaProgramming NamespaceMetaBuilder)self :: Void |
         <metaBuilder>
         self isPacked: true
     }.
 
-MetaProgramming FlagMetaBuilder
-    withSelector: #struct addMethod: {:(MetaProgramming FlagMetaBuilder)self :: Void |
+Std MetaProgramming FlagMetaBuilder
+    withSelector: #struct addMethod: {:(Std MetaProgramming FlagMetaBuilder)self :: Void |
         <metaBuilder>
-        self delegateToMetaBuilderClass: MetaProgramming StructureDefinitionMetaBuilder.
+        self delegateToMetaBuilderClass: Std MetaProgramming StructureDefinitionMetaBuilder.
         void
     }.
 
 __BootstrapCompiler__
     enterTopLevelNamespace;
-    addBindingNamed: #struct with: {:(MacroInvocationContext)macroSelf :: Reflection AST MetaBuilderInstanceNode |
+    addBindingNamed: #struct with: {:(MacroInvocationContext)macroSelf :: Std Reflection AST MetaBuilderInstanceNode |
         <macro>
         <messageMethod>
-        MetaProgramming StructureDefinitionMetaBuilder nodeWithContext: macroSelf
+        Std MetaProgramming StructureDefinitionMetaBuilder nodeWithContext: macroSelf
     }.

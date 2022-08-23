@@ -1,35 +1,35 @@
-Reflection Semantic ASTAnalyzer __type__
-    withSelector: #forEnvironment: addMethod: {:(Reflection Semantic ASTAnalyzer __type__)self :(Reflection Semantic EvaluationEnvironment)environment :: self |
+Std Reflection Semantic ASTAnalyzer __type__
+    withSelector: #forEnvironment: addMethod: {:(Std Reflection Semantic ASTAnalyzer __type__)self :(Std Reflection Semantic EvaluationEnvironment)environment :: self |
         self basicNewWithNamedSlots: #{
             environment: environment.
-            typeInferenceEnvironment: Reflection Semantic AutoTypeInferenceEnvironment basicNew.
+            typeInferenceEnvironment: Std Reflection Semantic AutoTypeInferenceEnvironment basicNew.
         }
     };
-    withSelector: #forEnvironment:withExpectedType: addMethod: {:(Reflection Semantic ASTAnalyzer __type__)self :(Reflection Semantic EvaluationEnvironment)environment :(Type)expectedType :: self |
+    withSelector: #forEnvironment:withExpectedType: addMethod: {:(Std Reflection Semantic ASTAnalyzer __type__)self :(Std Reflection Semantic EvaluationEnvironment)environment :(Type)expectedType :: self |
         self basicNewWithNamedSlots: #{
             environment: environment.
-            typeInferenceEnvironment: (Reflection Semantic ExpectedTypeInferenceEnvironment basicNewWithNamedSlots: #{
+            typeInferenceEnvironment: (Std Reflection Semantic ExpectedTypeInferenceEnvironment basicNewWithNamedSlots: #{
                 expectedType: expectedType
             }).
         }
     };
-    withSelector: #forScriptEvaluationScope: addMethod: {:(Reflection Semantic ASTAnalyzer __type__)self :(Reflection Semantic ScriptEvaluationScope)scope :: self |
-        self forEnvironment: (Reflection Semantic EvaluationEnvironment forScriptEvaluationScope: scope)
+    withSelector: #forScriptEvaluationScope: addMethod: {:(Std Reflection Semantic ASTAnalyzer __type__)self :(Std Reflection Semantic ScriptEvaluationScope)scope :: self |
+        self forEnvironment: (Std Reflection Semantic EvaluationEnvironment forScriptEvaluationScope: scope)
     };
-    withSelector: #forDefaultEnvironment addMethod: {:(Reflection Semantic ASTAnalyzer __type__)self :: self |
-        self forEnvironment: Reflection Semantic EvaluationEnvironment default
+    withSelector: #forDefaultEnvironment addMethod: {:(Std Reflection Semantic ASTAnalyzer __type__)self :: self |
+        self forEnvironment: Std Reflection Semantic EvaluationEnvironment default
     }.
 
-Reflection Semantic ASTAnalyzer
-    withSelector: #makeSemanticAnalysisError:at: addMethod: {:(Reflection Semantic ASTAnalyzer)self :(String)errorMessage :(Reflection SourcePosition)sourcePosition :: Reflection AST SemanticErrorNode |
-        Reflection AST SemanticErrorNode basicNewWithNamedSlots: #{
+Std Reflection Semantic ASTAnalyzer
+    withSelector: #makeSemanticAnalysisError:at: addMethod: {:(Std Reflection Semantic ASTAnalyzer)self :(String)errorMessage :(Std Reflection SourcePosition)sourcePosition :: Std Reflection AST SemanticErrorNode |
+        Std Reflection AST SemanticErrorNode basicNewWithNamedSlots: #{
             analyzedType: CompilationError.
             sourcePosition: sourcePosition.
             message: errorMessage.
         }.
     };
-    withSelector: #makeSemanticAnalysisError:atNode: addMethod: {:(Reflection Semantic ASTAnalyzer)self :(String)errorMessage :(Reflection AST Node)node :: Reflection AST SemanticErrorNode |
-        Reflection AST SemanticErrorNode basicNewWithNamedSlots: #{
+    withSelector: #makeSemanticAnalysisError:atNode: addMethod: {:(Std Reflection Semantic ASTAnalyzer)self :(String)errorMessage :(Std Reflection AST Node)node :: Std Reflection AST SemanticErrorNode |
+        Std Reflection AST SemanticErrorNode basicNewWithNamedSlots: #{
             analyzedType: (if: node analyzedType isNil then: CompilationError else: node analyzedType _).
             sourcePosition: node sourcePosition.
             message: errorMessage.
@@ -37,17 +37,17 @@ Reflection Semantic ASTAnalyzer
         }.
     };
 
-    withSelector: #computeBranchResultTypeOf:with: addMethod: {:(Reflection Semantic ASTAnalyzer)self :(Type)leftType :(Type)rightType :: Type |
+    withSelector: #computeBranchResultTypeOf:with: addMethod: {:(Std Reflection Semantic ASTAnalyzer)self :(Type)leftType :(Type)rightType :: Type |
         if: leftType == rightType then: {
             leftType
         } else: {
             Void
         }
     };
-    withSelector: #addImplicitCoercionTo:node: addMethod: {:(Reflection Semantic ASTAnalyzer)self :(Type)targetType :(Reflection AST Node)node :: Reflection AST Node |
+    withSelector: #addImplicitCoercionTo:node: addMethod: {:(Std Reflection Semantic ASTAnalyzer)self :(Type)targetType :(Std Reflection AST Node)node :: Std Reflection AST Node |
         node analyzedType _ addImplicitCoercionToNode: node targetType: targetType with: self
     };
-    withSelector: #withEnvironment:do: addMethod: {:(Reflection Semantic ASTAnalyzer)self :(Reflection Semantic EvaluationEnvironment)environment :(Void => Void)aBlock :: Void |
+    withSelector: #withEnvironment:do: addMethod: {:(Std Reflection Semantic ASTAnalyzer)self :(Std Reflection Semantic EvaluationEnvironment)environment :(Void => Void)aBlock :: Void |
         let: #oldEnvironment with: self environment.
         self environment: environment.
 
@@ -56,7 +56,7 @@ Reflection Semantic ASTAnalyzer
 
         void
     };
-    withSelector: #analyzeNodeIfNeeded:withEnvironment: addMethod: {:(Reflection Semantic ASTAnalyzer)self :(Reflection AST Node)node :(Reflection Semantic EvaluationEnvironment)environment :: Reflection AST Node |
+    withSelector: #analyzeNodeIfNeeded:withEnvironment: addMethod: {:(Std Reflection Semantic ASTAnalyzer)self :(Std Reflection AST Node)node :(Std Reflection Semantic EvaluationEnvironment)environment :: Std Reflection AST Node |
         let: #oldEnvironment with: self environment.
         self environment: environment.
 
@@ -65,7 +65,7 @@ Reflection Semantic ASTAnalyzer
 
         analyzedNode
     };
-    withSelector: #analyzeNodeIfNeeded:withEnvironment:expectedType: addMethod: {:(Reflection Semantic ASTAnalyzer)self :(Reflection AST Node)node :(Reflection Semantic EvaluationEnvironment)environment :(Type)expectedType :: Reflection AST Node |
+    withSelector: #analyzeNodeIfNeeded:withEnvironment:expectedType: addMethod: {:(Std Reflection Semantic ASTAnalyzer)self :(Std Reflection AST Node)node :(Std Reflection Semantic EvaluationEnvironment)environment :(Type)expectedType :: Std Reflection AST Node |
         let: #oldEnvironment with: self environment.
         self environment: environment.
 
@@ -74,7 +74,7 @@ Reflection Semantic ASTAnalyzer
 
         analyzedNode
     };
-    withSelector: #analyzeNodeIfNeeded:withTypeInferenceEnvironment: addMethod: {:(Reflection Semantic ASTAnalyzer)self :(Reflection AST Node)node :(Reflection Semantic TypeInferenceEnvironment)typeInferenceEnvironment :: Reflection AST Node |
+    withSelector: #analyzeNodeIfNeeded:withTypeInferenceEnvironment: addMethod: {:(Std Reflection Semantic ASTAnalyzer)self :(Std Reflection AST Node)node :(Std Reflection Semantic TypeInferenceEnvironment)typeInferenceEnvironment :: Std Reflection AST Node |
         let: #oldTypeInferenceEnvironment with: (self typeInferenceEnvironment).
         self typeInferenceEnvironment: typeInferenceEnvironment.
 

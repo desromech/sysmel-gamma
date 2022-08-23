@@ -1,30 +1,31 @@
 __BootstrapCompiler__
     enterTopLevelNamespace;
+    enterNamespaceNamed: #Std;
     enterNamespaceNamed: #Reflection;
     enterNamespaceNamed: #AST;
-    addBindingNamed: #BlockClosureNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
-        arguments: Reflection AST Node sharedArraySlice.
-        resultTypeExpression: Reflection AST Node optional.
-        body: Reflection AST Node.
-        analyzedBody: Reflection AST Node optional.
-        analyzedResultTypeExpression: Reflection AST Node optional.
+    addBindingNamed: #BlockClosureNode with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection AST Node publicSlots: #{
+        arguments: Std Reflection AST Node sharedArraySlice.
+        resultTypeExpression: Std Reflection AST Node optional.
+        body: Std Reflection AST Node.
+        analyzedBody: Std Reflection AST Node optional.
+        analyzedResultTypeExpression: Std Reflection AST Node optional.
         analyzedResultType: Type optional.
-        argumentAnalysisScope: Reflection Semantic LexicalScope optional.
+        argumentAnalysisScope: Std Reflection Semantic LexicalScope optional.
         hasGenericForAllArguments: Boolean.
         hasDependentArguments: Boolean.
         hasCompileTimeDefinedType: Boolean.
         hasLazyBodyAnalysis: Boolean.
     }).
 
-Reflection BlockClosure
+Std Reflection BlockClosure
     definePublicSlots: #{
         functionType: Function __type__ optional.
-        node: Reflection AST BlockClosureNode optional.
-        environment: Reflection Semantic EvaluationEnvironment.
+        node: Std Reflection AST BlockClosureNode optional.
+        environment: Std Reflection Semantic EvaluationEnvironment.
     }.
 
-Reflection AST BlockClosureNode
-    withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST BlockClosureNode)self :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+Std Reflection AST BlockClosureNode
+    withSelector: #analyzeNodeWith: addMethod: {:(Std Reflection AST BlockClosureNode)self :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
         let: #analyzedNode with: self shallowCopy.
 
         let: #argumentAnalysisScope with: analyzer environment lexicalScope makeChildLexicalScope.
@@ -34,7 +35,7 @@ Reflection AST BlockClosureNode
         ## Perform the analysis of the arguments.
         analyzer withEnvironment: argumentAnalysisEnvironment do: { :: Void |
             ## Analyze the arguments.
-            analyzedNode arguments: (analyzedNode arguments collect: {:argumentNode :: Reflection AST Node |
+            analyzedNode arguments: (analyzedNode arguments collect: {:argumentNode :: Std Reflection AST Node |
                 let: #analyzedArgument with: (analyzer analyzeNodeIfNeededWithCurrentExpectedType: argumentNode).
                 if: analyzedArgument isErrorNode then: {
                     hasError _: true
@@ -78,14 +79,14 @@ Reflection AST BlockClosureNode
             analyzedNode
         }.
     };
-    withSelector: #ensureBodyAnalysis addMethod: {:(Reflection AST BlockClosureNode)self :: Void |
+    withSelector: #ensureBodyAnalysis addMethod: {:(Std Reflection AST BlockClosureNode)self :: Void |
         if: (if: self hasCompileTimeDefinedType then: self analyzedBody isNil else: false) then: {
-            let: #analyzer with: (Reflection Semantic ASTAnalyzer forEnvironment: (Reflection Semantic EvaluationEnvironment forLexicalScope: self argumentAnalysisScope _)).
+            let: #analyzer with: (Std Reflection Semantic ASTAnalyzer forEnvironment: (Std Reflection Semantic EvaluationEnvironment forLexicalScope: self argumentAnalysisScope _)).
             self analyzedBody: (analyzer analyzeNodeIfNeeded: self body withExpectedType: self analyzedResultType _).
             void
         } else: { void }
     };
-    withSelector: #analyzeCompileTimeTypeConstraintsWith: addMethod: {:(Reflection AST BlockClosureNode)self :(Reflection EvaluationEnvironment)environment :: Void |
+    withSelector: #analyzeCompileTimeTypeConstraintsWith: addMethod: {:(Std Reflection AST BlockClosureNode)self :(Std Reflection EvaluationEnvironment)environment :: Void |
         self
             hasGenericForAllArguments: false;
             hasDependentArguments: false;
@@ -120,7 +121,7 @@ Reflection AST BlockClosureNode
 
         void
     };
-    withSelector: #computeFunctionTypeWith: addMethod: {:(Reflection AST BlockClosureNode)self :(Reflection EvaluationEnvironment)environment :: Type |
+    withSelector: #computeFunctionTypeWith: addMethod: {:(Std Reflection AST BlockClosureNode)self :(Std Reflection EvaluationEnvironment)environment :: Type |
         if: self hasCompileTimeDefinedType then: {
             let: #argumentTypes with: (self arguments collect: {:argumentNode :: Type |
                 argumentNode analyzedTypeExpression _ evaluateNodeWith: environment
@@ -133,8 +134,8 @@ Reflection AST BlockClosureNode
             Function newDependentFunctionTypeWithEnvironment: environment arguments: self arguments resultType: self analyzedResultTypeExpression.
         }.
     };
-    withSelector: #evaluateNodeWith: addMethod: {:(Reflection AST BlockClosureNode)self :(Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
-        let: #blockClosure with: (Reflection BlockClosure basicNewWithNamedSlots: #{
+    withSelector: #evaluateNodeWith: addMethod: {:(Std Reflection AST BlockClosureNode)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+        let: #blockClosure with: (Std Reflection BlockClosure basicNewWithNamedSlots: #{
             functionType: self analyzedType _.
             node: self.
             environment: evaluationEnvironment.
@@ -142,7 +143,7 @@ Reflection AST BlockClosureNode
 
         self analyzedType _ newWithImplementation: blockClosure
     };
-    withSelector: #evaluateWithEnvironment:arguments: addMethod: {:(Reflection AST BlockClosureNode)self :(Reflection Semantic EvaluationEnvironment)environment :(AnyValue arraySlice)arguments :: AnyValue |
+    withSelector: #evaluateWithEnvironment:arguments: addMethod: {:(Std Reflection AST BlockClosureNode)self :(Std Reflection Semantic EvaluationEnvironment)environment :(AnyValue arraySlice)arguments :: AnyValue |
         self ensureBodyAnalysis.
 
         if: self analyzedBody isNotNil then: {
@@ -150,7 +151,7 @@ Reflection AST BlockClosureNode
             let: #evaluationEnvironment with: (environment copyWithLexicalScope: evaluationScope) copyWithEmptyCleanUpScope.
             let: #currentArgumentIndex with: (Size valueBox with: 0sz).
 
-            self arguments do: {:(Reflection AST Node)argumentNode :: Void |
+            self arguments do: {:(Std Reflection AST Node)argumentNode :: Void |
                 let: #argumentVariable with: argumentNode getArgumentVariable.
 
                 if: argumentNode isGenericForallArgument then: {
@@ -181,17 +182,17 @@ Reflection AST BlockClosureNode
         }.
     }.
 
-Reflection BlockClosure
-    withSelector: #run:with:in: addMethod: {:(Reflection BlockClosure)self :(AnyValue)selector :(AnyValue arraySlice)arguments :(AnyValue)receiver :: AnyValue |
+Std Reflection BlockClosure
+    withSelector: #run:with:in: addMethod: {:(Std Reflection BlockClosure)self :(AnyValue)selector :(AnyValue arraySlice)arguments :(AnyValue)receiver :: AnyValue |
         __BootstrapCompiler__ printLine: "TODO: BlockClosure evaluateWithArguments:".
         __BootstrapCompiler__ printLine: selector.
         __BootstrapCompiler__ printLine: arguments.
         __BootstrapCompiler__ printLine: receiver.
         __BootstrapCompiler__ primitiveFailed
     };
-    withSelector: #evaluateWithArguments: addMethod: {:(Reflection BlockClosure)self :(AnyValue arraySlice)arguments :: AnyValue |
+    withSelector: #evaluateWithArguments: addMethod: {:(Std Reflection BlockClosure)self :(AnyValue arraySlice)arguments :: AnyValue |
         self node _ evaluateWithEnvironment: self environment arguments: arguments
     };
-    withSelector: #hasMethodFlag: addMethod: {:(Reflection BlockClosure)self :(Symbol)flag :: Boolean |
+    withSelector: #hasMethodFlag: addMethod: {:(Std Reflection BlockClosure)self :(Symbol)flag :: Boolean |
         false
     }.

@@ -1,22 +1,23 @@
 ## Type definition builder.
 __BootstrapCompiler__
     enterTopLevelNamespace;
+    enterNamespaceNamed: #Std;
     enterNamespaceNamed: #MetaProgramming;
-    addBindingNamed: #MethodDefinitionMetaBuilder with: (__TypeBuilder__ newGCClassWithSuperclass: MetaProgramming MetaBuilder slots: #{
+    addBindingNamed: #MethodDefinitionMetaBuilder with: (__TypeBuilder__ newGCClassWithSuperclass: Std MetaProgramming MetaBuilder slots: #{
         hasSeenMethodPrototype: Boolean.
-        selectorExpression: Reflection AST Node optional.
-        arguments: Reflection AST Node sharedArraySlice.
-        resultTypeExpression: Reflection AST Node optional.
-        body: Reflection AST Node optional.
+        selectorExpression: Std Reflection AST Node optional.
+        arguments: Std Reflection AST Node sharedArraySlice.
+        resultTypeExpression: Std Reflection AST Node optional.
+        body: Std Reflection AST Node optional.
     }).
 
-MetaProgramming MethodDefinitionMetaBuilder
-    withSelector: #analyzeMessageSendNode:with: addMethod: {:(MetaProgramming MethodDefinitionMetaBuilder)self :(Reflection AST MessageSendNode)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+Std MetaProgramming MethodDefinitionMetaBuilder
+    withSelector: #analyzeMessageSendNode:with: addMethod: {:(Std MetaProgramming MethodDefinitionMetaBuilder)self :(Std Reflection AST MessageSendNode)node :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
         if: self hasSeenMethodPrototype not then: {
             self
                 hasSeenMethodPrototype: true;
                 selectorExpression: node selector;
-                arguments: (node arguments collect: {:(Reflection AST Node)argumentNode :: Reflection AST Node |
+                arguments: (node arguments collect: {:(Std Reflection AST Node)argumentNode :: Std Reflection AST Node |
                     argumentNode parseAsArgumentDefinitionNode
                 }).
             node receiver _
@@ -24,18 +25,18 @@ MetaProgramming MethodDefinitionMetaBuilder
             self analyzeMetaBuilderDirectMessageNode: node with: analyzer
         }
     };
-    withSelector: #=> addMethod: {:(MetaProgramming MethodDefinitionMetaBuilder)self :(Reflection AST Node)resultTypeExpression :: Void |
+    withSelector: #=> addMethod: {:(Std MetaProgramming MethodDefinitionMetaBuilder)self :(Std Reflection AST Node)resultTypeExpression :: Void |
         <metaBuilder>
         self resultTypeExpression: resultTypeExpression.
         void
     };
-    withSelector: #":=" addMethod: {:(MetaProgramming MethodDefinitionMetaBuilder)self :(Reflection AST Node)body :: Void |
+    withSelector: #":=" addMethod: {:(Std MetaProgramming MethodDefinitionMetaBuilder)self :(Std Reflection AST Node)body :: Void |
         <metaBuilder>
         self body: body.
         self finish.
     };
-    withSelector: #concretizeMetaBuilder addMethod: {:(MetaProgramming MethodDefinitionMetaBuilder)self :: Reflection AST Node |
-        (Reflection AST MethodDefinitionNode basicNewWithNamedSlots: #{
+    withSelector: #concretizeMetaBuilder addMethod: {:(Std MetaProgramming MethodDefinitionMetaBuilder)self :: Std Reflection AST Node |
+        (Std Reflection AST MethodDefinitionNode basicNewWithNamedSlots: #{
             sourcePosition: self metaContext sourcePosition.
             selectorExpression: self selectorExpression.
             arguments: self arguments.
@@ -45,9 +46,9 @@ MetaProgramming MethodDefinitionMetaBuilder
         })
     }.
 
-MetaProgramming FlagMetaBuilder
-    withSelector: #method addMethod: {:(MetaProgramming FlagMetaBuilder)self :: Void |
+Std MetaProgramming FlagMetaBuilder
+    withSelector: #method addMethod: {:(Std MetaProgramming FlagMetaBuilder)self :: Void |
         <metaBuilder>
-        self delegateToMetaBuilderClass: MetaProgramming MethodDefinitionMetaBuilder.
+        self delegateToMetaBuilderClass: Std MetaProgramming MethodDefinitionMetaBuilder.
         void
     }.

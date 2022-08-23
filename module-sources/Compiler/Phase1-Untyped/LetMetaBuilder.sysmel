@@ -1,49 +1,50 @@
 ## Let meta builder.
 __BootstrapCompiler__
     enterTopLevelNamespace;
+    enterNamespaceNamed: #Std;
     enterNamespaceNamed: #MetaProgramming;
-    addBindingNamed: #LetMetaBuilder with: (__TypeBuilder__ newGCClassWithSuperclass: MetaProgramming NamedMetaBuilder slots: #{
-        typeExpression: Reflection AST Node optional.
-        initialValueExpression: Reflection AST Node optional.
+    addBindingNamed: #LetMetaBuilder with: (__TypeBuilder__ newGCClassWithSuperclass: Std MetaProgramming NamedMetaBuilder slots: #{
+        typeExpression: Std Reflection AST Node optional.
+        initialValueExpression: Std Reflection AST Node optional.
         isMutable: Boolean.
         hasReferenceTypeInference: Boolean.
         hasDirectTypeInference: Boolean.
     }).
 
-MetaProgramming LetMetaBuilder
-    withSelector: #mutable addMethod: {:(MetaProgramming LetMetaBuilder)self :: Void |
+Std MetaProgramming LetMetaBuilder
+    withSelector: #mutable addMethod: {:(Std MetaProgramming LetMetaBuilder)self :: Void |
         <metaBuilder>
         self isMutable: true.
         void
     };
-    withSelector: #ref addMethod: {:(MetaProgramming LetMetaBuilder)self :: Void |
+    withSelector: #ref addMethod: {:(Std MetaProgramming LetMetaBuilder)self :: Void |
         <metaBuilder>
         self hasReferenceTypeInference: true.
         void
     };
-    withSelector: #tempRef addMethod: {:(MetaProgramming LetMetaBuilder)self :: Void |
+    withSelector: #tempRef addMethod: {:(Std MetaProgramming LetMetaBuilder)self :: Void |
         <metaBuilder>
         self hasDirectTypeInference: true.
         void
     };
-    withSelector: #type addMethod: {:(MetaProgramming LetMetaBuilder)self :(Reflection AST Node)typeExpression :: Void |
+    withSelector: #type addMethod: {:(Std MetaProgramming LetMetaBuilder)self :(Std Reflection AST Node)typeExpression :: Void |
         <metaBuilder>
         self typeExpression: typeExpression.
         void
     };
-    withSelector: #=> addMethod: {:(MetaProgramming LetMetaBuilder)self :(Reflection AST Node)typeExpression :: Void |
+    withSelector: #=> addMethod: {:(Std MetaProgramming LetMetaBuilder)self :(Std Reflection AST Node)typeExpression :: Void |
         <metaBuilder>
         self typeExpression: typeExpression.
         void
     };
-    withSelector: #":=" addMethod: {:(MetaProgramming LetMetaBuilder)self :(Reflection AST Node)initialValueExpression :: Void |
+    withSelector: #":=" addMethod: {:(Std MetaProgramming LetMetaBuilder)self :(Std Reflection AST Node)initialValueExpression :: Void |
         <metaBuilder>
         self initialValueExpression: initialValueExpression.
         self finish.
         void
     };
-    withSelector: #concretizeMetaBuilder addMethod: {:(MetaProgramming LetMetaBuilder)self :: Reflection AST Node |
-        (Reflection AST LocalVariableDefinitionNode basicNewWithNamedSlots: #{
+    withSelector: #concretizeMetaBuilder addMethod: {:(Std MetaProgramming LetMetaBuilder)self :: Std Reflection AST Node |
+        (Std Reflection AST LocalVariableDefinitionNode basicNewWithNamedSlots: #{
             sourcePosition: self metaContext sourcePosition.
             nameExpression: self nameExpression.
             typeExpression: self typeExpression.
@@ -57,8 +58,8 @@ MetaProgramming LetMetaBuilder
 
 __BootstrapCompiler__
     enterTopLevelNamespace;
-    addBindingNamed: #let with: {:(MacroInvocationContext)macroSelf :: Reflection AST MetaBuilderInstanceNode |
+    addBindingNamed: #let with: {:(MacroInvocationContext)macroSelf :: Std Reflection AST MetaBuilderInstanceNode |
         <macro>
         <messageMethod>
-        MetaProgramming LetMetaBuilder nodeWithContext: macroSelf
+        Std MetaProgramming LetMetaBuilder nodeWithContext: macroSelf
     }.

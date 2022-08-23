@@ -1,31 +1,32 @@
 __BootstrapCompiler__
     enterTopLevelNamespace;
+    enterNamespaceNamed: #Std;
     enterNamespaceNamed: #Reflection;
     enterNamespaceNamed: #AST;
-    addBindingNamed: #MethodDefinitionNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST ProgramEntityDefinitionNode publicSlots: #{
-        selectorExpression: Reflection AST Node optional.
-        arguments: Reflection AST Node sharedArraySlice.
-        resultTypeExpression: Reflection AST Node optional.
-        body: Reflection AST Node optional.
-        visibility: Reflection ProgramEntityVisibility.
+    addBindingNamed: #MethodDefinitionNode with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection AST ProgramEntityDefinitionNode publicSlots: #{
+        selectorExpression: Std Reflection AST Node optional.
+        arguments: Std Reflection AST Node sharedArraySlice.
+        resultTypeExpression: Std Reflection AST Node optional.
+        body: Std Reflection AST Node optional.
+        visibility: Std Reflection ProgramEntityVisibility.
         analyzedSelector: Object optional.
-        analyzedOwnerProgramEntity: Reflection ProgramEntity optional.
-        analyzedBlockClosureNode: Reflection AST Node optional.
+        analyzedOwnerProgramEntity: Std Reflection ProgramEntity optional.
+        analyzedBlockClosureNode: Std Reflection AST Node optional.
     }).
 
-Reflection AST MethodDefinitionNode
-    withSelector: #makeImplicitArgumentsFor: addMethod: {:(Reflection AST MethodDefinitionNode)self :(Reflection ProgramEntity)programEntity :: Reflection AST Node sharedArraySlice |
+Std Reflection AST MethodDefinitionNode
+    withSelector: #makeImplicitArgumentsFor: addMethod: {:(Std Reflection AST MethodDefinitionNode)self :(Std Reflection ProgramEntity)programEntity :: Std Reflection AST Node sharedArraySlice |
         let: #receiverType with: programEntity asReceiverType.
         if: receiverType isNil then: {
-            Reflection AST Node sharedArraySlice basicNew
+            Std Reflection AST Node sharedArraySlice basicNew
         } else: {
-            Reflection AST Node sharedArraySlice with:
-                ((Reflection AST ArgumentDefinitionNode withName: #self type: receiverType _ at: self sourcePosition)
+            Std Reflection AST Node sharedArraySlice with:
+                ((Std Reflection AST ArgumentDefinitionNode withName: #self type: receiverType _ at: self sourcePosition)
                     isImplicitArgument: true;
                     yourself)
         }
     };
-    withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST MethodDefinitionNode)self :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+    withSelector: #analyzeNodeWith: addMethod: {:(Std Reflection AST MethodDefinitionNode)self :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
         let: #ownerProgramEntity with: (analyzer environment lexicalScope lookupCurrentProgramEntity).
         let: #hasValidOwner with: (if: ownerProgramEntity isNotNil then: ownerProgramEntity _ canHaveMethods else: false).
 
@@ -41,7 +42,7 @@ Reflection AST MethodDefinitionNode
             let: #implicitArguments with: (self makeImplicitArgumentsFor: ownerProgramEntity _).
             let: #allArguments with: implicitArguments -- self arguments.
 
-            let: #blockClosureNode with: (Reflection AST BlockClosureNode basicNewWithNamedSlots: #{
+            let: #blockClosureNode with: (Std Reflection AST BlockClosureNode basicNewWithNamedSlots: #{
                 arguments: allArguments.
                 resultTypeExpression: self resultTypeExpression.
                 body: self body _.
@@ -57,7 +58,7 @@ Reflection AST MethodDefinitionNode
             analyzer makeSemanticAnalysisError: "Methods cannot be defined in this context." at: self sourcePosition
         }.
     };
-    withSelector: #evaluateNodeWith: addMethod: {:(Reflection AST MethodDefinitionNode)self :(Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+    withSelector: #evaluateNodeWith: addMethod: {:(Std Reflection AST MethodDefinitionNode)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         let: #blockClosure with: (self analyzedBlockClosureNode _ evaluateNodeWith: evaluationEnvironment).
         self analyzedOwnerProgramEntity _ withSelector: self analyzedSelector _ addMethod: blockClosure.
         blockClosure

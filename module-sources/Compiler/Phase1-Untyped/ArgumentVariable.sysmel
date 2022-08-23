@@ -1,58 +1,59 @@
 __BootstrapCompiler__
     enterTopLevelNamespace;
+    enterNamespaceNamed: #Std;
     enterNamespaceNamed: #Reflection;
-    addBindingNamed: #ArgumentVariable with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection FunctionVariable publicSlots: #{
+    addBindingNamed: #ArgumentVariable with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection FunctionVariable publicSlots: #{
         isAnalyzingSignature: Boolean.
         hasDependentTypeAccess: Boolean.
     });
 
     enterNamespaceNamed: #AST;
-    addBindingNamed: #ArgumentDefinitionNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
-        nameExpression: Reflection AST Node optional.
-        typeExpression: Reflection AST Node optional.
+    addBindingNamed: #ArgumentDefinitionNode with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection AST Node publicSlots: #{
+        nameExpression: Std Reflection AST Node optional.
+        typeExpression: Std Reflection AST Node optional.
         analyzedName: Object optional.
-        analyzedTypeExpression: Reflection AST Node optional.
-        analyzedVariable: Reflection ArgumentVariable optional.
+        analyzedTypeExpression: Std Reflection AST Node optional.
+        analyzedVariable: Std Reflection ArgumentVariable optional.
         isGenericForallArgument: Boolean.
         isImplicitArgument: Boolean.
     }).
 
-Reflection ArgumentVariable
-    withSelector: #analyzeIdentifierReferenceNode:with: addMethod: {:(Reflection ArgumentVariable)self :(Reflection AST IdentifierReferenceNode)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+Std Reflection ArgumentVariable
+    withSelector: #analyzeIdentifierReferenceNode:with: addMethod: {:(Std Reflection ArgumentVariable)self :(Std Reflection AST IdentifierReferenceNode)node :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
         if: self isAnalyzingSignature then: {
             self hasDependentTypeAccess: true
         } else: {void}.
 
-        Reflection AST FunctionVariableReferenceNode basicNewWithNamedSlots: #{
+        Std Reflection AST FunctionVariableReferenceNode basicNewWithNamedSlots: #{
             binding: self.
             analyzedType: self referenceType
         }
     }.
 
-Reflection AST Node
-    withSelector: #parseAsArgumentDefinitionNode addMethod: {:(Reflection AST Node)self :: Reflection AST Node |
-        Reflection AST SemanticErrorNode basicNewWithNamedSlots: #{
+Std Reflection AST Node
+    withSelector: #parseAsArgumentDefinitionNode addMethod: {:(Std Reflection AST Node)self :: Std Reflection AST Node |
+        Std Reflection AST SemanticErrorNode basicNewWithNamedSlots: #{
             analyzedType: CompilationError.
             sourcePosition: self sourcePosition.
             message: "Expression cannot be interpreted as an argument definition node.".
             innerNode: self
         }.
     };
-    withSelector: #parseAsArgumentDefinitionNodes addMethod: {:(Reflection AST Node)self :: Reflection AST Node sharedArraySlice |
-        Reflection AST Node sharedArraySlice with: self parseAsArgumentDefinitionNode
+    withSelector: #parseAsArgumentDefinitionNodes addMethod: {:(Std Reflection AST Node)self :: Std Reflection AST Node sharedArraySlice |
+        Std Reflection AST Node sharedArraySlice with: self parseAsArgumentDefinitionNode
     }.
 
-Reflection AST ArgumentDefinitionNode __type__
-    withSelector: #withName:type:at: addMethod: {:(Reflection AST ArgumentDefinitionNode)self :(Object)name :(Type)type :(Reflection AST SourcePosition)sourcePosition :: self |
+Std Reflection AST ArgumentDefinitionNode __type__
+    withSelector: #withName:type:at: addMethod: {:(Std Reflection AST ArgumentDefinitionNode)self :(Object)name :(Type)type :(Std Reflection AST SourcePosition)sourcePosition :: self |
         self basicNewWithNamedSlots: #{
             sourcePosition: sourcePosition.
-            nameExpression: (Reflection AST LiteralValueNode withValue: name at: sourcePosition).
-            typeExpression: (Reflection AST LiteralValueNode withValue: type at: sourcePosition)
+            nameExpression: (Std Reflection AST LiteralValueNode withValue: name at: sourcePosition).
+            typeExpression: (Std Reflection AST LiteralValueNode withValue: type at: sourcePosition)
         }
     }.
 
-Reflection AST ArgumentDefinitionNode
-    withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST ArgumentDefinitionNode)self :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+Std Reflection AST ArgumentDefinitionNode
+    withSelector: #analyzeNodeWith: addMethod: {:(Std Reflection AST ArgumentDefinitionNode)self :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
         if: self nameExpression isNil & self typeExpression isNil then: {
             analyzer makeSemanticAnalysisError: "Argument definition node requires at least a name or a type" at: self sourcePosition
         } else: {
@@ -60,12 +61,12 @@ Reflection AST ArgumentDefinitionNode
 
             let: #name with: (if: self nameExpression isNotNil
                 then: (self nameExpression _ analyzeAndEvaluateNodeWith: analyzer)
-                else: (Reflection AnonymousSymbol basicNewWithNamedSlots: #{
+                else: (Std Reflection AnonymousSymbol basicNewWithNamedSlots: #{
                     sourcePosition: self sourcePosition
                 })
             ).
             let: #sanitizedName with: (name asSanitizedNameSymbolFor: self sourcePosition).
-            let: #errorNode with: (Reflection AST Node optional valueBox with: nil).
+            let: #errorNode with: (Std Reflection AST Node optional valueBox with: nil).
             let: #existentBinding with: (analyzer environment lexicalScope lookupSymbol: sanitizedName).
             analyzedNode analyzedName: sanitizedName.
 
@@ -85,7 +86,7 @@ Reflection AST ArgumentDefinitionNode
             } else: {
                 let: #argumentVariableType with: (analyzedNode computeArgumentVariableAnalysisTypeWith: analyzer).
 
-                let: #argumentVariable with: (Reflection ArgumentVariable basicNewWithNamedSlots: #{
+                let: #argumentVariable with: (Std Reflection ArgumentVariable basicNewWithNamedSlots: #{
                     name: sanitizedName.
                     valueType: argumentVariableType.
                     referenceType: argumentVariableType.
@@ -96,12 +97,12 @@ Reflection AST ArgumentDefinitionNode
 
                 analyzedNode 
                     analyzedVariable: argumentVariable;
-                    analyzedType: Reflection ArgumentVariable;
+                    analyzedType: Std Reflection ArgumentVariable;
                     yourself
             }.
         }.
     };
-    withSelector: #computeArgumentVariableAnalysisTypeWith: addMethod: {:(Reflection AST ArgumentDefinitionNode)self :(Reflection Semantic ASTAnalyzer)analyzer :: Type |
+    withSelector: #computeArgumentVariableAnalysisTypeWith: addMethod: {:(Std Reflection AST ArgumentDefinitionNode)self :(Std Reflection Semantic ASTAnalyzer)analyzer :: Type |
         if: (self analyzedTypeExpression _ isCompileTimeDirectlyEvaluableWith: analyzer environment) then: {
             self analyzedTypeExpression: (self analyzedTypeExpression _ optimizeViaCompileTimeEvaluationWith: analyzer environment).
             self analyzedTypeExpression _ evaluateNodeWith: analyzer environment
@@ -109,37 +110,37 @@ Reflection AST ArgumentDefinitionNode
             AnyValue
         }
     };
-    withSelector: #getArgumentVariable addMethod: {:(Reflection AST ArgumentDefinitionNode)self :: Reflection ArgumentVariable |
+    withSelector: #getArgumentVariable addMethod: {:(Std Reflection AST ArgumentDefinitionNode)self :: Std Reflection ArgumentVariable |
         self analyzedVariable _
     };
-    withSelector: #parseAsArgumentDefinitionNode addMethod: {:(Reflection AST ArgumentDefinitionNode)self :: Reflection AST Node |
+    withSelector: #parseAsArgumentDefinitionNode addMethod: {:(Std Reflection AST ArgumentDefinitionNode)self :: Std Reflection AST Node |
         self
     }.
 
 
-Reflection AST IdentifierReferenceNode
-    withSelector: #parseAsArgumentDefinitionNode addMethod: {:(Reflection AST IdentifierReferenceNode)self :: Reflection AST Node |
-        Reflection AST ArgumentDefinitionNode basicNewWithNamedSlots: #{
+Std Reflection AST IdentifierReferenceNode
+    withSelector: #parseAsArgumentDefinitionNode addMethod: {:(Std Reflection AST IdentifierReferenceNode)self :: Std Reflection AST Node |
+        Std Reflection AST ArgumentDefinitionNode basicNewWithNamedSlots: #{
             nameExpression: self asLiteralSymbolNode.
         }.
     }.
 
-Reflection AST LiteralValueNode
-    withSelector: #convertSelectorToArgumentName addMethod: {:(Reflection AST LiteralValueNode)self :: Reflection AST Node |
+Std Reflection AST LiteralValueNode
+    withSelector: #convertSelectorToArgumentName addMethod: {:(Std Reflection AST LiteralValueNode)self :: Std Reflection AST Node |
         self shallowCopy
             value: (self value withoutSuffix: ":");
             yourself
     }.
 
-Reflection AST MessageSendNode
-    withSelector: #parseAsArgumentDefinitionNode addMethod: {:(Reflection AST MessageSendNode)self :: Reflection AST Node |
+Std Reflection AST MessageSendNode
+    withSelector: #parseAsArgumentDefinitionNode addMethod: {:(Std Reflection AST MessageSendNode)self :: Std Reflection AST Node |
         if: self receiver isNil & (self arguments size = 1sz) & self selector isLiteralValueNode then: {
-            Reflection AST ArgumentDefinitionNode basicNewWithNamedSlots: #{
+            Std Reflection AST ArgumentDefinitionNode basicNewWithNamedSlots: #{
                 nameExpression: self selector convertSelectorToArgumentName.
                 typeExpression: (self arguments basicAt: 0)
             }
         } else: {
-            Reflection AST SemanticErrorNode basicNewWithNamedSlots: #{
+            Std Reflection AST SemanticErrorNode basicNewWithNamedSlots: #{
                 analyzedType: CompilationError.
                 sourcePosition: self sourcePosition.
                 message: "Message send expression is not valid argument definition.".
@@ -148,12 +149,12 @@ Reflection AST MessageSendNode
         }.
     }.
 
-Reflection AST SequenceNode
-    withSelector: #parseAsArgumentDefinitionNodes addMethod: {:(Reflection AST SequenceNode)self :: Reflection AST Node sharedArraySlice |
+Std Reflection AST SequenceNode
+    withSelector: #parseAsArgumentDefinitionNodes addMethod: {:(Std Reflection AST SequenceNode)self :: Std Reflection AST Node sharedArraySlice |
         if: self expressions size = 1sz & self pragmas isEmpty then: {
             (self expressions basicAt: 0sz) parseAsArgumentDefinitionNodes
         } else: {
-            Reflection AST Node sharedArraySlice with: (Reflection AST SemanticErrorNode basicNewWithNamedSlots: #{
+            Std Reflection AST Node sharedArraySlice with: (Std Reflection AST SemanticErrorNode basicNewWithNamedSlots: #{
                 analyzedType: CompilationError.
                 sourcePosition: self sourcePosition.
                 message: "Sequence node is not valid arguments definitions.".
@@ -162,9 +163,9 @@ Reflection AST SequenceNode
         }
     }.
 
-Reflection AST MakeTupleNode
-    withSelector: #parseAsArgumentDefinitionNodes addMethod: {:(Reflection AST MakeTupleNode)self :: Reflection AST Node sharedArraySlice |
-        self elements collect: {:(Reflection AST Node)node :: Reflection AST Node |
+Std Reflection AST MakeTupleNode
+    withSelector: #parseAsArgumentDefinitionNodes addMethod: {:(Std Reflection AST MakeTupleNode)self :: Std Reflection AST Node sharedArraySlice |
+        self elements collect: {:(Std Reflection AST Node)node :: Std Reflection AST Node |
             node parseAsArgumentDefinitionNode
         }
     }.

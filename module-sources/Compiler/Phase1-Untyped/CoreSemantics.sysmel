@@ -2,38 +2,41 @@
 ## Semantic analysis types.
 __BootstrapCompiler__
     enterTopLevelNamespace;
+    enterNamespaceNamed: #Std;
     enterNamespaceNamed: #Reflection;
     enterNamespaceNamed: #Semantic;
     addBindingNamed: #IdentifierLookupScope with: (__TypeBuilder__ newGCClassWithSuperclass: Object publicSlots: #{});
     addBindingNamed: #CleanUpScope with: (__TypeBuilder__ newGCClassWithSuperclass: Object publicSlots: #{}).
 
-Reflection Semantic IdentifierLookupScope definePublicSlots: #{
-    parent: Reflection Semantic IdentifierLookupScope optional
+Std Reflection Semantic IdentifierLookupScope definePublicSlots: #{
+    parent: Std Reflection Semantic IdentifierLookupScope optional
 }.
 
-Reflection Semantic CleanUpScope definePublicSlots: #{
-    parent: Reflection Semantic CleanUpScope optional
+Std Reflection Semantic CleanUpScope definePublicSlots: #{
+    parent: Std Reflection Semantic CleanUpScope optional
 }.
     
 __BootstrapCompiler__
     enterTopLevelNamespace;
+    enterNamespaceNamed: #Std;
     enterNamespaceNamed: #Reflection;
     enterNamespaceNamed: #Semantic;
-    addBindingNamed: #LexicalScope with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection Semantic IdentifierLookupScope publicSlots: #{
-        symbolTable: Reflection SymbolTable
+    addBindingNamed: #LexicalScope with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection Semantic IdentifierLookupScope publicSlots: #{
+        symbolTable: Std Reflection SymbolTable
     }).
 
 ## The AST nodes.
 __BootstrapCompiler__
     enterTopLevelNamespace;
+    enterNamespaceNamed: #Std;
     enterNamespaceNamed: #Reflection;
 
-    addBindingNamed: #SourceStringCollection with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection SourceCollection publicSlots: #{
+    addBindingNamed: #SourceStringCollection with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection SourceCollection publicSlots: #{
         sourceString: String.
         name: String.
     });
-    addBindingNamed: #SourceStringPosition with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection SourcePosition publicSlots: #{
-        sourceCollection: Reflection SourceCollection.
+    addBindingNamed: #SourceStringPosition with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection SourcePosition publicSlots: #{
+        sourceCollection: Std Reflection SourceCollection.
         startPosition: Size.
         endPosition: Size.
         startLine: Size.
@@ -41,7 +44,7 @@ __BootstrapCompiler__
         endLine: Size.
         endColumn: Size.
     });
-    addBindingNamed: #EmptySourcePosition with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection SourcePosition publicSlots: #{});
+    addBindingNamed: #EmptySourcePosition with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection SourcePosition publicSlots: #{});
 
     enterNamespaceNamed: #AST;
 
@@ -52,209 +55,210 @@ __BootstrapCompiler__
     });
 
     addBindingNamed: #Node with: (__TypeBuilder__ newGCClassWithSuperclass: Object publicSlots: #{
-        sourcePosition: Reflection SourcePosition.
+        sourcePosition: Std Reflection SourcePosition.
         analyzedType: Type optional
     });
-    addBindingNamed: #ChainedMessageNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
-        selector: Reflection AST Node.
-        arguments: Reflection AST Node sharedArraySlice
+    addBindingNamed: #ChainedMessageNode with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection AST Node publicSlots: #{
+        selector: Std Reflection AST Node.
+        arguments: Std Reflection AST Node sharedArraySlice
     });
-    addBindingNamed: #CleanUpScopeNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
-        body: Reflection AST Node.
-        cleanUpAction: Reflection AST Node optional.
-        analysisScope: Reflection Semantic CleanUpScope optional.
+    addBindingNamed: #CleanUpScopeNode with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection AST Node publicSlots: #{
+        body: Std Reflection AST Node.
+        cleanUpAction: Std Reflection AST Node optional.
+        analysisScope: Std Reflection Semantic CleanUpScope optional.
     });
-    addBindingNamed: #LexicalScopeNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
-        body: Reflection AST Node.
-        analysisScope: Reflection Semantic LexicalScope optional.
+    addBindingNamed: #LexicalScopeNode with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection AST Node publicSlots: #{
+        body: Std Reflection AST Node.
+        analysisScope: Std Reflection Semantic LexicalScope optional.
     });
-    addBindingNamed: #LiteralValueNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
+    addBindingNamed: #LiteralValueNode with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection AST Node publicSlots: #{
         value: AnyValue
     });
-    addBindingNamed: #IdentifierReferenceNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
+    addBindingNamed: #IdentifierReferenceNode with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection AST Node publicSlots: #{
         value: Object.
-        binding: Reflection SymbolBinding optional.
+        binding: Std Reflection SymbolBinding optional.
     });
 
-    addBindingNamed: #MakeAssociationNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
-        key: Reflection AST Node.
-        value: Reflection AST Node.
+    addBindingNamed: #MakeAssociationNode with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection AST Node publicSlots: #{
+        key: Std Reflection AST Node.
+        value: Std Reflection AST Node.
     });
-    addBindingNamed: #MakeTupleNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
-        elements: Reflection AST Node sharedArraySlice.
+    addBindingNamed: #MakeTupleNode with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection AST Node publicSlots: #{
+        elements: Std Reflection AST Node sharedArraySlice.
     });
-    addBindingNamed: #MakeDictionaryNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
-        elements: Reflection AST Node sharedArraySlice.
+    addBindingNamed: #MakeDictionaryNode with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection AST Node publicSlots: #{
+        elements: Std Reflection AST Node sharedArraySlice.
     });
-    addBindingNamed: #MakeByteArrayNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
-        elements: Reflection AST Node sharedArraySlice.
+    addBindingNamed: #MakeByteArrayNode with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection AST Node publicSlots: #{
+        elements: Std Reflection AST Node sharedArraySlice.
     });
 
-    addBindingNamed: #MessageSendNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
-        receiver: Reflection AST Node optional.
-        selector: Reflection AST Node.
-        arguments: Reflection AST Node sharedArraySlice.
-        expansionLevel: Reflection AST MessageSendExpansionLevel.
+    addBindingNamed: #MessageSendNode with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection AST Node publicSlots: #{
+        receiver: Std Reflection AST Node optional.
+        selector: Std Reflection AST Node.
+        arguments: Std Reflection AST Node sharedArraySlice.
+        expansionLevel: Std Reflection AST MessageSendExpansionLevel.
         boundMethod: Object optional.
         usesDynamicDispatch: Boolean.
     });
-    addBindingNamed: #MessageChainNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
-        receiver: Reflection AST Node.
-        chainedMessages: Reflection AST Node sharedArraySlice
+    addBindingNamed: #MessageChainNode with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection AST Node publicSlots: #{
+        receiver: Std Reflection AST Node.
+        chainedMessages: Std Reflection AST Node sharedArraySlice
     });
-    addBindingNamed: #SequenceNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
-        expressions: Reflection AST Node sharedArraySlice.
-        pragmas: Reflection AST Node sharedArraySlice.
-    });
-
-    addBindingNamed: #SpliceNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
-        expression: Reflection AST Node.
-    });
-    addBindingNamed: #QuoteNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
-        expression: Reflection AST Node.
-    });
-    addBindingNamed: #QuasiQuoteNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
-        expression: Reflection AST Node.
-    });
-    addBindingNamed: #QuasiUnquoteNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
-        expression: Reflection AST Node.
+    addBindingNamed: #SequenceNode with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection AST Node publicSlots: #{
+        expressions: Std Reflection AST Node sharedArraySlice.
+        pragmas: Std Reflection AST Node sharedArraySlice.
     });
 
-    addBindingNamed: #ErrorNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
+    addBindingNamed: #SpliceNode with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection AST Node publicSlots: #{
+        expression: Std Reflection AST Node.
+    });
+    addBindingNamed: #QuoteNode with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection AST Node publicSlots: #{
+        expression: Std Reflection AST Node.
+    });
+    addBindingNamed: #QuasiQuoteNode with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection AST Node publicSlots: #{
+        expression: Std Reflection AST Node.
+    });
+    addBindingNamed: #QuasiUnquoteNode with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection AST Node publicSlots: #{
+        expression: Std Reflection AST Node.
+    });
+
+    addBindingNamed: #ErrorNode with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection AST Node publicSlots: #{
         message: String
     });
-    addBindingNamed: #ParseErrorNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST ErrorNode publicSlots: #{});
-    addBindingNamed: #SemanticErrorNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST ErrorNode publicSlots: #{
-        innerNode: Reflection AST Node optional
+    addBindingNamed: #ParseErrorNode with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection AST ErrorNode publicSlots: #{});
+    addBindingNamed: #SemanticErrorNode with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection AST ErrorNode publicSlots: #{
+        innerNode: Std Reflection AST Node optional
     }).
 
 ## Semantic analysis types.
 __BootstrapCompiler__
     enterTopLevelNamespace;
+    enterNamespaceNamed: #Std;
     enterNamespaceNamed: #Reflection;
     enterNamespaceNamed: #Semantic;
 
     addBindingNamed: #FunctionSignatureAnalyzer with: (__TypeBuilder__ newGCClassWithSuperclass: Object publicSlots: #{});
-    addBindingNamed: #SymbolValueBinding with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection SymbolBinding publicSlots: #{
+    addBindingNamed: #SymbolValueBinding with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection SymbolBinding publicSlots: #{
         name: Object.
         value: AnyValue
     });
-    addBindingNamed: #ForAllPlaceholderBinding with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection SymbolBinding publicSlots: #{
+    addBindingNamed: #ForAllPlaceholderBinding with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection SymbolBinding publicSlots: #{
         name: Object.
         value: AnyValue.
         expectedType: Type.
     });
-    addBindingNamed: #TypeOrForAllPlaceholder with: (__TypeBuilder__ newSumTypeWith: (Type, Reflection Semantic ForAllPlaceholderBinding));
-    addBindingNamed: #ProgramEntityLookupScope with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection Semantic IdentifierLookupScope publicSlots: #{
-        programEntity: Reflection ProgramEntity
+    addBindingNamed: #TypeOrForAllPlaceholder with: (__TypeBuilder__ newSumTypeWith: (Type, Std Reflection Semantic ForAllPlaceholderBinding));
+    addBindingNamed: #ProgramEntityLookupScope with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection Semantic IdentifierLookupScope publicSlots: #{
+        programEntity: Std Reflection ProgramEntity
     });
-    addBindingNamed: #NamespaceLookupScope with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection Semantic ProgramEntityLookupScope publicSlots: #{});
-    addBindingNamed: #TypeDefinitionLookupScope with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection Semantic ProgramEntityLookupScope publicSlots: #{});
-    addBindingNamed: #ScriptEvaluationScope with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection Semantic LexicalScope publicSlots: #{});
+    addBindingNamed: #NamespaceLookupScope with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection Semantic ProgramEntityLookupScope publicSlots: #{});
+    addBindingNamed: #TypeDefinitionLookupScope with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection Semantic ProgramEntityLookupScope publicSlots: #{});
+    addBindingNamed: #ScriptEvaluationScope with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection Semantic LexicalScope publicSlots: #{});
     addBindingNamed: #EvaluationEnvironment with: (__TypeBuilder__ newGCClassWithSuperclass: Object publicSlots: #{
-        lexicalScope: Reflection Semantic LexicalScope.
-        cleanUpScope: Reflection Semantic CleanUpScope.
+        lexicalScope: Std Reflection Semantic LexicalScope.
+        cleanUpScope: Std Reflection Semantic CleanUpScope.
     });
     addBindingNamed: #TypeInferenceEnvironment with: (__TypeBuilder__ newGCClassWithSuperclass: Object publicSlots: #{});
-    addBindingNamed: #ExpectedTypeInferenceEnvironment with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection Semantic TypeInferenceEnvironment publicSlots: #{
+    addBindingNamed: #ExpectedTypeInferenceEnvironment with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection Semantic TypeInferenceEnvironment publicSlots: #{
         expectedType: Type
     });
-    addBindingNamed: #AutoTypeInferenceEnvironment with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection Semantic TypeInferenceEnvironment publicSlots: #{});
-    addBindingNamed: #DirectAutoTypeInferenceEnvironment with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection Semantic TypeInferenceEnvironment publicSlots: #{});
-    addBindingNamed: #ReferenceAutoTypeInferenceEnvironment with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection Semantic TypeInferenceEnvironment publicSlots: #{});
+    addBindingNamed: #AutoTypeInferenceEnvironment with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection Semantic TypeInferenceEnvironment publicSlots: #{});
+    addBindingNamed: #DirectAutoTypeInferenceEnvironment with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection Semantic TypeInferenceEnvironment publicSlots: #{});
+    addBindingNamed: #ReferenceAutoTypeInferenceEnvironment with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection Semantic TypeInferenceEnvironment publicSlots: #{});
     addBindingNamed: #ASTAnalyzer with: (__TypeBuilder__ newGCClassWithSuperclass: Object publicSlots: #{
-        environment: Reflection Semantic EvaluationEnvironment.
-        typeInferenceEnvironment: Reflection Semantic TypeInferenceEnvironment.
+        environment: Std Reflection Semantic EvaluationEnvironment.
+        typeInferenceEnvironment: Std Reflection Semantic TypeInferenceEnvironment.
     }).
 
 ## Macro invocation context.
-Reflection AST Node
-    withSelector: #analyzeNodeIfNeededWith: addMethod: {:(Reflection AST Node)self :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+Std Reflection AST Node
+    withSelector: #analyzeNodeIfNeededWith: addMethod: {:(Std Reflection AST Node)self :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
         if: self analyzedType isNil then: {
             self analyzeNodeWith: analyzer
         } else: {
             self
         }
     };
-    withSelector: #analyzeAndEvaluateNodeWith: addMethod: {:(Reflection AST Node)self :(Reflection Semantic ASTAnalyzer)analyzer :: AnyValue |
+    withSelector: #analyzeAndEvaluateNodeWith: addMethod: {:(Std Reflection AST Node)self :(Std Reflection Semantic ASTAnalyzer)analyzer :: AnyValue |
         (self analyzeNodeIfNeededWith: analyzer) evaluateNodeWith: analyzer environment
     };
-    withSelector: #analyzeAndEvaluateNodeWith:expectedType: addMethod: {:(Reflection AST Node)self :(Reflection Semantic ASTAnalyzer)analyzer :(Type)expectedType :: AnyValue |
+    withSelector: #analyzeAndEvaluateNodeWith:expectedType: addMethod: {:(Std Reflection AST Node)self :(Std Reflection Semantic ASTAnalyzer)analyzer :(Type)expectedType :: AnyValue |
         self analyzeAndEvaluateNodeWith: (analyzer copyWithExpectedType: expectedType)
     };
-    withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST Node)self :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+    withSelector: #analyzeNodeWith: addMethod: {:(Std Reflection AST Node)self :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
         __BootstrapCompiler__ subclassResponsibility
     };
-    withSelector: #asCollapsedNodeWith: addMethod: {:(Reflection AST Node)self :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+    withSelector: #asCollapsedNodeWith: addMethod: {:(Std Reflection AST Node)self :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
         self
     };
-    withSelector: #evaluateNodeWith: addMethod: {:(Reflection AST Node)self :(Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+    withSelector: #evaluateNodeWith: addMethod: {:(Std Reflection AST Node)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         __BootstrapCompiler__ subclassResponsibility
     };
-    withSelector: #isLiteralValueNode addMethod: {:(Reflection AST Node)self :: Boolean |
+    withSelector: #isLiteralValueNode addMethod: {:(Std Reflection AST Node)self :: Boolean |
         false
     };
-    withSelector: #isErrorNode addMethod: {:(Reflection AST Node)self :: Boolean |
+    withSelector: #isErrorNode addMethod: {:(Std Reflection AST Node)self :: Boolean |
         false
     };
-    withSelector: #evaluateLiteralValue addMethod: {:(Reflection AST Node)self :: AnyValue |
+    withSelector: #evaluateLiteralValue addMethod: {:(Std Reflection AST Node)self :: AnyValue |
         __BootstrapCompiler__ error: "Not a literal value node."
     };
-    withSelector: #analyzeAndEvaluateNodeWithScriptEvaluationScope: addMethod: {:(Reflection AST Node)self :(Reflection Semantic ScriptEvaluationScope)scope :: AnyValue |
-        self analyzeAndEvaluateNodeWith: (Reflection Semantic ASTAnalyzer forScriptEvaluationScope: scope)
+    withSelector: #analyzeAndEvaluateNodeWithScriptEvaluationScope: addMethod: {:(Std Reflection AST Node)self :(Std Reflection Semantic ScriptEvaluationScope)scope :: AnyValue |
+        self analyzeAndEvaluateNodeWith: (Std Reflection Semantic ASTAnalyzer forScriptEvaluationScope: scope)
     };
-    withSelector: #isCompileTimeDirectlyEvaluableWith: addMethod: {:(Reflection AST Node)self :(Reflection Semantic EvaluationEnvironment)environment :: Boolean |
+    withSelector: #isCompileTimeDirectlyEvaluableWith: addMethod: {:(Std Reflection AST Node)self :(Std Reflection Semantic EvaluationEnvironment)environment :: Boolean |
         false
     };
-    withSelector: #optimizeViaCompileTimeEvaluationWith: addMethod: {:(Reflection AST Node)self :(Reflection Semantic EvaluationEnvironment)environment :: Reflection AST Node |
-        Reflection AST LiteralValueNode basicNewWithNamedSlots: #{
+    withSelector: #optimizeViaCompileTimeEvaluationWith: addMethod: {:(Std Reflection AST Node)self :(Std Reflection Semantic EvaluationEnvironment)environment :: Std Reflection AST Node |
+        Std Reflection AST LiteralValueNode basicNewWithNamedSlots: #{
             analyzedType: self analyzedType _.
             value: (self evaluateNodeWith: environment).
         }
     }.
     
-Reflection SourceStringCollection
-    withSelector: #printString addMethod: {:(Reflection AST SourceStringCollection)self :: String |
+Std Reflection SourceStringCollection
+    withSelector: #printString addMethod: {:(Std Reflection AST SourceStringCollection)self :: String |
         self name
     }.
 
-Reflection SourceStringPosition
-    withSelector: #printString addMethod: {:(Reflection AST SourceStringCollection)self :: String |
+Std Reflection SourceStringPosition
+    withSelector: #printString addMethod: {:(Std Reflection AST SourceStringCollection)self :: String |
         "{0}:{1}.{2}-{3}.{4}" format: (self sourceCollection printString,
             self startLine printString, self startColumn printString,
             self endLine printString, self endColumn printString,
         )
     }.
 
-Reflection AST LiteralValueNode __type__
-    withSelector: #withValue:at: addMethod: {:(Reflection AST LiteralValueNode __type__)self :(AnyValue)value :(Reflection AST SourcePosition)sourcePosition :: self |
+Std Reflection AST LiteralValueNode __type__
+    withSelector: #withValue:at: addMethod: {:(Std Reflection AST LiteralValueNode __type__)self :(AnyValue)value :(Std Reflection AST SourcePosition)sourcePosition :: self |
         self basicNewWithNamedSlots: #{
             sourcePosition: sourcePosition.
             value: value
         }
     }.
 
-Reflection AST LiteralValueNode
-    withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST LiteralValueNode)self :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+Std Reflection AST LiteralValueNode
+    withSelector: #analyzeNodeWith: addMethod: {:(Std Reflection AST LiteralValueNode)self :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
         self shallowCopy
             analyzedType: self value __type__;
             yourself
     };
-    withSelector: #evaluateNodeWith: addMethod: {:(Reflection AST LiteralValueNode)self :(Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+    withSelector: #evaluateNodeWith: addMethod: {:(Std Reflection AST LiteralValueNode)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         self value
     };
-    withSelector: #isLiteralValueNode addMethod: {:(Reflection AST LiteralValueNode)self :: Boolean |
+    withSelector: #isLiteralValueNode addMethod: {:(Std Reflection AST LiteralValueNode)self :: Boolean |
         true
     };
-    withSelector: #evaluateLiteralValue addMethod: {:(Reflection AST LiteralValueNode)self :: AnyValue |
+    withSelector: #evaluateLiteralValue addMethod: {:(Std Reflection AST LiteralValueNode)self :: AnyValue |
         self value
     };
-    withSelector: #isCompileTimeDirectlyEvaluableWith: addMethod: {:(Reflection AST Node)self :(Reflection Semantic EvaluationEnvironment)environment :: Boolean |
+    withSelector: #isCompileTimeDirectlyEvaluableWith: addMethod: {:(Std Reflection AST Node)self :(Std Reflection Semantic EvaluationEnvironment)environment :: Boolean |
         true
     }.
 
-Reflection AST CleanUpScopeNode
-    withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST CleanUpScopeNode)self :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+Std Reflection AST CleanUpScopeNode
+    withSelector: #analyzeNodeWith: addMethod: {:(Std Reflection AST CleanUpScopeNode)self :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
         let: #cleanUpScope with: (analyzer environment cleanUpScope makeChildCleanUpScope).
         let: #childEnvironment with: (analyzer environment copyWithCleanUpScope: cleanUpScope).
 
@@ -273,7 +277,7 @@ Reflection AST CleanUpScopeNode
             analysisScope: cleanUpScope;
             yourself
     };
-    withSelector: #evaluateNodeWith: addMethod: {:(Type)self :(Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+    withSelector: #evaluateNodeWith: addMethod: {:(Type)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         let: #result with: (self body evaluateNodeWith: evaluationEnvironment).
 
         if: self cleanUpAction isNotNil then: {
@@ -285,8 +289,8 @@ Reflection AST CleanUpScopeNode
         result
     }.
 
-Reflection AST LexicalScopeNode
-    withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST LexicalScopeNode)self :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+Std Reflection AST LexicalScopeNode
+    withSelector: #analyzeNodeWith: addMethod: {:(Std Reflection AST LexicalScopeNode)self :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
         let: #lexicalScope with: (analyzer environment lexicalScope makeChildLexicalScope).
         let: #childEnvironment with: (analyzer environment copyWithLexicalScope: lexicalScope).
 
@@ -297,16 +301,16 @@ Reflection AST LexicalScopeNode
             analyzedType: analyzedBody analyzedType _;
             yourself
     };
-    withSelector: #evaluateNodeWith: addMethod: {:(Type)self :(Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+    withSelector: #evaluateNodeWith: addMethod: {:(Type)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         self body evaluateNodeWith: evaluationEnvironment
     }.
 
-Reflection AST SequenceNode
-    withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST SequenceNode)self :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
-        let: #analyzedPragmas with: (self pragmas collect: {:(Reflection AST Node)node :: Reflection AST Node |
+Std Reflection AST SequenceNode
+    withSelector: #analyzeNodeWith: addMethod: {:(Std Reflection AST SequenceNode)self :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
+        let: #analyzedPragmas with: (self pragmas collect: {:(Std Reflection AST Node)node :: Std Reflection AST Node |
                 analyzer analyzedNodeIfNeeded: node withExpectedType: Pragma
         }).
-        let: #analyzedExpressions with: (self expressions collectWithIndex: {:(Reflection AST Node)node :(Size)index :: Reflection AST Node |
+        let: #analyzedExpressions with: (self expressions collectWithIndex: {:(Std Reflection AST Node)node :(Size)index :: Std Reflection AST Node |
                 if: index + 1sz < self expressions size then: {
                     analyzer analyzeNodeIfNeeded: node withExpectedType: Void.
                 } else: {
@@ -320,21 +324,21 @@ Reflection AST SequenceNode
             analyzedType: (if: analyzedExpressions isEmpty then: Void else: analyzedExpressions last analyzedType _);
             yourself
     };
-    withSelector: #evaluateNodeWith: addMethod: {:(Type)self :(Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+    withSelector: #evaluateNodeWith: addMethod: {:(Type)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         let: #result with: (AnyValue valueBox with: void).
         
-        self expressions do: {:(Reflection AST Node)node |
+        self expressions do: {:(Std Reflection AST Node)node |
             result _: (node evaluateNodeWith: evaluationEnvironment).
             void
         }.
 
         result _
     };
-    withSelector: #analyzeAndEvaluateNodeWith: addMethod: {:(Reflection AST Node)self :(Reflection Semantic ASTAnalyzer)analyzer :: AnyValue |
+    withSelector: #analyzeAndEvaluateNodeWith: addMethod: {:(Std Reflection AST Node)self :(Std Reflection Semantic ASTAnalyzer)analyzer :: AnyValue |
         let: #result with: (AnyValue valueBox with: void).
         let: #expressionCount with: self expressions size.
         
-        self expressions doWithIndex: {:(Reflection AST Node)node :(Size)index |
+        self expressions doWithIndex: {:(Std Reflection AST Node)node :(Size)index |
             if: index + 1sz = expressionCount then: {
                 result _: (node analyzeAndEvaluateNodeWith: analyzer).
             } else: {
@@ -346,8 +350,8 @@ Reflection AST SequenceNode
         result _
     }.
 
-Reflection AST IdentifierReferenceNode
-    withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST IdentifierReferenceNode)self :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+Std Reflection AST IdentifierReferenceNode
+    withSelector: #analyzeNodeWith: addMethod: {:(Std Reflection AST IdentifierReferenceNode)self :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
         let: #binding with: (analyzer environment lexicalScope lookupSymbolRecursively: self value).
         
         if: binding isNil then: {
@@ -356,12 +360,12 @@ Reflection AST IdentifierReferenceNode
             binding _ analyzeIdentifierReferenceNode: self with: analyzer
         }
     };
-    withSelector: #evaluateNodeWith: addMethod: {:(Type)self :(Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+    withSelector: #evaluateNodeWith: addMethod: {:(Type)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         self binding evaluateBindingWithEnvironment: evaluationEnvironment
     }.
 
-Reflection AST MessageSendNode
-    withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST MessageSendNode)self :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+Std Reflection AST MessageSendNode
+    withSelector: #analyzeNodeWith: addMethod: {:(Std Reflection AST MessageSendNode)self :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
         let: #analyzedSelector with: (analyzer analyzeNodeIfNeededWithAutoType: self selector).
         if: self receiver isNil then: {
             if: analyzedSelector isLiteralValueNode then: {
@@ -386,15 +390,15 @@ Reflection AST MessageSendNode
                 yourself) with: analyzer
         }.
     };
-    withSelector: #evaluateNodeWith: addMethod: {:(Reflection AST MessageSendNode)self :(Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+    withSelector: #evaluateNodeWith: addMethod: {:(Std Reflection AST MessageSendNode)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         if: self receiver isNil then: {
-            self boundMethod run: (self selector evaluateNodeWith: evaluationEnvironment) with: (self arguments collect: {:(Reflection AST Node)arg :: AnyValue |
+            self boundMethod run: (self selector evaluateNodeWith: evaluationEnvironment) with: (self arguments collect: {:(Std Reflection AST Node)arg :: AnyValue |
                 arg evaluateNodeWith: evaluationEnvironment
             }) in: nil
         } else: {
             let: #receiver with: (self receiver _ evaluateNodeWith: evaluationEnvironment).
             let: #selector with: (self selector evaluateNodeWith: evaluationEnvironment).
-            let: #arguments with: (self arguments collect: {:(Reflection AST Node)arg :: AnyValue |
+            let: #arguments with: (self arguments collect: {:(Std Reflection AST Node)arg :: AnyValue |
                     arg evaluateNodeWith: evaluationEnvironment
             }).
 
@@ -406,9 +410,9 @@ Reflection AST MessageSendNode
         }
     }.
 
-Reflection AST ChainedMessageNode
-    withSelector: #asMessageSendNodeWithReceiver: addMethod: {:(Reflection AST ChainedMessageNode)self :(Reflection AST Node)receiver :: Reflection AST Node |
-        Reflection AST MessageSendNode basicNewWithNamedSlots: #{
+Std Reflection AST ChainedMessageNode
+    withSelector: #asMessageSendNodeWithReceiver: addMethod: {:(Std Reflection AST ChainedMessageNode)self :(Std Reflection AST Node)receiver :: Std Reflection AST Node |
+        Std Reflection AST MessageSendNode basicNewWithNamedSlots: #{
             sourcePosition: self sourcePosition.
             receiver: receiver.
             selector: self selector.
@@ -416,14 +420,14 @@ Reflection AST ChainedMessageNode
         }
     }.
 
-Reflection AST MessageChainNode
-    withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST SequenceNode)self :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
-        let: #receiverSymbol with: (Reflection MessageChainReceiverAnonymousSymbol basicNewWithNamedSlots: #{
+Std Reflection AST MessageChainNode
+    withSelector: #analyzeNodeWith: addMethod: {:(Std Reflection AST SequenceNode)self :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
+        let: #receiverSymbol with: (Std Reflection MessageChainReceiverAnonymousSymbol basicNewWithNamedSlots: #{
             sourcePosition: self sourcePosition
         }).
-        let: #receiverVariable with: (Reflection AST LocalVariableDefinitionNode basicNewWithNamedSlots: #{
+        let: #receiverVariable with: (Std Reflection AST LocalVariableDefinitionNode basicNewWithNamedSlots: #{
             sourcePosition: self sourcePosition.
-            nameExpression: (Reflection AST LiteralValueNode basicNewWithNamedSlots: #{
+            nameExpression: (Std Reflection AST LiteralValueNode basicNewWithNamedSlots: #{
                 sourcePosition: self sourcePosition.
                 value: receiverSymbol
             }).
@@ -431,48 +435,48 @@ Reflection AST MessageChainNode
             hasDirectTypeInference: true.
         }).
 
-        let: #receiverIdentifier with: (Reflection AST IdentifierReferenceNode basicNewWithNamedSlots: #{
+        let: #receiverIdentifier with: (Std Reflection AST IdentifierReferenceNode basicNewWithNamedSlots: #{
             sourcePosition: self sourcePosition.
             value: receiverSymbol.
         }).
 
-        let: #messageSequenceNode with: (Reflection AST SequenceNode basicNewWithNamedSlots: #{
+        let: #messageSequenceNode with: (Std Reflection AST SequenceNode basicNewWithNamedSlots: #{
             sourcePosition: self sourcePosition.
-            expressions: (self chainedMessages collect: {:(Reflection AST Node)node :: Reflection AST Node |
+            expressions: (self chainedMessages collect: {:(Std Reflection AST Node)node :: Std Reflection AST Node |
                 node asMessageSendNodeWithReceiver: receiverIdentifier
             })
         }).
 
-        let: #sequenceNode with: (Reflection AST SequenceNode basicNewWithNamedSlots: #{
+        let: #sequenceNode with: (Std Reflection AST SequenceNode basicNewWithNamedSlots: #{
             sourcePosition: self sourcePosition.
-            expressions: (Reflection AST Node sharedArraySlice with: receiverVariable with: messageSequenceNode)
+            expressions: (Std Reflection AST Node sharedArraySlice with: receiverVariable with: messageSequenceNode)
         }).
 
         analyzer analyzeNodeIfNeededWithCurrentExpectedType: sequenceNode
     }.
 
-Reflection AST ErrorNode
-    withSelector: #isErrorNode addMethod: {:(Reflection AST ErrorNode)self :: Boolean |
+Std Reflection AST ErrorNode
+    withSelector: #isErrorNode addMethod: {:(Std Reflection AST ErrorNode)self :: Boolean |
         true
     }.
 
-Reflection AST ParseErrorNode
-    withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST ParseErrorNode)self :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+Std Reflection AST ParseErrorNode
+    withSelector: #analyzeNodeWith: addMethod: {:(Std Reflection AST ParseErrorNode)self :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
         self shallowCopy
             analyzedType: CompilationError;
             yourself
     };
-    withSelector: #evaluateNodeWith: addMethod: {:(Type)self :(Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+    withSelector: #evaluateNodeWith: addMethod: {:(Type)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         __BootstrapCompiler__ parseError: self message at: self sourcePosition
     }.
 
-Reflection AST SemanticErrorNode
-    withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST SemanticErrorNode)self :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+Std Reflection AST SemanticErrorNode
+    withSelector: #analyzeNodeWith: addMethod: {:(Std Reflection AST SemanticErrorNode)self :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
         self shallowCopy
             analyzedType: CompilationError;
             yourself
     };
-    withSelector: #evaluateNodeWith: addMethod: {:(Reflection AST SemanticErrorNode)self :(Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+    withSelector: #evaluateNodeWith: addMethod: {:(Std Reflection AST SemanticErrorNode)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         if: self innerNode isNotNil then: {
             self innerNode evaluateNodeWith: evaluationEnvironment
         } else: {void}.

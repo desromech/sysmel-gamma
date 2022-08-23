@@ -21,6 +21,7 @@ __BootstrapCompiler__
     addBasicTypeNamed: #Object with: (__TypeBuilder__ newGCClassWithSuperclass: AnyValue slots: #{});
 
     enterTopLevelNamespace;
+    enterNamespaceNamed: #Std;
     enterNamespaceNamed: #Reflection;
     addBasicTypeNamed: #ProgramEntityVisibility with: (__TypeBuilder__ newEnumTypeWith: #{
         Undefined: Undefined.
@@ -37,7 +38,7 @@ __BootstrapCompiler__
     addBasicTypeNamed: #ProgramEntity with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
 
     enterTopLevelNamespace;
-    addBasicTypeNamed: #Type with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection ProgramEntity slots: #{});
+    addBasicTypeNamed: #Type with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection ProgramEntity slots: #{});
     addBasicTypeNamed: #SimpleType with: (__TypeBuilder__ newGCClassWithSuperclass: Type slots: #{});
     addBasicTypeNamed: #MetaType with: (__TypeBuilder__ newGCClassWithSuperclass: Type slots: #{});
     addBasicTypeNamed: #Trait with: (__TypeBuilder__ newGCClassWithSuperclass: Type slots: #{});
@@ -53,28 +54,29 @@ __BootstrapCompiler__
     addBasicTypeNamed: #CompilationError with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
 
     enterTopLevelNamespace;
+    enterNamespaceNamed: #Std;
     enterNamespaceNamed: #Reflection;
     addBasicTypeNamed: #TypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
-    addBasicTypeNamed: #TrivialTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection TypeSchema slots: #{});
-    addBasicTypeNamed: #AbsurdTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection TypeSchema slots: #{});
-    addBasicTypeNamed: #SumTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection TypeSchema slots: #{});
-    addBasicTypeNamed: #PrimitiveTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection TypeSchema slots: #{});
-    addBasicTypeNamed: #ProductTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection TypeSchema slots: #{});
-    addBasicTypeNamed: #RecordTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection ProductTypeSchema slots: #{});
-    addBasicTypeNamed: #GCClassTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection RecordTypeSchema slots: #{});
-    addBasicTypeNamed: #ArrayTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection TypeSchema slots: #{});
-    addBasicTypeNamed: #PointerTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection TypeSchema slots: #{});
-    addBasicTypeNamed: #ReferenceTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection TypeSchema slots: #{});
+    addBasicTypeNamed: #TrivialTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection TypeSchema slots: #{});
+    addBasicTypeNamed: #AbsurdTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection TypeSchema slots: #{});
+    addBasicTypeNamed: #SumTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection TypeSchema slots: #{});
+    addBasicTypeNamed: #PrimitiveTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection TypeSchema slots: #{});
+    addBasicTypeNamed: #ProductTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection TypeSchema slots: #{});
+    addBasicTypeNamed: #RecordTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection ProductTypeSchema slots: #{});
+    addBasicTypeNamed: #GCClassTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection RecordTypeSchema slots: #{});
+    addBasicTypeNamed: #ArrayTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection TypeSchema slots: #{});
+    addBasicTypeNamed: #PointerTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection TypeSchema slots: #{});
+    addBasicTypeNamed: #ReferenceTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection TypeSchema slots: #{});
 
-    addBasicTypeNamed: #FunctionProgramEntity with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection ProgramEntity slots: #{});
-    addBasicTypeNamed: #BootstrapBlockClosure with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection FunctionProgramEntity slots: #{});
-    addBasicTypeNamed: #BlockClosure with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection FunctionProgramEntity slots: #{});
-    addBasicTypeNamed: #AbstractPrimitiveMethod with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection FunctionProgramEntity slots: #{});
-    addBasicTypeNamed: #BootstrapPrimitiveMethod with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AbstractPrimitiveMethod slots: #{});
-    addBasicTypeNamed: #TypeSchemaPrimitiveMethod with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AbstractPrimitiveMethod slots: #{});
-    addBasicTypeNamed: #RecordTypeAccessorPrimitiveMethod with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AbstractPrimitiveMethod slots: #{});
-    addBasicTypeNamed: #RecordTypeGetterPrimitiveMethod with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection RecordTypeAccessorPrimitiveMethod slots: #{});
-    addBasicTypeNamed: #RecordTypeSetterPrimitiveMethod with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection RecordTypeAccessorPrimitiveMethod slots: #{});
+    addBasicTypeNamed: #FunctionProgramEntity with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection ProgramEntity slots: #{});
+    addBasicTypeNamed: #BootstrapBlockClosure with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection FunctionProgramEntity slots: #{});
+    addBasicTypeNamed: #BlockClosure with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection FunctionProgramEntity slots: #{});
+    addBasicTypeNamed: #AbstractPrimitiveMethod with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection FunctionProgramEntity slots: #{});
+    addBasicTypeNamed: #BootstrapPrimitiveMethod with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection AbstractPrimitiveMethod slots: #{});
+    addBasicTypeNamed: #TypeSchemaPrimitiveMethod with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection AbstractPrimitiveMethod slots: #{});
+    addBasicTypeNamed: #RecordTypeAccessorPrimitiveMethod with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection AbstractPrimitiveMethod slots: #{});
+    addBasicTypeNamed: #RecordTypeGetterPrimitiveMethod with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection RecordTypeAccessorPrimitiveMethod slots: #{});
+    addBasicTypeNamed: #RecordTypeSetterPrimitiveMethod with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection RecordTypeAccessorPrimitiveMethod slots: #{});
 
     addBindingNamed: #SourceCollection with: (__TypeBuilder__ newGCClassWithSlots: #{});
     addBindingNamed: #SourcePosition with: (__TypeBuilder__ newGCClassWithSlots: #{}).
@@ -810,25 +812,26 @@ Undefined
     }.
 
 
-Reflection ProgramEntity definePublicSlots: #{
-    parent: Reflection ProgramEntity optional.
+Std Reflection ProgramEntity definePublicSlots: #{
+    parent: Std Reflection ProgramEntity optional.
     name: String optional.
 }.
 
 Type definePublicSlots: #{
     supertype: Type optional.
-    schema: Reflection TypeSchema.
-    symbolTable: Reflection SymbolTable
+    schema: Std Reflection TypeSchema.
+    symbolTable: Std Reflection SymbolTable
 }.
 
 Function definePublicSlots: #{
-    bootstrapImplementation: Reflection FunctionProgramEntity optional.
-    implementation: Reflection FunctionProgramEntity optional.
+    bootstrapImplementation: Std Reflection FunctionProgramEntity optional.
+    implementation: Std Reflection FunctionProgramEntity optional.
 }.
 
 __BootstrapCompiler__
     enterTopLevelNamespace;
+    enterNamespaceNamed: #Std;
     enterNamespaceNamed: #Reflection;
-    addBasicTypeNamed: #Namespace with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection ProgramEntity slots: #{
-        symbolTable: Reflection SymbolTable
+    addBasicTypeNamed: #Namespace with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection ProgramEntity slots: #{
+        symbolTable: Std Reflection SymbolTable
     }).

@@ -1,21 +1,22 @@
 __BootstrapCompiler__
     enterTopLevelNamespace;
+    enterNamespaceNamed: #Std;
     enterNamespaceNamed: #Reflection;
     enterNamespaceNamed: #AST;
 
-    addBindingNamed: #IfTrueIfFalseNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
-        condition: Reflection AST Node.
-        trueExpression: Reflection AST Node optional.
-        falseExpression: Reflection AST Node optional.
+    addBindingNamed: #IfTrueIfFalseNode with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection AST Node publicSlots: #{
+        condition: Std Reflection AST Node.
+        trueExpression: Std Reflection AST Node optional.
+        falseExpression: Std Reflection AST Node optional.
     });
-    addBindingNamed: #WhileDoContinueNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
-        condition: Reflection AST Node.
-        bodyExpression: Reflection AST Node optional.
-        continueExpression: Reflection AST Node optional.
+    addBindingNamed: #WhileDoContinueNode with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection AST Node publicSlots: #{
+        condition: Std Reflection AST Node.
+        bodyExpression: Std Reflection AST Node optional.
+        continueExpression: Std Reflection AST Node optional.
     }).
 
-Reflection AST IfTrueIfFalseNode
-    withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST IfTrueIfFalseNode)self :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+Std Reflection AST IfTrueIfFalseNode
+    withSelector: #analyzeNodeWith: addMethod: {:(Std Reflection AST IfTrueIfFalseNode)self :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
         let: #analyzedNode with: self shallowCopy.
 
         analyzedNode condition: (analyzer analyzeNodeIfNeeded: self condition withExpectedType: Boolean).
@@ -53,7 +54,7 @@ Reflection AST IfTrueIfFalseNode
 
         analyzedNode
     };
-    withSelector: #evaluateNodeWith: addMethod: {:(Reflection AST IfTrueIfFalseNode)self :(Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+    withSelector: #evaluateNodeWith: addMethod: {:(Std Reflection AST IfTrueIfFalseNode)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         if: (self condition evaluateNodeWith: evaluationEnvironment) then: {
             if: self trueExpression isNil then: {
                 void
@@ -69,8 +70,8 @@ Reflection AST IfTrueIfFalseNode
         }
     }.
 
-Reflection AST WhileDoContinueNode
-    withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST WhileDoContinueNode)self :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+Std Reflection AST WhileDoContinueNode
+    withSelector: #analyzeNodeWith: addMethod: {:(Std Reflection AST WhileDoContinueNode)self :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
         let: #analyzedNode with: self shallowCopy.
 
         analyzedNode
@@ -93,7 +94,7 @@ Reflection AST WhileDoContinueNode
 
         analyzedNode
     };
-    withSelector: #evaluateNodeWith: addMethod: {:(Reflection AST WhileDoContinueNode)self :(Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+    withSelector: #evaluateNodeWith: addMethod: {:(Std Reflection AST WhileDoContinueNode)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         while: (self condition evaluateNodeWith: evaluationEnvironment) do: {
             if: self bodyExpression isNil then: {
                 void

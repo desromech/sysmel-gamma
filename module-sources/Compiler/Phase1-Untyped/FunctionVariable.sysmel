@@ -1,21 +1,22 @@
 __BootstrapCompiler__
     enterTopLevelNamespace;
+    enterNamespaceNamed: #Std;
     enterNamespaceNamed: #Reflection;
-    addBindingNamed: #FunctionVariable with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection Variable publicSlots: #{});
+    addBindingNamed: #FunctionVariable with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection Variable publicSlots: #{});
 
     enterNamespaceNamed: #AST;
-    addBindingNamed: #FunctionVariableReferenceNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST VariableReferenceNode publicSlots: #{}).
+    addBindingNamed: #FunctionVariableReferenceNode with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection AST VariableReferenceNode publicSlots: #{}).
 
-Reflection FunctionVariable
-    withSelector: #analyzeIdentifierReferenceNode:with: addMethod: {:(Reflection FunctionVariable)self :(Reflection AST IdentifierReferenceNode)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
-        Reflection AST FunctionVariableReferenceNode basicNewWithNamedSlots: #{
+Std Reflection FunctionVariable
+    withSelector: #analyzeIdentifierReferenceNode:with: addMethod: {:(Std Reflection FunctionVariable)self :(Std Reflection AST IdentifierReferenceNode)node :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
+        Std Reflection AST FunctionVariableReferenceNode basicNewWithNamedSlots: #{
             binding: self.
             analyzedType: self referenceType
         }
     }.
 
-Reflection AST FunctionVariableReferenceNode
-    withSelector: #evaluateNodeWith: addMethod: {:(Reflection AST LocalVariableReferenceNode)self :(Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+Std Reflection AST FunctionVariableReferenceNode
+    withSelector: #evaluateNodeWith: addMethod: {:(Std Reflection AST LocalVariableReferenceNode)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         (evaluationEnvironment lexicalScope lookupSymbolRecursively: self binding) _ 
             evaluateBindingWithEnvironment: evaluationEnvironment
     }.

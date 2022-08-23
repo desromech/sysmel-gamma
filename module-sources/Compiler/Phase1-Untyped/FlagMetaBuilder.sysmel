@@ -1,53 +1,45 @@
 ## Type definition builder.
 __BootstrapCompiler__
     enterTopLevelNamespace;
+    enterNamespaceNamed: #Std;
     enterNamespaceNamed: #MetaProgramming;
-    addBindingNamed: #FlagMetaBuilder with: (__TypeBuilder__ newGCClassWithSuperclass: MetaProgramming MetaBuilder slots: #{}).
+    addBindingNamed: #FlagMetaBuilder with: (__TypeBuilder__ newGCClassWithSuperclass: Std MetaProgramming MetaBuilder slots: #{}).
 
 __BootstrapCompiler__
     enterTopLevelNamespace;
-    addBindingNamed: #public with: {:(MacroInvocationContext)macroSelf :: Reflection AST MetaBuilderInstanceNode |
+    addBindingNamed: #public with: {:(MacroInvocationContext)macroSelf :: Std Reflection AST MetaBuilderInstanceNode |
         <macro>
         <messageMethod>
-        (MetaProgramming FlagMetaBuilder withContext: macroSelf)
-            programEntityAttributes: (MetaProgramming ProgramEntityMetaBuilderAttributes basicNewWithNamedSlots: #{
-                visibility: Reflection ProgramEntityVisibility Public basicNew
+        (Std MetaProgramming FlagMetaBuilder withContext: macroSelf)
+            programEntityAttributes: (Std MetaProgramming ProgramEntityMetaBuilderAttributes basicNewWithNamedSlots: #{
+                visibility: Std Reflection ProgramEntityVisibility Public basicNew
             });
             makeInstanceNode
-    }.
-
-__BootstrapCompiler__
-    enterTopLevelNamespace;
-    addBindingNamed: #protected with: {:(MacroInvocationContext)macroSelf :: Reflection AST MetaBuilderInstanceNode |
+    };
+    addBindingNamed: #protected with: {:(MacroInvocationContext)macroSelf :: Std Reflection AST MetaBuilderInstanceNode |
         <macro>
         <messageMethod>
-        (MetaProgramming FlagMetaBuilder withContext: macroSelf)
-            programEntityAttributes: (MetaProgramming ProgramEntityMetaBuilderAttributes basicNewWithNamedSlots: #{
-                visibility: Reflection ProtectedVisibility basicNew
+        (Std MetaProgramming FlagMetaBuilder withContext: macroSelf)
+            programEntityAttributes: (Std MetaProgramming ProgramEntityMetaBuilderAttributes basicNewWithNamedSlots: #{
+                visibility: Std Reflection ProtectedVisibility basicNew
             });
             makeInstanceNode
-    }.
-
-__BootstrapCompiler__
-    enterTopLevelNamespace;
-    addBindingNamed: #private with: {:(MacroInvocationContext)macroSelf :: Reflection AST MetaBuilderInstanceNode |
+    };
+    addBindingNamed: #private with: {:(MacroInvocationContext)macroSelf :: Std Reflection AST MetaBuilderInstanceNode |
         <macro>
         <messageMethod>
-        (MetaProgramming FlagMetaBuilder withContext: macroSelf)
-            programEntityAttributes: (MetaProgramming ProgramEntityMetaBuilderAttributes basicNewWithNamedSlots: #{
-                visibility: Reflection PrivateVisibility basicNew
+        (Std MetaProgramming FlagMetaBuilder withContext: macroSelf)
+            programEntityAttributes: (Std MetaProgramming ProgramEntityMetaBuilderAttributes basicNewWithNamedSlots: #{
+                visibility: Std Reflection PrivateVisibility basicNew
             });
             makeInstanceNode
-    }.
-
-__BootstrapCompiler__
-    enterTopLevelNamespace;
-    addBindingNamed: #internal with: {:(MacroInvocationContext)macroSelf :: Reflection AST MetaBuilderInstanceNode |
+    };
+    addBindingNamed: #internal with: {:(MacroInvocationContext)macroSelf :: Std Reflection AST MetaBuilderInstanceNode |
         <macro>
         <messageMethod>
-        (MetaProgramming FlagMetaBuilder withContext: macroSelf)
-            programEntityAttributes: (MetaProgramming ProgramEntityMetaBuilderAttributes basicNewWithNamedSlots: #{
-                visibility: Reflection InternalVisibility basicNew
+        (Std MetaProgramming FlagMetaBuilder withContext: macroSelf)
+            programEntityAttributes: (Std MetaProgramming ProgramEntityMetaBuilderAttributes basicNewWithNamedSlots: #{
+                visibility: Std Reflection InternalVisibility basicNew
             });
             makeInstanceNode
     }.

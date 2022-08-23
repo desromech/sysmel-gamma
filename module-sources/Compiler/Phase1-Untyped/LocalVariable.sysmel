@@ -1,14 +1,15 @@
 __BootstrapCompiler__
     enterTopLevelNamespace;
+    enterNamespaceNamed: #Std;
     enterNamespaceNamed: #Reflection;
-    addBindingNamed: #LocalVariable with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection FunctionVariable publicSlots: #{});
+    addBindingNamed: #LocalVariable with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection FunctionVariable publicSlots: #{});
 
     enterNamespaceNamed: #AST;
-    addBindingNamed: #LocalVariableDefinitionNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST VariableDefinitionNode publicSlots: #{
+    addBindingNamed: #LocalVariableDefinitionNode with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection AST VariableDefinitionNode publicSlots: #{
     }).
 
-Reflection AST LocalVariableDefinitionNode
-    withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST LocalVariableDefinitionNode)self :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+Std Reflection AST LocalVariableDefinitionNode
+    withSelector: #analyzeNodeWith: addMethod: {:(Std Reflection AST LocalVariableDefinitionNode)self :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
         let: #analyzedNode with: self shallowCopy.
         let: #name with: (if: self nameExpression isNotNil
             then: (self nameExpression _ analyzeAndEvaluateNodeWith: analyzer)
@@ -17,7 +18,7 @@ Reflection AST LocalVariableDefinitionNode
             })
         ).
         let: #sanitizedName with: (name asSanitizedNameSymbolFor: self sourcePosition).
-        let: #errorNode with: (Reflection AST Node optional valueBox with: nil).
+        let: #errorNode with: (Std Reflection AST Node optional valueBox with: nil).
 
         let: #existentBinding with: (analyzer environment lexicalScope lookupSymbol: sanitizedName).
 
@@ -56,7 +57,7 @@ Reflection AST LocalVariableDefinitionNode
 
             ## TODO: Add support for mutability.
             let: #variableReferenceType with: valueType.
-            let: #variable with: (Reflection LocalVariable basicNewWithNamedSlots: #{
+            let: #variable with: (Std Reflection LocalVariable basicNewWithNamedSlots: #{
                 name: sanitizedName.
                 valueType: valueType.
                 referenceType: variableReferenceType.
@@ -80,7 +81,7 @@ Reflection AST LocalVariableDefinitionNode
             analyzedNode
         }.
     };
-    withSelector: #evaluateNodeWith: addMethod: {:(Reflection AST LocalVariableDefinitionNode)self :(Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+    withSelector: #evaluateNodeWith: addMethod: {:(Std Reflection AST LocalVariableDefinitionNode)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         ## TODO: Add support for mutability.
         
         let: #initialValue with: (self initialValueExpression _ evaluateNodeWith: evaluationEnvironment).

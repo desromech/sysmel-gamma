@@ -1,10 +1,10 @@
 __BootstrapCompiler__ setSemanticAnalysisMapping: #{
-    FunctionSignatureAnalyzer: Reflection Semantic FunctionSignatureAnalyzer.
-    SymbolValueBinding: Reflection Semantic SymbolValueBinding.
-    IdentifierLookupScope: Reflection Semantic IdentifierLookupScope.
-    LexicalScope: Reflection Semantic LexicalScope.
-    NamespaceLookupScope: Reflection Semantic NamespaceLookupScope.
-    ScriptEvaluationScope: Reflection Semantic ScriptEvaluationScope.
-    EvaluationEnvironment: Reflection Semantic EvaluationEnvironment.
-    ASTAnalyzer: Reflection Semantic ASTAnalyzer.
+    FunctionSignatureAnalyzer: Std Reflection Semantic FunctionSignatureAnalyzer.
+    SymbolValueBinding: Std Reflection Semantic SymbolValueBinding.
+    IdentifierLookupScope: Std Reflection Semantic IdentifierLookupScope.
+    LexicalScope: Std Reflection Semantic LexicalScope.
+    NamespaceLookupScope: Std Reflection Semantic NamespaceLookupScope.
+    ScriptEvaluationScope: Std Reflection Semantic ScriptEvaluationScope.
+    EvaluationEnvironment: Std Reflection Semantic EvaluationEnvironment.
+    ASTAnalyzer: Std Reflection Semantic ASTAnalyzer.
 }.

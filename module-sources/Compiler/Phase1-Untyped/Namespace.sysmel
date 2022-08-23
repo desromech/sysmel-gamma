@@ -1,60 +1,61 @@
 __BootstrapCompiler__
     enterTopLevelNamespace;
+    enterNamespaceNamed: #Std;
     enterNamespaceNamed: #Reflection;
     enterNamespaceNamed: #AST;
-    addBindingNamed: #NamespaceDefinitionNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST ProgramEntityDefinitionNode publicSlots: #{
-        nameExpression: Reflection AST Node optional.
-        bodyExpression: Reflection AST Node optional.
-        bodyLexicalScope: Reflection Semantic LexicalScope optional
+    addBindingNamed: #NamespaceDefinitionNode with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection AST ProgramEntityDefinitionNode publicSlots: #{
+        nameExpression: Std Reflection AST Node optional.
+        bodyExpression: Std Reflection AST Node optional.
+        bodyLexicalScope: Std Reflection Semantic LexicalScope optional
     }).
 
-Reflection ProgramEntity
-    withSelector: #getOrCreateChildNamespaceNamed: addMethod: {:(Reflection ProgramEntity)self :(Object)name :: Reflection Namespace |
+Std Reflection ProgramEntity
+    withSelector: #getOrCreateChildNamespaceNamed: addMethod: {:(Std Reflection ProgramEntity)self :(Object)name :: Std Reflection Namespace |
         __BootstrapCompiler__ subclassResponsibility
     }.
 
-Reflection Namespace
-    withSelector: #isDefinitionOwner addMethod: {:(Reflection Namespace)self :: Boolean |
+Std Reflection Namespace
+    withSelector: #isDefinitionOwner addMethod: {:(Std Reflection Namespace)self :: Boolean |
         true
     };
-    withSelector: #canHaveTypes addMethod: {:(Reflection Namespace)self :: Boolean |
+    withSelector: #canHaveTypes addMethod: {:(Std Reflection Namespace)self :: Boolean |
         true
     };
-    withSelector: #canHaveFunctions addMethod: {:(Reflection ProgramEntity)self :: Boolean |
+    withSelector: #canHaveFunctions addMethod: {:(Std Reflection ProgramEntity)self :: Boolean |
         true
     };
-    withSelector: #canHaveGlobals addMethod: {:(Reflection ProgramEntity)self :: Boolean |
+    withSelector: #canHaveGlobals addMethod: {:(Std Reflection ProgramEntity)self :: Boolean |
         true
     };
-    withSelector: #canHaveMethods addMethod: {:(Reflection Namespace)self :: Boolean |
+    withSelector: #canHaveMethods addMethod: {:(Std Reflection Namespace)self :: Boolean |
         true
     };
-    withSelector: #canHaveNamespaces addMethod: {:(Reflection Namespace)self :: Boolean |
+    withSelector: #canHaveNamespaces addMethod: {:(Std Reflection Namespace)self :: Boolean |
         true
     };
-    withSelector: #getOrCreateChildNamespaceNamed: addMethod: {:(Reflection ProgramEntity)self :(Object)name :: Reflection Namespace |
+    withSelector: #getOrCreateChildNamespaceNamed: addMethod: {:(Std Reflection ProgramEntity)self :(Object)name :: Std Reflection Namespace |
         <primitive: #"namespace.getOrCreateChildNamespaceNamed">
         __BootstrapCompiler__ primitiveFailed
     };
-    withSelector: #lookupPublicSymbol: addMethod: {:(Reflection Namespace)self :(Object)symbol :: Reflection SymbolBinding optional |
+    withSelector: #lookupPublicSymbol: addMethod: {:(Std Reflection Namespace)self :(Object)symbol :: Std Reflection SymbolBinding optional |
         self symbolTable lookupSymbol: symbol
     };
-    withSelector: #lookupScopeSymbol: addMethod: {:(Reflection Namespace)self :(Object)symbol :: Reflection SymbolBinding optional |
+    withSelector: #lookupScopeSymbol: addMethod: {:(Std Reflection Namespace)self :(Object)symbol :: Std Reflection SymbolBinding optional |
         self symbolTable lookupSymbol: symbol
     };
-    withSelector: #setSymbol:visibility:immutableValue: addMethod: {:(Reflection Namespace)self :(Object)symbol :(Reflection ProgramEntityVisibility)visibility :(AnyValue)immutableValue :: Void |
+    withSelector: #setSymbol:visibility:immutableValue: addMethod: {:(Std Reflection Namespace)self :(Object)symbol :(Std Reflection ProgramEntityVisibility)visibility :(AnyValue)immutableValue :: Void |
         self symbolTable setSymbol: symbol immutableValue: immutableValue
     }.
 
-Reflection AST NamespaceDefinitionNode
-    withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST NamespaceDefinitionNode)self :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+Std Reflection AST NamespaceDefinitionNode
+    withSelector: #analyzeNodeWith: addMethod: {:(Std Reflection AST NamespaceDefinitionNode)self :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
         let: #ownerProgramEntity with: (analyzer environment lexicalScope lookupCurrentProgramEntity).
         let: #hasValidOwner with: (if: ownerProgramEntity isNotNil then: ownerProgramEntity _ canHaveNamespaces else: false).
 
         if: hasValidOwner then: {
             let: #name with: (if: self nameExpression isNotNil
                 then: (self nameExpression _ analyzeAndEvaluateNodeWith: analyzer)
-                else: (Reflection AnonymousSymbol basicNewWithNamedSlots: #{
+                else: (Std Reflection AnonymousSymbol basicNewWithNamedSlots: #{
                     sourcePosition: self sourcePosition
                 })
             ).
@@ -69,7 +70,7 @@ Reflection AST NamespaceDefinitionNode
                 analyzedType: childNamespace __type__.
 
             if: analyzedNode bodyExpression isNotNil then: {
-                let: #namespaceScope with: (Reflection Semantic NamespaceLookupScope basicNewWithNamedSlots: #{
+                let: #namespaceScope with: (Std Reflection Semantic NamespaceLookupScope basicNewWithNamedSlots: #{
                     parent: analyzer environment lexicalScope.
                     programEntity: childNamespace
                 }).
@@ -88,9 +89,9 @@ Reflection AST NamespaceDefinitionNode
             analyzer makeSemanticAnalysisError: "A namespace cannot be defined in this location." at: self sourcePosition.
         }
     };
-    withSelector: #evaluateNodeWith: addMethod: {:(Reflection AST NamespaceDefinitionNode)self :(Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+    withSelector: #evaluateNodeWith: addMethod: {:(Std Reflection AST NamespaceDefinitionNode)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         if: self bodyExpression isNotNil then: {
-            let: #namespaceScope with: (Reflection Semantic NamespaceLookupScope basicNewWithNamedSlots: #{
+            let: #namespaceScope with: (Std Reflection Semantic NamespaceLookupScope basicNewWithNamedSlots: #{
                 parent: evaluationEnvironment lexicalScope.
                 programEntity: self analyzedProgramEntity _
             }).

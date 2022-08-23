@@ -1,13 +1,14 @@
 __BootstrapCompiler__
     enterTopLevelNamespace;
+    enterNamespaceNamed: #Std;
     enterNamespaceNamed: #Reflection;
     enterNamespaceNamed: #AST;
-    addBindingNamed: #StructureDefinitionNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST TypeDefinitionNode publicSlots: #{
+    addBindingNamed: #StructureDefinitionNode with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection AST TypeDefinitionNode publicSlots: #{
         packed: Boolean optional
     }).
 
-Reflection AST StructureDefinitionNode
-    withSelector: #constructTypeInstance addMethod: {:(Reflection AST StructureDefinitionNode)self :: Type |
+Std Reflection AST StructureDefinitionNode
+    withSelector: #constructTypeInstance addMethod: {:(Std Reflection AST StructureDefinitionNode)self :: Type |
         if: (if: self packed isNotNil then: self packed _ else: false) then: {
             __TypeBuilder__ newEmptyPackedRecordType
         } else: {

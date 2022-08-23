@@ -31,49 +31,49 @@ __BootstrapCompiler__
         index
     });
 
-    printLine: Reflection SourcePosition basicNew;
-    printLine: (Reflection AST Node basicNewWithNamedSlots: #{
-        sourcePosition: Reflection SourcePosition basicNew
+    printLine: Std Reflection SourcePosition basicNew;
+    printLine: (Std Reflection AST Node basicNewWithNamedSlots: #{
+        sourcePosition: Std Reflection SourcePosition basicNew
     });
     printLine: Int32 basicNew;
     printLine: (Int32 basicNew: -42);
-    printLine: Reflection Semantic ASTAnalyzer __type__;
+    printLine: Std Reflection Semantic ASTAnalyzer __type__;
 
-    printLine: (`'1 analyzeNodeIfNeededWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
-    printLine: (`'1 analyzeAndEvaluateNodeWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
+    printLine: (`'1 analyzeNodeIfNeededWith: Std Reflection Semantic ASTAnalyzer forDefaultEnvironment);
+    printLine: (`'1 analyzeAndEvaluateNodeWith: Std Reflection Semantic ASTAnalyzer forDefaultEnvironment);
 
-    printLine: (`'(1 + 1) analyzeNodeIfNeededWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
-    printLine: (`'(1 + 1) analyzeAndEvaluateNodeWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
+    printLine: (`'(1 + 1) analyzeNodeIfNeededWith: Std Reflection Semantic ASTAnalyzer forDefaultEnvironment);
+    printLine: (`'(1 + 1) analyzeAndEvaluateNodeWith: Std Reflection Semantic ASTAnalyzer forDefaultEnvironment);
 
-    printLine: (`'{} analyzeNodeIfNeededWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
-    printLine: (`'{} analyzeAndEvaluateNodeWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
+    printLine: (`'{} analyzeNodeIfNeededWith: Std Reflection Semantic ASTAnalyzer forDefaultEnvironment);
+    printLine: (`'{} analyzeAndEvaluateNodeWith: Std Reflection Semantic ASTAnalyzer forDefaultEnvironment);
 
-    printLine: (`'{1 . 1 + 1} analyzeNodeIfNeededWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
-    printLine: (`'{1 . 1 + 1} analyzeAndEvaluateNodeWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
+    printLine: (`'{1 . 1 + 1} analyzeNodeIfNeededWith: Std Reflection Semantic ASTAnalyzer forDefaultEnvironment);
+    printLine: (`'{1 . 1 + 1} analyzeAndEvaluateNodeWith: Std Reflection Semantic ASTAnalyzer forDefaultEnvironment);
 
-    printLine: (`'(1 negated) analyzeNodeIfNeededWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
+    printLine: (`'(1 negated) analyzeNodeIfNeededWith: Std Reflection Semantic ASTAnalyzer forDefaultEnvironment);
 
-    printLine: (`'(if: true then: 1 else: 2) analyzeNodeIfNeededWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
-    printLine: (`'(if: true then: 1 else: 2) analyzeAndEvaluateNodeWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
-    printLine: (`'(if: false then: 1 else: 2) analyzeAndEvaluateNodeWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
+    printLine: (`'(if: true then: 1 else: 2) analyzeNodeIfNeededWith: Std Reflection Semantic ASTAnalyzer forDefaultEnvironment);
+    printLine: (`'(if: true then: 1 else: 2) analyzeAndEvaluateNodeWith: Std Reflection Semantic ASTAnalyzer forDefaultEnvironment);
+    printLine: (`'(if: false then: 1 else: 2) analyzeAndEvaluateNodeWith: Std Reflection Semantic ASTAnalyzer forDefaultEnvironment);
 
-    printLine: (`'(if: true then: 1) analyzeNodeIfNeededWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
-    printLine: (`'(if: false then: 1) analyzeAndEvaluateNodeWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
+    printLine: (`'(if: true then: 1) analyzeNodeIfNeededWith: Std Reflection Semantic ASTAnalyzer forDefaultEnvironment);
+    printLine: (`'(if: false then: 1) analyzeAndEvaluateNodeWith: Std Reflection Semantic ASTAnalyzer forDefaultEnvironment);
 
-    printLine: (`'{let: #testVar with: 1 . testVar} analyzeNodeIfNeededWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
-    printLine: (`'{let: #testVar with: 1 . testVar} analyzeAndEvaluateNodeWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
-    ##printLine: (`'(let: #testVar type: Int32 with: 1s32) analyzeNodeIfNeededWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
+    printLine: (`'{let: #testVar with: 1 . testVar} analyzeNodeIfNeededWith: Std Reflection Semantic ASTAnalyzer forDefaultEnvironment);
+    printLine: (`'{let: #testVar with: 1 . testVar} analyzeAndEvaluateNodeWith: Std Reflection Semantic ASTAnalyzer forDefaultEnvironment);
+    ##printLine: (`'(let: #testVar type: Int32 with: 1s32) analyzeNodeIfNeededWith: Std Reflection Semantic ASTAnalyzer forDefaultEnvironment);
 
-    printLine: (`'(let testVar := 42) analyzeNodeIfNeededWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
+    printLine: (`'(let testVar := 42) analyzeNodeIfNeededWith: Std Reflection Semantic ASTAnalyzer forDefaultEnvironment);
 
     printLine: nil isNil;
     printLine: nil isNotNil;
 
-    printLine: (`'{:(Int32)a :(Int32)b :: Int32 | a + b } analyzeNodeIfNeededWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
-    printLine: (`'{:(Int32)a :(Int32)b :: Int32 | a + b } analyzeAndEvaluateNodeWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment);
-    printLine: (`'{:(Int32)a :(Int32)b :: Int32 | a + b } analyzeAndEvaluateNodeWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment)(1i32, 2i32);
+    printLine: (`'{:(Int32)a :(Int32)b :: Int32 | a + b } analyzeNodeIfNeededWith: Std Reflection Semantic ASTAnalyzer forDefaultEnvironment);
+    printLine: (`'{:(Int32)a :(Int32)b :: Int32 | a + b } analyzeAndEvaluateNodeWith: Std Reflection Semantic ASTAnalyzer forDefaultEnvironment);
+    printLine: (`'{:(Int32)a :(Int32)b :: Int32 | a + b } analyzeAndEvaluateNodeWith: Std Reflection Semantic ASTAnalyzer forDefaultEnvironment)(1i32, 2i32);
 
-    printLine: (`'(struct testStruct) analyzeNodeIfNeededWith: Reflection Semantic ASTAnalyzer forDefaultEnvironment).
+    printLine: (`'(struct testStruct) analyzeNodeIfNeededWith: Std Reflection Semantic ASTAnalyzer forDefaultEnvironment).
 
 if: true then: {
     __BootstrapCompiler__ printLine: "then branch"

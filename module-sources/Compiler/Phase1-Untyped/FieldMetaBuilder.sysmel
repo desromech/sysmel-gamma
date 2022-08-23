@@ -1,31 +1,32 @@
 ## Let meta builder.
 __BootstrapCompiler__
     enterTopLevelNamespace;
+    enterNamespaceNamed: #Std;
     enterNamespaceNamed: #MetaProgramming;
-    addBindingNamed: #FieldMetaBuilder with: (__TypeBuilder__ newGCClassWithSuperclass: MetaProgramming NamedMetaBuilder slots: #{
-        typeExpression: Reflection AST Node optional.
-        initialValueExpression: Reflection AST Node optional.
+    addBindingNamed: #FieldMetaBuilder with: (__TypeBuilder__ newGCClassWithSuperclass: Std MetaProgramming NamedMetaBuilder slots: #{
+        typeExpression: Std Reflection AST Node optional.
+        initialValueExpression: Std Reflection AST Node optional.
     }).
 
-MetaProgramming FieldMetaBuilder
-    withSelector: #type addMethod: {:(MetaProgramming LetMetaBuilder)self :(Reflection AST Node)typeExpression :: Void |
+Std MetaProgramming FieldMetaBuilder
+    withSelector: #type addMethod: {:(Std MetaProgramming LetMetaBuilder)self :(Std Reflection AST Node)typeExpression :: Void |
         <metaBuilder>
         self typeExpression: typeExpression.
         void
     };
-    withSelector: #=> addMethod: {:(MetaProgramming LetMetaBuilder)self :(Reflection AST Node)typeExpression :: Void |
+    withSelector: #=> addMethod: {:(Std MetaProgramming LetMetaBuilder)self :(Std Reflection AST Node)typeExpression :: Void |
         <metaBuilder>
         self typeExpression: typeExpression.
         void
     };
-    withSelector: #":=" addMethod: {:(MetaProgramming LetMetaBuilder)self :(Reflection AST Node)initialValueExpression :: Void |
+    withSelector: #":=" addMethod: {:(Std MetaProgramming LetMetaBuilder)self :(Std Reflection AST Node)initialValueExpression :: Void |
         <metaBuilder>
         self initialValueExpression: initialValueExpression.
         self finish.
         void
     };
-    withSelector: #concretizeMetaBuilder addMethod: {:(MetaProgramming LetMetaBuilder)self :: Reflection AST Node |
-        (Reflection AST FieldVariableDefinitionNode basicNewWithNamedSlots: #{
+    withSelector: #concretizeMetaBuilder addMethod: {:(Std MetaProgramming LetMetaBuilder)self :: Std Reflection AST Node |
+        (Std Reflection AST FieldVariableDefinitionNode basicNewWithNamedSlots: #{
             sourcePosition: self metaContext sourcePosition.
             nameExpression: self nameExpression.
             typeExpression: self typeExpression.
@@ -33,9 +34,9 @@ MetaProgramming FieldMetaBuilder
         })
     }.
 
-MetaProgramming FlagMetaBuilder
-    withSelector: #field addMethod: {:(MetaProgramming FlagMetaBuilder)self :: Void |
+Std MetaProgramming FlagMetaBuilder
+    withSelector: #field addMethod: {:(Std MetaProgramming FlagMetaBuilder)self :: Void |
         <metaBuilder>
-        self delegateToMetaBuilderClass: MetaProgramming FieldMetaBuilder.
+        self delegateToMetaBuilderClass: Std MetaProgramming FieldMetaBuilder.
         void
     }.

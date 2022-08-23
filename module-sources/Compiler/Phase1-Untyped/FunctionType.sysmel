@@ -13,14 +13,14 @@ Function __type__
         <primitive: #"functionType.getArgumentCount">
         __BootstrapCompiler__ primitiveFailed
     };
-    withSelector: #makeFunctionSignatureAnalyzer addMethod: {:(Function __type__)self :: Reflection Semantic FunctionSignatureAnalyzer |
+    withSelector: #makeFunctionSignatureAnalyzer addMethod: {:(Function __type__)self :: Std Reflection Semantic FunctionSignatureAnalyzer |
         <primitive: #"functionType.makeFunctionSignatureAnalyzer">
         __BootstrapCompiler__ primitiveFailed
     };
-    withSelector: #analyzeMessageSendNode:with:valueBinding: addMethod: {:(Function __type__)self :(Reflection AST MessageSendNode)node :(Reflection Semantic ASTAnalyzer)analyzer :(Reflection Semantic SymbolValueBinding)binding :: Reflection AST Node |
+    withSelector: #analyzeMessageSendNode:with:valueBinding: addMethod: {:(Function __type__)self :(Std Reflection AST MessageSendNode)node :(Std Reflection Semantic ASTAnalyzer)analyzer :(Std Reflection Semantic SymbolValueBinding)binding :: Std Reflection AST Node |
         binding value analyzeMessageSendNode: node with: analyzer
     };
-    withSelector: #analyzeIdentifierReferenceNode:with:valueBinding: addMethod: {:(Function __type__)self :(Reflection AST IdentifierReferenceNode)node :(Reflection Semantic ASTAnalyzer)analyzer :(Reflection Semantic SymbolValueBinding)binding :: Reflection AST Node |
+    withSelector: #analyzeIdentifierReferenceNode:with:valueBinding: addMethod: {:(Function __type__)self :(Std Reflection AST IdentifierReferenceNode)node :(Std Reflection Semantic ASTAnalyzer)analyzer :(Std Reflection Semantic SymbolValueBinding)binding :: Std Reflection AST Node |
         if: binding value hasMacroFlag & binding value hasMessageMethodFlag then: {
             analyzer analyzeNodeIfNeededWithCurrentExpectedType: (binding value
                 run: node value
@@ -28,7 +28,7 @@ Function __type__
                 in: (analyzer makeMacroInvocationContextForIdentifierReferenceNode: node)
             )
         } else: {
-            Reflection AST LiteralValueNode basicNewWithNamedSlots: #{
+            Std Reflection AST LiteralValueNode basicNewWithNamedSlots: #{
                 sourcePosition: node sourcePosition.
                 analyzedType: self.
                 value: binding value
@@ -39,36 +39,36 @@ Function __type__
         <primitive: #"type.newSimpleFunctionType">
         __BootstrapCompiler__ primitiveFailed
     };
-    withSelector: #newWithImplementation: addMethod: {:(Function __type__)self :(Reflection FunctionProgramEntity)implementation :: self |
+    withSelector: #newWithImplementation: addMethod: {:(Function __type__)self :(Std Reflection FunctionProgramEntity)implementation :: self |
         <primitive: #"function.newWithImplementation">
         __BootstrapCompiler__ primitiveFailed
     }.
 
-Reflection Semantic FunctionSignatureAnalyzer
-    withSelector: #hasPendingArguments addMethod: {:(Reflection Semantic FunctionSignatureAnalyzer)self :: Boolean |
+Std Reflection Semantic FunctionSignatureAnalyzer
+    withSelector: #hasPendingArguments addMethod: {:(Std Reflection Semantic FunctionSignatureAnalyzer)self :: Boolean |
         <primitive: #"functionSignatureAnalyzer.hasPendingArguments">
         __BootstrapCompiler__ primitiveFailed
     };
-    withSelector: #evaluateNextSignatureType addMethod: {:(Reflection Semantic FunctionSignatureAnalyzer)self :: Reflection Semantic TypeOrForAllPlaceholder |
+    withSelector: #evaluateNextSignatureType addMethod: {:(Std Reflection Semantic FunctionSignatureAnalyzer)self :: Std Reflection Semantic TypeOrForAllPlaceholder |
         <primitive: #"functionSignatureAnalyzer.evaluateNextSignatureType">
         __BootstrapCompiler__ primitiveFailed
     };
-    withSelector: #computeResultType addMethod: {:(Reflection Semantic FunctionSignatureAnalyzer)self :: Type |
+    withSelector: #computeResultType addMethod: {:(Std Reflection Semantic FunctionSignatureAnalyzer)self :: Type |
         <primitive: #"functionSignatureAnalyzer.computeResultType">
         __BootstrapCompiler__ primitiveFailed
     };
-    withSelector: #advanceArgumentWithAnalyzedType: addMethod: {:(Reflection Semantic FunctionSignatureAnalyzer)self :(Type)analyzedType :: Void |
+    withSelector: #advanceArgumentWithAnalyzedType: addMethod: {:(Std Reflection Semantic FunctionSignatureAnalyzer)self :(Type)analyzedType :: Void |
         <primitive: #"functionSignatureAnalyzer.advanceArgument">
         __BootstrapCompiler__ primitiveFailed
     };
-    withSelector: #analyzeReceiverArgumentNode:with: addMethod: {:(Reflection Semantic FunctionSignatureAnalyzer)self :(Reflection AST Node)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+    withSelector: #analyzeReceiverArgumentNode:with: addMethod: {:(Std Reflection Semantic FunctionSignatureAnalyzer)self :(Std Reflection AST Node)node :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
         self analyzeArgumentNode: node with: analyzer
     };
-    withSelector: #analyzeArgumentNode:with: addMethod: {:(Reflection Semantic FunctionSignatureAnalyzer)self :(Reflection AST Node)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+    withSelector: #analyzeArgumentNode:with: addMethod: {:(Std Reflection Semantic FunctionSignatureAnalyzer)self :(Std Reflection AST Node)node :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
         if: self hasPendingArguments then: {
             let: #signatureTypeOrPlaceholder with: self evaluateNextSignatureType.
-            let: #analyzedNode with: (if: (signatureTypeOrPlaceholder is: Reflection Semantic ForAllPlaceholderBinding) then: {
-                let: #placeholder with: (signatureTypeOrPlaceholder get: Reflection Semantic ForAllPlaceholderBinding).
+            let: #analyzedNode with: (if: (signatureTypeOrPlaceholder is: Std Reflection Semantic ForAllPlaceholderBinding) then: {
+                let: #placeholder with: (signatureTypeOrPlaceholder get: Std Reflection Semantic ForAllPlaceholderBinding).
                 let: #directNode with: (analyzer analyzeNodeIfNeeded: node withTypeInferenceEnvironment: signatureType makeTypeInferenceEnvironment).
 
                 if: (signatureType matchAndSolveWithType: directNode _ analyzedType) then: {
@@ -87,7 +87,7 @@ Reflection Semantic FunctionSignatureAnalyzer
             analyzer makeSemanticAnalysisError: "Unexpected excessive argument." atNode: (analyzer analyzeNodeIfNeededWithAutoType: node)
         }
     };
-    withSelector: #annotateExtraSemanticAnalysisErrorsOn:with: addMethod: {:(Reflection Semantic FunctionSignatureAnalyzer)self :(Reflection AST Node)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+    withSelector: #annotateExtraSemanticAnalysisErrorsOn:with: addMethod: {:(Std Reflection Semantic FunctionSignatureAnalyzer)self :(Std Reflection AST Node)node :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
         if: self hasPendingArguments then: {
             analyzer makeSemanticAnalysisError: "Missing required arguments." atNode: node
         } else: {
@@ -96,7 +96,7 @@ Reflection Semantic FunctionSignatureAnalyzer
     }.
 
 Function
-    withSelector: #analyzeMessageSendNode:with: addMethod: {:(Function)self :(Reflection AST MessageSendNode)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+    withSelector: #analyzeMessageSendNode:with: addMethod: {:(Function)self :(Std Reflection AST MessageSendNode)node :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
         if: self hasMacroFlag then: {
             analyzer analyzeNodeIfNeededWithCurrentExpectedType: (self
                 run: (node selector analyzeAndEvaluateNodeWith: analyzer)
@@ -112,7 +112,7 @@ Function
             } else: {void}.
 
             analyzedNode
-                arguments: (node arguments collect: {:(Reflection AST Node)argumentNode :: Reflection AST Node |
+                arguments: (node arguments collect: {:(Std Reflection AST Node)argumentNode :: Std Reflection AST Node |
                     signatureAnalyzer analyzeArgumentNode: argumentNode with: analyzer
                 });
                 analyzedType: signatureAnalyzer computeResultType;

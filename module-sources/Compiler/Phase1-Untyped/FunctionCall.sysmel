@@ -1,44 +1,45 @@
 __BootstrapCompiler__
     enterTopLevelNamespace;
+    enterNamespaceNamed: #Std;
     enterNamespaceNamed: #Reflection;
     enterNamespaceNamed: #AST;
-    addBindingNamed: #FunctionCallNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST ProgramEntityDefinitionNode publicSlots: #{
-        functionExpression: Reflection AST Node.
-        argumentsExpression: Reflection AST Node optional.
-        analyzedArgumentSetupExpression: Reflection AST Node optional.
-        analyzedArgumentUnpackExpressions: Reflection AST Node sharedArraySlice.
+    addBindingNamed: #FunctionCallNode with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection AST ProgramEntityDefinitionNode publicSlots: #{
+        functionExpression: Std Reflection AST Node.
+        argumentsExpression: Std Reflection AST Node optional.
+        analyzedArgumentSetupExpression: Std Reflection AST Node optional.
+        analyzedArgumentUnpackExpressions: Std Reflection AST Node sharedArraySlice.
     }).
 
-Reflection AST Node
-    withSelector: #isDirectlyUnpackableArgumentList addMethod: {:(Reflection AST Node)self :: Boolean |
+Std Reflection AST Node
+    withSelector: #isDirectlyUnpackableArgumentList addMethod: {:(Std Reflection AST Node)self :: Boolean |
         false
     };
-    withSelector: #asDirectlyUnpackedArgumentList addMethod: {:(Reflection AST Node)self :: Reflection AST Node sharedArraySlice |
+    withSelector: #asDirectlyUnpackedArgumentList addMethod: {:(Std Reflection AST Node)self :: Std Reflection AST Node sharedArraySlice |
         __BootstrapCompiler__ subclassResponsibility
     }.
 
-Reflection AST SequenceNode
-    withSelector: #isDirectlyUnpackableArgumentList addMethod: {:(Reflection AST SequenceNode)self :: Boolean |
+Std Reflection AST SequenceNode
+    withSelector: #isDirectlyUnpackableArgumentList addMethod: {:(Std Reflection AST SequenceNode)self :: Boolean |
         if: self expressions size = 1sz & self pragmas isEmpty then: {
             (self expressions basicAt: 0sz) isDirectlyUnpackableArgumentList
         } else: {
             false
         }
     };
-    withSelector: #asDirectlyUnpackedArgumentList addMethod: {:(Reflection AST SequenceNode)self :: Reflection AST Node sharedArraySlice |
+    withSelector: #asDirectlyUnpackedArgumentList addMethod: {:(Std Reflection AST SequenceNode)self :: Std Reflection AST Node sharedArraySlice |
          (self expressions basicAt: 0sz) asDirectlyUnpackedArgumentList
     }.
 
-Reflection AST MakeTupleNode
-    withSelector: #isDirectlyUnpackableArgumentList addMethod: {:(Reflection AST MakeTupleNode)self :: Boolean |
+Std Reflection AST MakeTupleNode
+    withSelector: #isDirectlyUnpackableArgumentList addMethod: {:(Std Reflection AST MakeTupleNode)self :: Boolean |
         true
     };
-    withSelector: #asDirectlyUnpackedArgumentList addMethod: {:(Reflection AST MakeTupleNode)self :: Reflection AST Node sharedArraySlice |
+    withSelector: #asDirectlyUnpackedArgumentList addMethod: {:(Std Reflection AST MakeTupleNode)self :: Std Reflection AST Node sharedArraySlice |
         self elements
     }.
 
-Reflection AST FunctionCallNode
-    withSelector: #analyzeNodeWith: addMethod: {:(Reflection AST FunctionCallNode)self :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+Std Reflection AST FunctionCallNode
+    withSelector: #analyzeNodeWith: addMethod: {:(Std Reflection AST FunctionCallNode)self :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
         let: #analyzedNode with: (self shallowCopy).
 
         analyzedNode functionExpression: (analyzer analyzeNodeIfNeededWithAutoType: analyzedNode functionExpression).
@@ -52,14 +53,14 @@ Reflection AST FunctionCallNode
             let: #argumentsExpression with: analyzedNode argumentsExpression.
             if: functionType argumentCount > 1sz then: {
                 if: argumentsExpression _ isDirectlyUnpackableArgumentList then: {
-                    analyzedNode analyzedArgumentUnpackExpressions: (argumentsExpression _ asDirectlyUnpackedArgumentList collect: {:(Reflection AST Node)argumentNode :: Reflection AST Node |
+                    analyzedNode analyzedArgumentUnpackExpressions: (argumentsExpression _ asDirectlyUnpackedArgumentList collect: {:(Std Reflection AST Node)argumentNode :: Std Reflection AST Node |
                         signatureAnalyzer analyzeArgumentNode: argumentNode with: analyzer
                     })
                 } else: {
                     __BootstrapCompiler__ error: "TODO: Setup and unpack call expression."
                 }
             } else: {
-                analyzedNode analyzedArgumentUnpackExpressions: (Reflection AST Node sharedArraySlice with:
+                analyzedNode analyzedArgumentUnpackExpressions: (Std Reflection AST Node sharedArraySlice with:
                     (signatureAnalyzer analyzeArgumentNode: argumentsExpression _ with: analyzer)
                 )
             }.
@@ -68,32 +69,32 @@ Reflection AST FunctionCallNode
         analyzedNode analyzedType: signatureAnalyzer computeResultType.
         signatureAnalyzer annotateExtraSemanticAnalysisErrorsOn: analyzedNode with: analyzer.
     };
-    withSelector: #evaluateNodeWith: addMethod: {:(Reflection AST FunctionCallNode)self :(Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+    withSelector: #evaluateNodeWith: addMethod: {:(Std Reflection AST FunctionCallNode)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         let: #function with: (self functionExpression evaluateNodeWith: evaluationEnvironment).
 
         if: self analyzedArgumentSetupExpression isNotNil then: {
             self analyzedArgumentSetupExpression _ evaluateNodeWith: evaluationEnvironment.
         } else: { void }.
 
-        function evaluateWithArguments: (self analyzedArgumentUnpackExpressions collect: {:(Reflection AST Node)argumentNode :: AnyValue |
+        function evaluateWithArguments: (self analyzedArgumentUnpackExpressions collect: {:(Std Reflection AST Node)argumentNode :: AnyValue |
             argumentNode evaluateNodeWith: evaluationEnvironment
         })
     }.
     .
 
 Function
-    withSelector: #"()" addMacroMethod: {:(MacroInvocationContext)macroSelf :: Reflection AST FunctionCallNode |
+    withSelector: #"()" addMacroMethod: {:(MacroInvocationContext)macroSelf :: Std Reflection AST FunctionCallNode |
         <macro>
         <messageMethod>
-        Reflection AST FunctionCallNode basicNewWithNamedSlots: #{
+        Std Reflection AST FunctionCallNode basicNewWithNamedSlots: #{
             sourcePosition: macroSelf sourcePosition.
             functionExpression: macroSelf selfNode _.
         }.
     };
-    withSelector: #"():" addMacroMethod: {:(MacroInvocationContext)macroSelf :(Reflection AST Node)arguments :: Reflection AST FunctionCallNode |
+    withSelector: #"():" addMacroMethod: {:(MacroInvocationContext)macroSelf :(Std Reflection AST Node)arguments :: Std Reflection AST FunctionCallNode |
         <macro>
         <messageMethod>
-        Reflection AST FunctionCallNode basicNewWithNamedSlots: #{
+        Std Reflection AST FunctionCallNode basicNewWithNamedSlots: #{
             sourcePosition: macroSelf sourcePosition.
             functionExpression: macroSelf selfNode _.
             argumentsExpression: arguments.

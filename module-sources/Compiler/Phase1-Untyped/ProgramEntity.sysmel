@@ -1,45 +1,46 @@
 __BootstrapCompiler__
     enterTopLevelNamespace;
+    enterNamespaceNamed: #Std;
     enterNamespaceNamed: #Reflection;
     enterNamespaceNamed: #AST;
-    addBindingNamed: #ProgramEntityDefinitionNode with: (__TypeBuilder__ newGCClassWithSuperclass: Reflection AST Node publicSlots: #{
-        analyzedProgramEntity: Reflection ProgramEntity optional
+    addBindingNamed: #ProgramEntityDefinitionNode with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection AST Node publicSlots: #{
+        analyzedProgramEntity: Std Reflection ProgramEntity optional
     }).
 
-Reflection ProgramEntity
-    withSelector: #canHaveTypes addMethod: {:(Reflection ProgramEntity)self :: Boolean |
+Std Reflection ProgramEntity
+    withSelector: #canHaveTypes addMethod: {:(Std Reflection ProgramEntity)self :: Boolean |
         false
     };
-    withSelector: #canHaveMethods addMethod: {:(Reflection ProgramEntity)self :: Boolean |
+    withSelector: #canHaveMethods addMethod: {:(Std Reflection ProgramEntity)self :: Boolean |
         false
     };
-    withSelector: #canHaveFunctions addMethod: {:(Reflection ProgramEntity)self :: Boolean |
+    withSelector: #canHaveFunctions addMethod: {:(Std Reflection ProgramEntity)self :: Boolean |
         false
     };
-    withSelector: #canHaveFields addMethod: {:(Reflection ProgramEntity)self :: Boolean |
+    withSelector: #canHaveFields addMethod: {:(Std Reflection ProgramEntity)self :: Boolean |
         false
     };
-    withSelector: #canHaveGlobals addMethod: {:(Reflection ProgramEntity)self :: Boolean |
+    withSelector: #canHaveGlobals addMethod: {:(Std Reflection ProgramEntity)self :: Boolean |
         false
     };
-    withSelector: #canHaveNamespaces addMethod: {:(Reflection ProgramEntity)self :: Boolean |
+    withSelector: #canHaveNamespaces addMethod: {:(Std Reflection ProgramEntity)self :: Boolean |
         false
     };
-    withSelector: #lookupPublicSymbol: addMethod: {:(Reflection ProgramEntity)self :(Object)symbol :: Reflection SymbolBinding optional |
+    withSelector: #lookupPublicSymbol: addMethod: {:(Std Reflection ProgramEntity)self :(Object)symbol :: Std Reflection SymbolBinding optional |
         nil
     };
-    withSelector: #lookupScopeSymbol: addMethod: {:(Reflection ProgramEntity)self :(Object)symbol :: Reflection SymbolBinding optional |
+    withSelector: #lookupScopeSymbol: addMethod: {:(Std Reflection ProgramEntity)self :(Object)symbol :: Std Reflection SymbolBinding optional |
         nil
     };
-    withSelector: #asReceiverType addMethod: {:(Reflection ProgramEntity)self :: Type optional |
+    withSelector: #asReceiverType addMethod: {:(Std Reflection ProgramEntity)self :: Type optional |
         nil
     };
-    withSelector: #setSymbol:visibility:immutableValue: addMethod: {:(Reflection ProgramEntity)self :(Object)symbol :(Reflection ProgramEntityVisibility)visibility :(AnyValue)immutableValue :: Void |
+    withSelector: #setSymbol:visibility:immutableValue: addMethod: {:(Std Reflection ProgramEntity)self :(Object)symbol :(Std Reflection ProgramEntityVisibility)visibility :(AnyValue)immutableValue :: Void |
         __BootstrapCompiler__ subclassResponsibility
     }.
 
-Reflection ProgramEntity __type__
-    withSelector: #analyzeUnboundMessageSendNode:with: addMethod: {:(Reflection ProgramEntity __type__)self :(Reflection AST MessageSendNode)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+Std Reflection ProgramEntity __type__
+    withSelector: #analyzeUnboundMessageSendNode:with: addMethod: {:(Std Reflection ProgramEntity __type__)self :(Std Reflection AST MessageSendNode)node :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
         if: (if: node arguments isEmpty then: (if: node receiver isNotNil then:
                 (if: node receiver _ isLiteralValueNode
                 then: node selector isLiteralValueNode

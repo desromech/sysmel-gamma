@@ -27,18 +27,18 @@ Type
     withSelector: #asReceiverType addMethod: {:(Type)self :: Type optional |
         self
     };
-    withSelector: #addFieldVariable: addMethod: {:(Type)self :(Reflection FieldVariable)fieldVariable :: Void |
+    withSelector: #addFieldVariable: addMethod: {:(Type)self :(Std Reflection FieldVariable)fieldVariable :: Void |
         self schema addFieldVariable: fieldVariable.
 
         void
     };
-    withSelector: #lookupPublicSymbol: addMethod: {:(Type)self :(Object)symbol :: Reflection SymbolBinding optional |
+    withSelector: #lookupPublicSymbol: addMethod: {:(Type)self :(Object)symbol :: Std Reflection SymbolBinding optional |
         self symbolTable lookupSymbol: symbol
     };
-    withSelector: #lookupScopeSymbol: addMethod: {:(Type)self :(Object)symbol :: Reflection SymbolBinding optional |
+    withSelector: #lookupScopeSymbol: addMethod: {:(Type)self :(Object)symbol :: Std Reflection SymbolBinding optional |
         self symbolTable lookupSymbol: symbol
     };
-    withSelector: #setSymbol:visibility:immutableValue: addMethod: {:(Type)self :(Object)symbol :(Reflection ProgramEntityVisibility)visibility :(AnyValue)immutableValue :: Void |
+    withSelector: #setSymbol:visibility:immutableValue: addMethod: {:(Type)self :(Object)symbol :(Std Reflection ProgramEntityVisibility)visibility :(AnyValue)immutableValue :: Void |
         self symbolTable setSymbol: symbol immutableValue: immutableValue
     };
     withSelector: #lookupMacroSelector: addMethod: {:(Type)self :(AnyValue)selector :: AnyValue |
@@ -53,38 +53,38 @@ Type
         <primitive: #"type.lookupMacroFallbackSelector">
         __BootstrapCompiler__ primitiveFailed
     };
-    withSelector: #lookupSelector:withExpansionLevel: addMethod: {:(Type)self :(AnyValue)selector :(Reflection AST MessageSendExpansionLevel)expansionLevel :: AnyValue |
-        if: (expansionLevel is: Reflection AST MessageSendExpansionLevel Macro) then: {
+    withSelector: #lookupSelector:withExpansionLevel: addMethod: {:(Type)self :(AnyValue)selector :(Std Reflection AST MessageSendExpansionLevel)expansionLevel :: AnyValue |
+        if: (expansionLevel is: Std Reflection AST MessageSendExpansionLevel Macro) then: {
             let: #result with: (self lookupMacroSelector: selector).
             if: result isNotNil then: {
                 result
             } else: {
-                self lookupSelector: selector withExpansionLevel: (Reflection AST MessageSendExpansionLevel basicNew: Reflection AST MessageSendExpansionLevel Method basicNew)
+                self lookupSelector: selector withExpansionLevel: (Std Reflection AST MessageSendExpansionLevel basicNew: Std Reflection AST MessageSendExpansionLevel Method basicNew)
             }.
         } else: {
-            if: (expansionLevel is: Reflection AST MessageSendExpansionLevel Method) then: {
+            if: (expansionLevel is: Std Reflection AST MessageSendExpansionLevel Method) then: {
                 let: #result with: (self lookupSelector: selector).
                 if: result isNotNil then: {
                     result
                 } else: {
-                    self lookupSelector: selector withExpansionLevel: (Reflection AST MessageSendExpansionLevel basicNew: Reflection AST MessageSendExpansionLevel MacroFallbackMethod basicNew)
+                    self lookupSelector: selector withExpansionLevel: (Std Reflection AST MessageSendExpansionLevel basicNew: Std Reflection AST MessageSendExpansionLevel MacroFallbackMethod basicNew)
                 }.
             } else: {
                 self lookupMacroFallbackSelector: selector
             }.
         }.
     };
-    withSelector: #analyzeMessageSendNode:with:valueBinding: addMethod: {:(Type)self :(Reflection AST MessageSendNode)node :(Reflection Semantic ASTAnalyzer)analyzer :(Reflection Semantic SymbolValueBinding)binding :: Reflection AST Node |
-        Reflection AST LiteralValueNode basicNewWithNamedSlots: #{
+    withSelector: #analyzeMessageSendNode:with:valueBinding: addMethod: {:(Type)self :(Std Reflection AST MessageSendNode)node :(Std Reflection Semantic ASTAnalyzer)analyzer :(Std Reflection Semantic SymbolValueBinding)binding :: Std Reflection AST Node |
+        Std Reflection AST LiteralValueNode basicNewWithNamedSlots: #{
             sourcePosition: node sourcePosition.
             value: binding value.
             analyzedType: binding value __type__
         }
     };
-    withSelector: #analyzeMessageSendNode:with: addMethod: {:(Type)self :(Reflection AST MessageSendNode)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+    withSelector: #analyzeMessageSendNode:with: addMethod: {:(Type)self :(Std Reflection AST MessageSendNode)node :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
         self analyzeNormalMessageSendNode: node with: analyzer
     };
-    withSelector: #analyzeNormalMessageSendNode:with: addMethod: {:(Type)self :(Reflection AST MessageSendNode)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+    withSelector: #analyzeNormalMessageSendNode:with: addMethod: {:(Type)self :(Std Reflection AST MessageSendNode)node :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
         if: node selector isLiteralValueNode then: {
             let: #selector with: (node selector evaluateLiteralValue).
             let: #method with: (self lookupSelector: selector withExpansionLevel: node expansionLevel).
@@ -98,10 +98,10 @@ Type
             self analyzeUnboundMessageSendNode: node with: analyzer
         }
     };
-    withSelector: #analyzeUnboundMessageSendNode:with: addMethod: {:(Type)self :(Reflection AST MessageSendNode)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+    withSelector: #analyzeUnboundMessageSendNode:with: addMethod: {:(Type)self :(Std Reflection AST MessageSendNode)node :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
         self analyzeUnboundOrDynamicMessageSendNode: node with: analyzer
     };
-    withSelector: #analyzeUnboundOrDynamicMessageSendNode:with: addMethod: {:(Type)self :(Reflection AST MessageSendNode)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+    withSelector: #analyzeUnboundOrDynamicMessageSendNode:with: addMethod: {:(Type)self :(Std Reflection AST MessageSendNode)node :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
         if: self hasAnyValueFlag then: {
             self analyzeDynamicMessageSendNode: node with: analyzer
         } else: {
@@ -112,18 +112,18 @@ Type
             analyzer makeSemanticAnalysisError: "Unsupported dynamic message send." at: node sourcePosition
         }
     };
-    withSelector: #analyzeDynamicMessageSendNode:with: addMethod: {:(Type)self :(Reflection AST MessageSendNode)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+    withSelector: #analyzeDynamicMessageSendNode:with: addMethod: {:(Type)self :(Std Reflection AST MessageSendNode)node :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
         let: #analyzedNode with: node shallowCopy.
         analyzedNode
             selector: (analyzer analyzeNodeIfNeeded: analyzedNode selector withExpectedType: self);
-            arguments: (node arguments collect: {:(Reflection AST Node)argumentNode :: Reflection AST Node |
+            arguments: (node arguments collect: {:(Std Reflection AST Node)argumentNode :: Std Reflection AST Node |
                 analyzer analyzeNodeIfNeeded: argumentNode withExpectedType: AnyValue
             });
             usesDynamicDispatch: true;
             yourself
     };
-    withSelector: #analyzeIdentifierReferenceNode:with:valueBinding: addMethod: {:(Type)self :(Reflection AST IdentifierReferenceNode)node :(Reflection Semantic ASTAnalyzer)analyzer :(Reflection Semantic SymbolValueBinding)binding :: Reflection AST Node |
-        Reflection AST LiteralValueNode basicNewWithNamedSlots: #{
+    withSelector: #analyzeIdentifierReferenceNode:with:valueBinding: addMethod: {:(Type)self :(Std Reflection AST IdentifierReferenceNode)node :(Std Reflection Semantic ASTAnalyzer)analyzer :(Std Reflection Semantic SymbolValueBinding)binding :: Std Reflection AST Node |
+        Std Reflection AST LiteralValueNode basicNewWithNamedSlots: #{
             sourcePosition: node sourcePosition.
             analyzedType: self.
             value: binding value
@@ -160,12 +160,12 @@ Type
     };
 
     withSelector: #addImplicitCoercionToNode:targetType:with: addMethod: {:(Type)self
-        :(Reflection AST Node)node :(Type)targetType :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+        :(Std Reflection AST Node)node :(Type)targetType :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
         if: self == targetType then: {
             node
         } else: {
             if: (self isSubtypeOf: targetType) then: {
-                Reflection AST UpcastConversionNode basicNewWithNamedSlots: #{
+                Std Reflection AST UpcastConversionNode basicNewWithNamedSlots: #{
                     sourcePosition: node sourcePosition.
                     expression: node.
                     analyzedType: targetType
@@ -176,12 +176,12 @@ Type
         }
     };
     withSelector: #addImplicitCoercionToNode:fromType:with: addMethod: {:(Type)self
-        :(Reflection AST Node)node :(Type)fromType :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+        :(Std Reflection AST Node)node :(Type)fromType :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
         if: self == fromType then: {
             node
         } else: {
             if: self hasAnyValueFlag then: {
-                Reflection AST WrapAnyValueNode basicNewWithNamedSlots: #{
+                Std Reflection AST WrapAnyValueNode basicNewWithNamedSlots: #{
                     sourcePosition: node sourcePosition.
                     expression: node.
                     analyzedType: self
@@ -196,46 +196,46 @@ Type
         }
     }.
 
-Reflection TypeSchema 
-    withSelector: #canHaveFields addMethod: {:(Reflection TypeSchema)self :: Boolean |
+Std Reflection TypeSchema 
+    withSelector: #canHaveFields addMethod: {:(Std Reflection TypeSchema)self :: Boolean |
         false
     };
     withSelector: #canConstructWithValueOfType: addMethod: {:(TypeSchema)self :(Type)sourceType :: Boolean |
         false
     };
-    withSelector: #addFieldVariable: addMethod: {:(TypeSchema)self :(Reflection FieldVariable)fieldVariable :: Void |
+    withSelector: #addFieldVariable: addMethod: {:(TypeSchema)self :(Std Reflection FieldVariable)fieldVariable :: Void |
         __BootstrapCompiler__ error: "Type schema does not support field variables."
     };
-    withSelector: #addConstructionNodeFor:valueType:into:with: addMethod: {:(TypeSchema)self :(Reflection AST Node)node :(Type)sourceType :(Type)targetType :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+    withSelector: #addConstructionNodeFor:valueType:into:with: addMethod: {:(TypeSchema)self :(Std Reflection AST Node)node :(Type)sourceType :(Type)targetType :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
         __BootstrapCompiler__ subclassResponsibility
     }.
 
-Reflection RecordTypeSchema
-    withSelector: #canHaveFields addMethod: {:(Reflection RecordTypeSchema)self :: Boolean |
+Std Reflection RecordTypeSchema
+    withSelector: #canHaveFields addMethod: {:(Std Reflection RecordTypeSchema)self :: Boolean |
         true
     };
-    withSelector: #addFieldVariable: addMethod: {:(Reflection RecordTypeSchema)self :(Reflection FieldVariable)fieldVariable :: Void |
+    withSelector: #addFieldVariable: addMethod: {:(Std Reflection RecordTypeSchema)self :(Std Reflection FieldVariable)fieldVariable :: Void |
         self addSlotWithType: fieldVariable valueType name: fieldVariable name
     };
-    withSelector: #addSlotWithType:name: addMethod: {:(Reflection RecordTypeSchema)self :(Type)slotType :(AnyValue)slotName :: Void |
+    withSelector: #addSlotWithType:name: addMethod: {:(Std Reflection RecordTypeSchema)self :(Type)slotType :(AnyValue)slotName :: Void |
         <primitive: #"recordTypeSchema.addSlotWithTypeAndName">
         __BootstrapCompiler__ primitiveFailed
     }.
 
-Reflection SumTypeSchema 
-    withSelector: #containsType: addMethod: {:(Reflection SumTypeSchema)self :(Type)typeToCheck :: Boolean |
+Std Reflection SumTypeSchema 
+    withSelector: #containsType: addMethod: {:(Std Reflection SumTypeSchema)self :(Type)typeToCheck :: Boolean |
         <primitive: #"sumTypeSchema.containsType" >
         __BootstrapCompiler__ primitiveFailed
     };
-    withSelector: #getTypeSelectorIndexFor: addMethod: {:(Reflection SumTypeSchema)self :(Type)elementType :: Size |
+    withSelector: #getTypeSelectorIndexFor: addMethod: {:(Std Reflection SumTypeSchema)self :(Type)elementType :: Size |
         <primitive: #"sumTypeSchema.getTypeSelectorIndexFor" >
         __BootstrapCompiler__ primitiveFailed
     };
-    withSelector: #canConstructWithValueOfType: addMethod: {:(Reflection SumTypeSchema)self :(Type)sourceType :: Boolean |
+    withSelector: #canConstructWithValueOfType: addMethod: {:(Std Reflection SumTypeSchema)self :(Type)sourceType :: Boolean |
         self containsType: sourceType
     };
-    withSelector: #addConstructionNodeFor:valueType:into:with: addMethod: {:(Reflection SumTypeSchema)self :(Reflection AST Node)node :(Type)sourceType :(Type)targetType :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
-        Reflection AST WrapValueInSumTypeNode basicNewWithNamedSlots: #{
+    withSelector: #addConstructionNodeFor:valueType:into:with: addMethod: {:(Std Reflection SumTypeSchema)self :(Std Reflection AST Node)node :(Type)sourceType :(Type)targetType :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
+        Std Reflection AST WrapValueInSumTypeNode basicNewWithNamedSlots: #{
             sourcePosition: node sourcePosition.
             expression: node.
             typeSelector: (self getTypeSelectorIndexFor: sourceType).
@@ -245,11 +245,11 @@ Reflection SumTypeSchema
 
 Void __type__
     withSelector: #addImplicitCoercionToNode:fromType:with: addMethod: {:(Type)self
-        :(Reflection AST Node)node :(Type)fromType :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+        :(Std Reflection AST Node)node :(Type)fromType :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
         if: self == fromType then: {
             node
         } else: {
-            Reflection AST ValueAsVoidNode basicNewWithNamedSlots: #{
+            Std Reflection AST ValueAsVoidNode basicNewWithNamedSlots: #{
                 sourcePosition: node sourcePosition.
                 expression: node.
                 analyzedType: self
