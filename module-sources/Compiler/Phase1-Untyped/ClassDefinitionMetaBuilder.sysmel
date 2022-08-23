@@ -1,0 +1,38 @@
+## Class definition builder.
+__BootstrapCompiler__
+    enterTopLevelNamespace;
+    enterNamespaceNamed: #Std;
+    enterNamespaceNamed: #MetaProgramming;
+    addBindingNamed: #ClassDefinitionMetaBuilder with: (__TypeBuilder__ newGCClassWithSuperclass: Std MetaProgramming TypeDefinitionMetaBuilder slots: #{}).
+
+Std MetaProgramming ClassDefinitionMetaBuilder
+    withSelector: #concretizeMetaBuilder addMethod: {:(Std MetaProgramming NamespaceMetaBuilder)self :: Std Reflection AST Node |
+        (Std Reflection AST ClassDefinitionNode basicNewWithNamedSlots: #{
+            sourcePosition: self metaContext sourcePosition.
+            nameExpression: self nameExpression.
+            supertypeExpression: self supertypeExpression.
+            traitExpressions: self traitExpressions.
+            bodyExpression: self bodyExpression.
+            visibility: self programEntityAttributes visibility.
+        })
+    };
+    withSelector: #superclass: addMethod: {:(Std MetaProgramming NamespaceMetaBuilder)self :(Std Reflection AST Node)superclassExpression :: Void |
+        <metaBuilder>
+        self supertypeExpression: superclassExpression.
+        void
+    }.
+
+Std MetaProgramming FlagMetaBuilder
+    withSelector: #class addMethod: {:(Std MetaProgramming FlagMetaBuilder)self :: Void |
+        <metaBuilder>
+        self delegateToMetaBuilderClass: Std MetaProgramming ClassDefinitionMetaBuilder.
+        void
+    }.
+
+__BootstrapCompiler__
+    enterTopLevelNamespace;
+    addBindingNamed: #class with: {:(MacroInvocationContext)macroSelf :: Std Reflection AST MetaBuilderInstanceNode |
+        <macro>
+        <messageMethod>
+        Std MetaProgramming ClassDefinitionMetaBuilder nodeWithContext: macroSelf
+    }.

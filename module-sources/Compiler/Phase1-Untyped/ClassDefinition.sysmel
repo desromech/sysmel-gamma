@@ -1,0 +1,12 @@
+__BootstrapCompiler__
+    enterTopLevelNamespace;
+    enterNamespaceNamed: #Std;
+    enterNamespaceNamed: #Reflection;
+    enterNamespaceNamed: #AST;
+    addBindingNamed: #ClassDefinitionNode with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection AST TypeDefinitionNode publicSlots: #{
+    }).
+
+Std Reflection AST ClassDefinitionNode
+    withSelector: #constructTypeInstance addMethod: {:(Std Reflection AST ClassDefinitionNode)self :: Type |
+        __TypeBuilder__ newEmptyGCClassType
+    }.

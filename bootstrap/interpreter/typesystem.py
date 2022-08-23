@@ -1471,6 +1471,10 @@ class TemporaryReferenceTypeSchema(TypeSchema):
     def basicNewWithValue(self, valueType, initialValue):
         return TemporaryReferenceTypeValue(valueType, initialValue)
 
+class UnionTypeSchema(RecordTypeSchema):
+    def getType(self):
+        return getBasicTypeNamed('UnionTypeSchema')
+
 class GCClassTypeSchema(RecordTypeSchema):
     def getType(self):
         return getBasicTypeNamed('GCClassTypeSchema')
@@ -2421,6 +2425,8 @@ class TypeBuilder(BehaviorTypedObject):
             (cls.newEnumTypeWith, 'newEnumTypeWith:', '(SelfType -- AnyValue) => Type'),
             (cls.newEmptyPackedRecordType, 'newEmptyPackedRecordType', '(SelfType) => Type'),
             (cls.newEmptyRecordType, 'newEmptyRecordType', '(SelfType) => Type'),
+            (cls.newEmptyUnionType, 'newEmptyUnionType', '(SelfType) => Type'),
+            (cls.newEmptyGCClassType, 'newEmptyGCClassType', '(SelfType) => Type'),
             (cls.newRecordTypeWithSupertypeWith, 'newRecordTypeWithSupertype:with:', '(SelfType -- Type -- AnyValue) => Type'),
             (cls.newRecordTypeWith, 'newRecordTypeWith:', '(SelfType -- AnyValue) => Type'),
             (cls.newArrayTypeForWithBounds, 'newArrayTypeFor:withBounds:', '(SelfType -- Type -- Integer) => Type'),
@@ -2480,6 +2486,12 @@ class TypeBuilder(BehaviorTypedObject):
 
     def newEmptyPackedRecordType(self):
         return SimpleType(schema = RecordTypeSchema([], packed = True))
+
+    def newEmptyUnionType(self):
+        return SimpleType(schema = UnionTypeSchema([]))
+
+    def newEmptyGCClassType(self):
+        return SimpleType(schema = GCClassTypeSchema([]))
 
     def newRecordTypeWithSupertypeWith(self, supertype, slots):
         return SimpleType(supertype = supertype, schema = RecordTypeSchema(slots, supertypeSchema = supertype.schema))

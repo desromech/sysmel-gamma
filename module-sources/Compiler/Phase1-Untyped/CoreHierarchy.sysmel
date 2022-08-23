@@ -63,6 +63,7 @@ __BootstrapCompiler__
     addBasicTypeNamed: #PrimitiveTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection TypeSchema slots: #{});
     addBasicTypeNamed: #ProductTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection TypeSchema slots: #{});
     addBasicTypeNamed: #RecordTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection ProductTypeSchema slots: #{});
+    addBasicTypeNamed: #UnionTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection RecordTypeSchema slots: #{});
     addBasicTypeNamed: #GCClassTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection RecordTypeSchema slots: #{});
     addBasicTypeNamed: #ArrayTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection TypeSchema slots: #{});
     addBasicTypeNamed: #PointerTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection TypeSchema slots: #{});

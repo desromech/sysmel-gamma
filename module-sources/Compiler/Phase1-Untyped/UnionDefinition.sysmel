@@ -1,0 +1,12 @@
+__BootstrapCompiler__
+    enterTopLevelNamespace;
+    enterNamespaceNamed: #Std;
+    enterNamespaceNamed: #Reflection;
+    enterNamespaceNamed: #AST;
+    addBindingNamed: #UnionDefinitionNode with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection AST TypeDefinitionNode publicSlots: #{
+    }).
+
+Std Reflection AST UnionDefinitionNode
+    withSelector: #constructTypeInstance addMethod: {:(Std Reflection AST UnionDefinitionNode)self :: Type |
+        __TypeBuilder__ newEmptyUnionType
+    }.

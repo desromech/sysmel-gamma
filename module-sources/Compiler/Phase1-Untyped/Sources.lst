@@ -22,7 +22,9 @@ FunctionCall.sysmel
 FunctionDefinition.sysmel
 FunctionType.sysmel
 MethodDefinition.sysmel
+ClassDefinition.sysmel
 StructureDefinition.sysmel
+UnionDefinition.sysmel
 Macros.sysmel
 MetaBuilder.sysmel
 FlagMetaBuilder.sysmel
@@ -32,7 +34,9 @@ NamespaceMetaBuilder.sysmel
 FunctionDefinitionMetaBuilder.sysmel
 MethodDefinitionMetaBuilder.sysmel
 TypeDefinitionMetaBuilder.sysmel
+ClassDefinitionMetaBuilder.sysmel
 StructureDefinitionMetaBuilder.sysmel
+UnionDefinitionMetaBuilder.sysmel
 ParseTreeMapping.sysmel
 Tests.sysmel
 Finish.sysmel
