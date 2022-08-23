@@ -37,3 +37,24 @@ Reflection ProgramEntity
     withSelector: #setSymbol:visibility:immutableValue: addMethod: {:(Reflection ProgramEntity)self :(Object)symbol :(Reflection ProgramEntityVisibility)visibility :(AnyValue)immutableValue :: Void |
         __BootstrapCompiler__ subclassResponsibility
     }.
+
+Reflection ProgramEntity __type__
+    withSelector: #analyzeUnboundMessageSendNode:with: addMethod: {:(Reflection ProgramEntity __type__)self :(Reflection AST MessageSendNode)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
+        if: (if: node arguments isEmpty then: (if: node receiver isNotNil then:
+                (if: node receiver _ isLiteralValueNode
+                then: node selector isLiteralValueNode
+                else: false) else: false)
+            else: false) then: {
+            let: #receiver with: (node receiver _ evaluateLiteralValue).
+            let: #selector with: (node selector evaluateLiteralValue).
+            let: #publicBinding with: (receiver lookupPublicSymbol: selector).
+
+            if: publicBinding isNotNil then: {
+                publicBinding _ analyzeMessageSendNode: node with: analyzer
+            } else: {
+                self analyzeUnboundOrDynamicMessageSendNode: node with: analyzer
+            }
+        } else: {
+            self analyzeUnboundOrDynamicMessageSendNode: node with: analyzer
+        }.
+    }.

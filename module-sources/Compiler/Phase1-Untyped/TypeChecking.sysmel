@@ -74,6 +74,13 @@ Type
             }.
         }.
     };
+    withSelector: #analyzeMessageSendNode:with:valueBinding: addMethod: {:(Type)self :(Reflection AST MessageSendNode)node :(Reflection Semantic ASTAnalyzer)analyzer :(Reflection Semantic SymbolValueBinding)binding :: Reflection AST Node |
+        Reflection AST LiteralValueNode basicNewWithNamedSlots: #{
+            sourcePosition: node sourcePosition.
+            value: binding value.
+            analyzedType: binding value __type__
+        }
+    };
     withSelector: #analyzeMessageSendNode:with: addMethod: {:(Type)self :(Reflection AST MessageSendNode)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
         self analyzeNormalMessageSendNode: node with: analyzer
     };
@@ -88,7 +95,7 @@ Type
                 method analyzeMessageSendNode: node with: analyzer
             }
         } else: {
-            self analyzeUnboundOrDynamicMessageSendNode: node with: analyzer
+            self analyzeUnboundMessageSendNode: node with: analyzer
         }
     };
     withSelector: #analyzeUnboundMessageSendNode:with: addMethod: {:(Type)self :(Reflection AST MessageSendNode)node :(Reflection Semantic ASTAnalyzer)analyzer :: Reflection AST Node |
