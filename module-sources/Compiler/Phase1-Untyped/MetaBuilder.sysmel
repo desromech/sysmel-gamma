@@ -63,6 +63,29 @@ Std MetaProgramming MetaBuilder __type__
         } else: {
             self analyzeNormalMessageSendNode: node with: analyzer
         }
+    };
+    withSelector: #analyzeMessageChainNode:with: addMethod: {:(Type)self :(Std Reflection AST MessageChainNode)node :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
+        if: node receiver isMetaBuilderInstanceNode then: {
+            node receiver evaluateLiteralValue analyzeMessageChainNode: node with: analyzer
+        } else: {
+            node expandAndAnalyzeNodeWith: analyzer
+        }
+    }.
+
+Std Reflection AST MessageChainNode
+    withSelector: #replaceFirstChainedMessageWithNewReceiver: addMethod: {:(Std Reflection AST MessageChainNode)self :(Std Reflection AST Node)newReceiver :: Std Reflection AST Node |
+        if: (self chainedMessages size <= 1sz) then: {
+            newReceiver
+        } else: {
+            if: self chainedMessages size = 2sz then: {
+                self chainedMessages second asMessageSendNodeWithReceiver: newReceiver
+            } else: {
+                self shallowCopy
+                    receiver: newReceiver;
+                    chainedMessages: (self chainedMessages allButFirst);
+                    yourself
+            }
+        }
     }.
 
 Std MetaProgramming MetaBuilder
@@ -104,6 +127,22 @@ Std MetaProgramming MetaBuilder
             receiver: self emitResultNode;
             yourself
         )
+    };
+    withSelector: #analyzeMessageChainNode:with: addMethod: {:(Std MetaProgramming MetaBuilder)self :(Std Reflection AST MessageChainNode)node :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
+        self analyzeMetaBuilderDirectMessageChainNode: node with: analyzer
+    };
+    withSelector: #analyzeMetaBuilderDirectMessageChainNode:with: addMethod: {:(Std MetaProgramming MetaBuilder)self :(Std Reflection AST MessageChainNode)node :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
+        let: #firstMessage with: node chainedMessages first.
+        let: #firstMessageNode with: (firstMessage asMessageSendNodeWithReceiver: node receiver).
+        let: #firstAnalyzedMessageNode with: (analyzer analyzeNodeIfNeededWithDirectAutoType: firstMessageNode).
+        let: #shouldContinue with: (firstAnalyzedMessageNode isMetaBuilderInstanceNode).
+
+        if: shouldContinue then: {
+            analyzer analyzeNodeIfNeededWithCurrentExpectedType: (node replaceFirstChainedMessageWithNewReceiver: firstAnalyzedMessageNode)
+        } else: {
+            __BootstrapCompiler__ error: "TODO: expand aborted metabuilder message chain"
+            ##node expandAndAnalyzeNodeWith: analyzer
+        }.
     };
     withSelector: #emitResultNode addMethod: {:(Std MetaProgramming MetaBuilder)self :: Std Reflection AST Node |
         if: self finishResultNode isNotNil then: {

@@ -523,6 +523,10 @@ __BootstrapCompiler__
                 <pure>
                 self basicAt: 0sz
             };
+            withSelector: #second addMethod: {:(arraySliceType)self :: elementType |
+                <pure>
+                self basicAt: 1sz
+            };
             withSelector: #last addMethod: {:(arraySliceType)self :: elementType |
                 <pure>
                 self basicAt: self size - 1sz
@@ -552,6 +556,20 @@ __BootstrapCompiler__
                     block(self basicAt: index _, index _).
                 } continueWith: (index _: index _ + 1sz).
                 void
+            };
+            withSelector: #allButFirst: addMethod: {:(arraySliceType)self :(Size)itemsToDrop :: SharedArraySlice(elementType) |
+                let: #resultSize with: (if: itemsToDrop - self size then: self size - itemsToDrop else: 0).
+                let: #index with: (Size valueBox with: 0sz).                
+                let: #result with: (SharedArraySlice(elementType) allocate: resultSize).
+
+                while: index _ < resultSize do: {
+                    result basicAt: index _ put: (self basicAt: itemsToDrop + index _)
+                } continueWith: (index _: index _ + 1sz).
+
+                result
+            };
+            withSelector: #allButFirst addMethod: {:(arraySliceType)self :: SharedArraySlice(elementType) |
+                self allButFirst: 1sz
             };
             withSelector: #-- addMethod: {:(arraySliceType)self :(arraySliceType)other :: SharedArraySlice(elementType) |
                 <pure>

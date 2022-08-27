@@ -81,6 +81,9 @@ Type
             analyzedType: binding value __type__
         }
     };
+    withSelector: #analyzeMessageChainNode:with: addMethod: {:(Type)self :(Std Reflection AST MessageChainNode)node :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
+        node expandAndAnalyzeNodeWith: analyzer
+    };
     withSelector: #analyzeMessageSendNode:with: addMethod: {:(Type)self :(Std Reflection AST MessageSendNode)node :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
         self analyzeNormalMessageSendNode: node with: analyzer
     };

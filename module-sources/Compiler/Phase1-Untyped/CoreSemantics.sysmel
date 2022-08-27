@@ -421,7 +421,14 @@ Std Reflection AST ChainedMessageNode
     }.
 
 Std Reflection AST MessageChainNode
-    withSelector: #analyzeNodeWith: addMethod: {:(Std Reflection AST SequenceNode)self :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
+    withSelector: #analyzeNodeWith: addMethod: {:(Std Reflection AST MessageChainNode)self :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
+        let: #nodeWithAnalyzedReceiver with: (self shallowCopy
+            receiver: (analyzer analyzeNodeIfNeededWithDirectAutoType: self receiver);
+            yourself).
+
+        nodeWithAnalyzedReceiver receiver analyzedType _ analyzeMessageChainNode: nodeWithAnalyzedReceiver with: analyzer
+    };
+    withSelector: #expandAndAnalyzeNodeWith: addMethod: {:(Std Reflection AST MessageChainNode)self :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
         let: #receiverSymbol with: (Std Reflection MessageChainReceiverAnonymousSymbol basicNewWithNamedSlots: #{
             sourcePosition: self sourcePosition
         }).

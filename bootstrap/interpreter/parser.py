@@ -454,7 +454,8 @@ def p_makeByteArray(p):
     p[0] = PTMakeByteArray(p[2], [tokenAt(p, 1), tokenAt(p, 3)])
 
 def p_anyOperator(p):
-    '''anyOperator : OPERATOR
+    '''anyOperator : SINGLE_CHAR_OPERATOR
+                   | MULTI_CHAR_OPERATOR
                    | BAR
                    | STAR
                    | LESS_THAN
@@ -462,7 +463,8 @@ def p_anyOperator(p):
     p[0] = PTLiteralSymbol(tokenAt(p, 1))
 
 def p_anyPrefixOperator(p):
-    '''anyPrefixOperator : OPERATOR
+    '''anyPrefixOperator : SINGLE_CHAR_OPERATOR
+                         | MULTI_CHAR_OPERATOR
                          | STAR'''
     p[0] = PTLiteralSymbol(tokenAt(p, 1))
 

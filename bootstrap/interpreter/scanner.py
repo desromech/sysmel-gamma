@@ -12,7 +12,8 @@ tokens = (
     'SYMBOL_IDENTIFIER',
     'SYMBOL_STRING',
     'SYMBOL_OPERATOR',
-    'OPERATOR',
+    'SINGLE_CHAR_OPERATOR',
+    'MULTI_CHAR_OPERATOR',
 
     'BAR',
     'LESS_THAN',
@@ -105,6 +106,10 @@ def t_BAR(t):
     r'\|'
     return t
 
+def t_MULTI_CHAR_OPERATOR(t):
+    r'[+\-/\\\*~<>=@,%\|&\?\!^][+\-/\\\*~<>=@,%\|&\?\!^]+'
+    return t
+
 def t_LESS_THAN(t):
     r'<'
     return t
@@ -117,8 +122,8 @@ def t_STAR(t):
     r'\*'
     return t
 
-def t_OPERATOR(t):
-    r'[+\-/\\\*~<>=@,%\|&\?\!^]+'
+def t_SINGLE_CHAR_OPERATOR(t):
+    r'[+\-/\\\*~<>=@,%\|&\?\!^]'
     return t
 
 def t_newline(t):

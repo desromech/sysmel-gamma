@@ -108,13 +108,19 @@ class TestScanner(unittest.TestCase):
         self.assertEqual(self.scanString('>').type, 'GREATER_THAN')
         self.assertEqual(self.scanString('>').value, '>')
 
-        self.assertEqual(self.scanString('==').type, 'OPERATOR')
+        self.assertEqual(self.scanString('+').type, 'SINGLE_CHAR_OPERATOR')
+        self.assertEqual(self.scanString('+').value, '+')
+
+        self.assertEqual(self.scanString('==').type, 'MULTI_CHAR_OPERATOR')
         self.assertEqual(self.scanString('==').value, '==')
 
-        self.assertEqual(self.scanString('->').type, 'OPERATOR')
+        self.assertEqual(self.scanString('->').type, 'MULTI_CHAR_OPERATOR')
         self.assertEqual(self.scanString('->').value, '->')
 
-        self.assertEqual(self.scanString('=>').type, 'OPERATOR')
+        self.assertEqual(self.scanString('<=').type, 'MULTI_CHAR_OPERATOR')
+        self.assertEqual(self.scanString('<=').value, '<=')
+
+        self.assertEqual(self.scanString('=>').type, 'MULTI_CHAR_OPERATOR')
         self.assertEqual(self.scanString('=>').value, '=>')
 
     def test_integer(self):

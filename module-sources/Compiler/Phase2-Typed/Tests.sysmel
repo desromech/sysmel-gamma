@@ -22,7 +22,7 @@ add(1i32, 2i32).
 ##TestStruct basicNew add: 1i32 with: 2i32.
 TestStruct basicNew first: 42i32; first.
 
-(public class TestClass superclass: Object) definition: {
+public class TestClass superclass: Object; definition: {
     __BootstrapCompiler__ printLine: "TestClass body".
 }.
 
