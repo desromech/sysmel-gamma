@@ -549,6 +549,32 @@ __BootstrapCompiler__
                 } continueWith: (index _: index _ + 1sz).
                 void
             };
+            withSelector: #anySatisfy: addMethod: {:(arraySliceType)self :((elementType) => Boolean)block :: Boolean |
+                <pure>
+                let: #result with: (Boolean valueBox with: false).
+                let: #index with: (Size valueBox with: 0sz).                
+                while: (if: result _ not then: index _ < self size else: false) do: {
+                    if: block(self basicAt: index _) then: {
+                        void
+                    } else: {
+                        result _: true
+                    }
+                } continueWith: (index _: index _ + 1sz).
+                result _
+            };
+            withSelector: #allSatisfy: addMethod: {:(arraySliceType)self :((elementType) => Boolean)block :: Boolean |
+                <pure>
+                let: #result with: (Boolean valueBox with: true).
+                let: #index with: (Size valueBox with: 0sz).                
+                while: (if: result _ then: index _ < self size else: false) do: {
+                    if: block(self basicAt: index _) then: {
+                        void
+                    } else: {
+                        result _: false
+                    }
+                } continueWith: (index _: index _ + 1sz).
+                result _
+            };
             withSelector: #doWithIndex: addMethod: {:(arraySliceType)self :((elementType -- Size) => Void)block :: Void |
                 <pure>
                 let: #index with: (Size valueBox with: 0sz).                

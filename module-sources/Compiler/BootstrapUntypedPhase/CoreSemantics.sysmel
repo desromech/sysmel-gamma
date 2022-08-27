@@ -408,6 +408,24 @@ Std Reflection AST MessageSendNode
                 self boundMethod _ run: selector with: arguments in: receiver
             }
         }
+    };
+    withSelector: #hasCompileTimeEvaluableMethod addMethod: {:(Std Reflection AST MessageSendNode)self :: Boolean |
+        true
+    };
+    withSelector: #isCompileTimeDirectlyEvaluableWith: addMethod: {:(Std Reflection AST MessageSendNode)self :(Std Reflection Semantic EvaluationEnvironment)environment :: Boolean |
+        if: self hasCompileTimeEvaluableMethod then: {
+            if: (if: self receiver isNotNil
+                then: (self receiver _ isCompileTimeDirectlyEvaluableWith: environment)
+                else: true) then: {
+                self arguments allSatisfy: {:(Std Reflection AST Node)arg :: Boolean |
+                    arg isCompileTimeDirectlyEvaluableWith: environment
+                }
+            } else: {
+                false
+            }
+        } else: {
+            false
+        }
     }.
 
 Std Reflection AST ChainedMessageNode

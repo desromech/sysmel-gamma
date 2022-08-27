@@ -1,0 +1,23 @@
+namespace Std definition: { namespace Reflection definition: { namespace SSA definition: {
+
+public class BasicBlock superclass: Value; definition: {
+    public field firstInstruction => Instruction.
+    public field lastInstruction => Instruction.
+
+    public method addInstruction: (instruction: Instruction) before: (position: Instruction optional) ::=> Void := {
+
+    }.
+
+    public method addInstruction: (instruction: Instruction) after: (position: Instruction optional) ::=> Void := {
+
+    }.
+
+    public method addFirstInstruction: (instruction: Instruction) ::=> Void
+        := self addInstruction: instruction after: nil.
+
+    public method addLastInstruction: (instruction: Instruction) ::=> Void
+        := self addInstruction: instruction before: nil.
+
+}.
+
+}}}
