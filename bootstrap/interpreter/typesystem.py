@@ -175,6 +175,13 @@ class FunctionTypeValue(TypedValue):
         else:
             return self.rawOwnerType
 
+    def getSlotWithIndexAndName(self, slotIndex, slotName):
+        if slotName == 'implementation':
+            return self.implementation
+        elif slotName == 'bootstrapImplementation':
+            return self.bootstrapImplementation
+        return super().getSlotWithIndexAndName(slotIndex, slotName)
+
     def getType(self):
         if self.type is None:
             self.type = FunctionType.constructFromTypeSpec(self.functionTypeSpec, self.getOwnerType())
@@ -839,6 +846,13 @@ class TrivialTypedValue(TypedValue):
 class OpaqueTypeSchema(TypeSchema):
     def getType(self):
         return getBasicTypeNamed('OpaqueTypeSchema')
+
+class TraitTypeSchema(TypeSchema):
+    def getType(self):
+        return getBasicTypeNamed('TraitTypeSchema')
+
+    def isTraitTypeSchema(self):
+        return True
 
 class TrivialTypeSchema(TypeSchema):
     def __init__(self):
@@ -1610,7 +1624,10 @@ class BehaviorType(ProgramEntity, TypeInterface):
         self.implicitConstructionMethods = []
         self.explicitConstructionMethods = []
         self.supertype = supertype
-        self.traits = traits
+        self.traits = list(traits)
+        self.installImplicitTraits()
+        self.allTraits = None
+        self.directTraits = None
         self.schema = schema
         self.schema.installedInType(self)
         self.type = None
@@ -1625,6 +1642,10 @@ class BehaviorType(ProgramEntity, TypeInterface):
         self.pendingSupertypeExpression = []
         self.pendingTraitExpressions = []
         self.pendingBodyExpressions = []
+
+    def installImplicitTraits(self):
+        if Symbol('AnyValueTrait') in BasicTypeEnvironment:
+            self.traits.append(BasicTypeEnvironment[Symbol('AnyValueTrait')])
 
     def shallowCopyValue(self):
         return self
@@ -1671,7 +1692,7 @@ class BehaviorType(ProgramEntity, TypeInterface):
     def evaluatePendingTraitExpressions(self):
         self.evaluatePendingSupertypeExpressions()
         while len(self.pendingTraitExpressions) > 0:
-            self.pendingTraitExpressions.pop(0)()
+            self.addTrait(self.pendingTraitExpressions.pop(0)())
 
     @primitiveNamed('type.addPendingBodyExpression')
     def addPendingBodyExpression(self, bodyExpression):
@@ -1695,6 +1716,16 @@ class BehaviorType(ProgramEntity, TypeInterface):
             self.schema.setSupertypeSchema(newSupertype.schema)
         else:
             self.schema.setSupertypeSchema(None)
+        self.invalidateTraitCache()
+
+    def addTrait(self, newTrait):
+        if newTrait not in self.traits:
+            self.traits.append(newTrait)
+            self.invalidateTraitCache()
+
+    def invalidateTraitCache(self):
+        self.allTraits = None
+        self.directTraits = None
 
     def getSupertype(self):
         self.evaluatePendingSupertypeExpressions()
@@ -1724,8 +1755,34 @@ class BehaviorType(ProgramEntity, TypeInterface):
         self.constructionTemplate = template
         self.constructionTemplateArguments = arguments
 
-    def directTraits(self):
-        return self.traits
+    def getAllTraits(self):
+        if self.allTraits is None:
+            self.allTraits = []
+            if self.supertype is not None:
+                self.allTraits = list(self.supertype.getAllTraits())
+            exclusionSet = set(self.allTraits)
+            for trait in self.traits:
+                if trait not in exclusionSet:
+                    self.allTraits.append(trait)
+                    exclusionSet.add(trait)
+                    for indirectTrait in trait.getAllTraits():
+                        if indirectTrait not in exclusionSet:
+                            self.allTraits.append(indirectTrait)
+                            exclusionSet.add(indirectTrait)
+
+        return self.allTraits
+
+    def getDirectTraits(self):
+        if self.directTraits is None:
+            if self.supertype is not None:
+                exclusionSet = set(self.supertype.getAllTraits())
+                self.directTraits = []
+                for trait in self.getAllTraits():
+                    if trait not in exclusionSet:
+                        self.directTraits.append(trait)
+            else:
+                self.directTraits = self.getAllTraits()
+        return self.directTraits
 
     def lookupLocalSelector(self, selector):
         self.evaluatePendingBodyExpressions()
@@ -1760,8 +1817,8 @@ class BehaviorType(ProgramEntity, TypeInterface):
             return found
 
         ## Find in a direct trait.
-        for trait in self.directTraits():
-            found = trait.lookupLocalMacroSelector(found)
+        for trait in self.getDirectTraits():
+            found = trait.lookupLocalMacroSelector(selector)
             if found is not None:
                 return found
 
@@ -1777,8 +1834,8 @@ class BehaviorType(ProgramEntity, TypeInterface):
             return found
 
         ## Find in a direct trait.
-        for trait in self.directTraits():
-            found = trait.lookupLocalSelector(found)
+        for trait in self.getDirectTraits():
+            found = trait.lookupLocalSelector(selector)
             if found is not None:
                 return found
 
@@ -1794,8 +1851,8 @@ class BehaviorType(ProgramEntity, TypeInterface):
             return found
 
         ## Find in a direct trait.
-        for trait in self.directTraits():
-            found = trait.lookupLocalMacroFallbackSelector(found)
+        for trait in self.getDirectTraits():
+            found = trait.lookupLocalMacroFallbackSelector(selector)
             if found is not None:
                 return found
 
@@ -1966,6 +2023,9 @@ class BehaviorTypedObject(TypedValue):
     @classmethod
     def initializeBehaviorType(cls, type):
         pass
+
+class Trait(BehaviorType):
+    pass
 
 class MetaType(BehaviorType):
     def __init__(self, thisType=None, name=None, supertype=None, traits=[], schema=None, methodDict={}):
@@ -2418,6 +2478,7 @@ class TypeBuilder(BehaviorTypedObject):
     def initializeBehaviorType(cls, type):
         BehaviorTypedObject.initializeBehaviorType(type)
         type.addPrimitiveMethodsWithSelectors([
+            (cls.newTrait, 'newTrait', '(SelfType) => Trait'),
             (cls.newAbsurdType, 'newAbsurdType', '(SelfType) => Type'),
             (cls.newTrivialType, 'newTrivialType', '(SelfType) => Type'),
             (cls.newProductType, 'newProductTypeWith:', '(SelfType -- AnyValue) => Type'),
@@ -2450,6 +2511,9 @@ class TypeBuilder(BehaviorTypedObject):
             (cls.newSimpleFunctionTypeWithArgumentAndResultType, 'newSimpleFunctionTypeWithArgument:resultType:', '(SelfType -- Type -- Type) => Type'),
             (cls.newSimpleFunctionTypeWithArgumentsAndResultType, 'newSimpleFunctionTypeWithArguments:resultType:', '(SelfType -- Type -- Type) => Type')
         ])
+
+    def newTrait(self):
+        return Trait(schema = TraitTypeSchema())
 
     def newAbsurdType(self):
         return SimpleType(schema = AbsurdTypeSchema())

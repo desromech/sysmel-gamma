@@ -1,6 +1,7 @@
 CoreHierarchy.sysmel
 CoreSemantics.sysmel
 SemanticAnalysisMapping.sysmel
+SimpleType.sysmel
 TypeChecking.sysmel
 TypeInference.sysmel
 Symbol.sysmel

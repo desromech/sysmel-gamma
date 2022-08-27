@@ -5,10 +5,13 @@
 __BootstrapCompiler__
     enterTopLevelNamespace;
 
+    ## Basic trait that provides fundamental methods.
+    addBasicTypeNamed: #AnyValueTrait with: __TypeBuilder__ newTrait;
+
     ## Type theory fundamentals
     addBasicTypeNamed: #Absurd with: __TypeBuilder__ newAbsurdType;
     addBasicTypeNamed: #Trivial with: __TypeBuilder__ newTrivialType;
-
+    
     addBasicTypeNamed: #False with: __TypeBuilder__ newTrivialType;
     addBasicTypeNamed: #True with: __TypeBuilder__ newTrivialType;
     addBasicTypeNamed: #Boolean with: (__TypeBuilder__ newSumTypeWith: (False, True));
@@ -57,6 +60,7 @@ __BootstrapCompiler__
     enterNamespaceNamed: #Std;
     enterNamespaceNamed: #Reflection;
     addBasicTypeNamed: #TypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
+    addBasicTypeNamed: #TraitTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection TypeSchema slots: #{});
     addBasicTypeNamed: #TrivialTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection TypeSchema slots: #{});
     addBasicTypeNamed: #AbsurdTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection TypeSchema slots: #{});
     addBasicTypeNamed: #SumTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection TypeSchema slots: #{});
@@ -435,7 +439,7 @@ __BootstrapCompiler__
         arrayType
             withSelector: #asArraySlice addMethod: {:(arrayType)self :: ArraySlice(elementType) |
                 <pure>
-                ArraySlice(elementType) basicNewWithNamedSlots: #{
+                ArraySlice(elementType)#{
                     elements: self.
                     size: bounds
                 }
@@ -443,7 +447,7 @@ __BootstrapCompiler__
             withSelector: #asSharedArraySlice addMethod: {:(arrayType)self :: SharedArraySlice(elementType) |
                 <pure>
                 ## TODO: Make a shared copy if needed.
-                SharedArraySlice(elementType) basicNewWithNamedSlots: #{
+                SharedArraySlice(elementType)#{
                     elements: self.
                     size: bounds.
                     storage: self
@@ -627,7 +631,7 @@ __BootstrapCompiler__
             withSelector: #allocate: addMethod: {:(sharedArraySliceType)self :(Size)size :: sharedArraySliceType |
                 <pure>
                 let: #storage with: (storagePointerType allocate: size).
-                sharedArraySliceType basicNewWithNamedSlots: #{
+                sharedArraySliceType#{
                     elements: storage.
                     size: size.
                     storage: storage
@@ -714,7 +718,7 @@ __BootstrapCompiler__
         }).
         valueBoxType __type__
             withSelector: #with: addMethod: {:(valueBoxType __type__)self :(elementType)value :: self |
-                self basicNewWithNamedSlots: #{
+                self#{
                     _: value
                 }
             }.
@@ -856,6 +860,18 @@ Undefined
         false
     }.
 
+AnyValueTrait
+    withSelector: #initialize addMethod: {:(AnyValueTrait)self :: Void |
+        void
+    }.
+
+SimpleType
+    withSelector: #"()" addMethod: {:(SimpleType)self :: self |
+        self basicNew initialize; yourself
+    };
+    withSelector: #"#{}:" addMethod: {:(SimpleType)self :(AnyValue)slotPairs :: self |
+        (self basicNewWithNamedSlots: slotPairs) initialize; yourself
+    }.
 
 Std Reflection ProgramEntity definePublicSlots: #{
     parent: Std Reflection ProgramEntity optional.

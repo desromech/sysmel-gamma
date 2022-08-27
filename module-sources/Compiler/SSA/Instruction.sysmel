@@ -1,9 +1,9 @@
 namespace Std definition: { namespace Reflection definition: { namespace SSA definition: {
 
 public class Instruction superclass: FunctionLocalValue; definition: {
-    public field parent => BasicBlock.
-    public field previousInstruction => Instruction.
-    public field nextInstruction => Instruction.
+    public field parent type: BasicBlock optional.
+    public field previousInstruction type: Instruction optional.
+    public field nextInstruction type: Instruction optional.
 }.
 
 }}}

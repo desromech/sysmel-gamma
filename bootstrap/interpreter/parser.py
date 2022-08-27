@@ -102,15 +102,15 @@ def p_primaryExpression_subscript(p):
 
 def p_primaryExpression_applyBlock(p):
     'primaryExpression : primaryExpression block'
-    p[0] = PTApplyBlock(p[1], p[3])
+    p[0] = PTApplyBlock(p[1], p[2])
 
 def p_primaryExpression_applyDictionary(p):
     'primaryExpression : primaryExpression makeDictionary'
-    p[0] = PTApplyDictionary(p[1], p[3])
+    p[0] = PTApplyDictionary(p[1], p[2])
 
 def p_primaryExpression_applyByteArray(p):
     'primaryExpression : primaryExpression makeByteArray'
-    p[0] = PTApplyByteArray(p[1], p[3])
+    p[0] = PTApplyByteArray(p[1], p[2])
 
 def p_blockClosureHeader(p):
     'blockClosureHeader : blockArguments blockResultType BAR'

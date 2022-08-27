@@ -618,7 +618,7 @@ class PTApplyBlock(PTNode):
     def doEvaluateWithEnvironment(self, machine, environment):
         entity = self.entity.evaluateWithEnvironment(machine, environment)
         block = self.block.evaluateWithEnvironment(machine, environment)
-        return entity.performWithArguments(Symbol.intern('{}:'), [block])
+        return entity.performWithArguments(machine, Symbol.intern('{}:'), [block])
 
 class PTApplyDictionary(PTNode):
     def __init__(self, entity, dictionary):
@@ -633,7 +633,7 @@ class PTApplyDictionary(PTNode):
     def doEvaluateWithEnvironment(self, machine, environment):
         entity = self.entity.evaluateWithEnvironment(machine, environment)
         dictionary = self.dictionary.evaluateWithEnvironment(machine, environment)
-        return entity.performWithArguments(Symbol.intern('#{}:'), [dictionary])
+        return entity.performWithArguments(machine, Symbol.intern('#{}:'), [dictionary])
 
 class PTApplyByteArray(PTNode):
     def __init__(self, entity, byteArray):
@@ -648,7 +648,7 @@ class PTApplyByteArray(PTNode):
     def doEvaluateWithEnvironment(self, machine, environment):
         entity = self.entity.evaluateWithEnvironment(machine, environment)
         byteArray = self.byteArray.evaluateWithEnvironment(machine, environment)
-        return entity.performWithArguments(Symbol.intern('#[]:'), [byteArray])
+        return entity.performWithArguments(machine, Symbol.intern('#[]:'), [byteArray])
 
 class PTIdentifierReference(PTNode):
     def __init__(self, identifier):

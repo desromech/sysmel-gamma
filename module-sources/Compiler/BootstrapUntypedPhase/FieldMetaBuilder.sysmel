@@ -9,7 +9,7 @@ __BootstrapCompiler__
     }).
 
 Std MetaProgramming FieldMetaBuilder
-    withSelector: #type addMethod: {:(Std MetaProgramming LetMetaBuilder)self :(Std Reflection AST Node)typeExpression :: Void |
+    withSelector: #type: addMethod: {:(Std MetaProgramming LetMetaBuilder)self :(Std Reflection AST Node)typeExpression :: Void |
         <metaBuilder>
         self typeExpression: typeExpression.
         void

@@ -96,13 +96,14 @@ class ScriptEvaluationScope(LexicalScope):
         self.setSymbolValueBinding(Symbol.intern('__CurrentScriptDirectory__'), String(scriptDirectory))
         scriptSource = scriptFile.read()
         parseTree = parseString(scriptSource, scriptFilename)
+        print('Evaluating',scriptFilename)
         if self.bootstrapCompiler.isTypeSystemEnabled:
             convertedASTNode = parseTree.convertIntoGenericASTWith(self.bootstrapCompiler)
             resultValue = convertedASTNode.performWithArguments(evaluationMachine, Symbol.intern('analyzeAndEvaluateNodeWithScriptEvaluationScope:'), [self])
         else:
             resultValue = parseTree.evaluateWithEnvironment(evaluationMachine, self)
 
-        print(scriptFilename, resultValue)
+        ##print(scriptFilename, resultValue)
         return resultValue
 
 class BootstrapCompiler(BehaviorTypedObject):

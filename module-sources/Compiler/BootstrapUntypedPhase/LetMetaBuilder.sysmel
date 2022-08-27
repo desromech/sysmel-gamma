@@ -27,7 +27,7 @@ Std MetaProgramming LetMetaBuilder
         self hasDirectTypeInference: true.
         void
     };
-    withSelector: #type addMethod: {:(Std MetaProgramming LetMetaBuilder)self :(Std Reflection AST Node)typeExpression :: Void |
+    withSelector: #type: addMethod: {:(Std MetaProgramming LetMetaBuilder)self :(Std Reflection AST Node)typeExpression :: Void |
         <metaBuilder>
         self typeExpression: typeExpression.
         void
