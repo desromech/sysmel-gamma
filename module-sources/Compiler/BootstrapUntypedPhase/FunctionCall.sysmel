@@ -21,13 +21,13 @@ Std Reflection AST Node
 Std Reflection AST SequenceNode
     withSelector: #isDirectlyUnpackableArgumentList addMethod: {:(Std Reflection AST SequenceNode)self :: Boolean |
         if: self expressions size = 1sz & self pragmas isEmpty then: {
-            (self expressions basicAt: 0sz) isDirectlyUnpackableArgumentList
+            (self expressions at: 0sz) isDirectlyUnpackableArgumentList
         } else: {
             false
         }
     };
     withSelector: #asDirectlyUnpackedArgumentList addMethod: {:(Std Reflection AST SequenceNode)self :: Std Reflection AST Node sharedArraySlice |
-         (self expressions basicAt: 0sz) asDirectlyUnpackedArgumentList
+         (self expressions at: 0sz) asDirectlyUnpackedArgumentList
     }.
 
 Std Reflection AST MakeTupleNode

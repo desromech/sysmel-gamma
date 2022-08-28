@@ -412,6 +412,7 @@ __BootstrapCompiler__
     
     ## The polymorphic types
     addBasicTypeNamed: #Optional with: {:(Type)optionalType :: Type |
+        <pure>
         let: #sumType with: (__TypeBuilder__ newSumTypeWith: (Undefined, optionalType)).
 
         sumType
@@ -435,6 +436,7 @@ __BootstrapCompiler__
     } templated;
 
     addBasicTypeNamed: #Array with: {:(Type)elementType :(Size)bounds :: Type |
+        <pure>
         let: #arrayType with: (__TypeBuilder__ newArrayTypeFor: elementType withBounds: bounds).
         arrayType
             withSelector: #asArraySlice addMethod: {:(arrayType)self :: ArraySlice(elementType) |
@@ -453,12 +455,12 @@ __BootstrapCompiler__
                     storage: self
                 }
             };
-            withSelector: #basicAt: addMethod: {:(arrayType)self :(Size)index :: elementType |
+            withSelector: #at: addMethod: {:(arrayType)self :(Size)index :: elementType |
                 <pure>
                 <primitive: #"array.basicAt">
                 __BootstrapCompiler__ primitiveFailed
             };
-            withSelector: #basicAt:put: addMethod: {:(arrayType)self :(Size)index :(elementType)value :: elementType |
+            withSelector: #at:put: addMethod: {:(arrayType)self :(Size)index :(elementType)value :: elementType |
                 <primitive: #"array.basicAtPut">
                 __BootstrapCompiler__ primitiveFailed
             };
@@ -470,6 +472,7 @@ __BootstrapCompiler__
     } templated;
 
     addBasicTypeNamed: #Pointer with: {:(Type)elementType :(Symbol)addressSpace :: Type |
+        <pure>
         let: #pointerType with: (__TypeBuilder__ newPointerTypeFor: elementType addressSpace: addressSpace).
 
         pointerType __type__
@@ -484,12 +487,12 @@ __BootstrapCompiler__
             }.
 
         pointerType
-            withSelector: #basicAt: addMethod: {:(pointerType)self :(Size)index :: elementType |
+            withSelector: #at: addMethod: {:(pointerType)self :(Size)index :: elementType |
                 <pure>
                 <primitive: #"pointer.basicAt">
                 __BootstrapCompiler__ primitiveFailed
             };
-            withSelector: #basicAt:put: addMethod: {:(pointerType)self :(Size)index :(elementType)value :: elementType |
+            withSelector: #at:put: addMethod: {:(pointerType)self :(Size)index :(elementType)value :: elementType |
                 <primitive: #"pointer.basicAtPut">
                 __BootstrapCompiler__ primitiveFailed
             }.
@@ -497,10 +500,12 @@ __BootstrapCompiler__
         pointerType
     } templated;
     addBasicTypeNamed: #SharedPointer with: {:(Type)elementType :: Type |
+        <pure>
         Pointer(elementType, #shared)
     };
 
     addBasicTypeNamed: #ArraySlice with: {:(Type)elementType :: Type |
+        <pure>
         let: #arraySliceType with: (__TypeBuilder__ newRecordTypeWith: #{
             elements: Pointer(elementType, #generic).
             size: Size.
@@ -516,24 +521,31 @@ __BootstrapCompiler__
                 <pure>
                 self size ~= 0sz
             };
-            withSelector: #basicAt: addMethod: {:(arraySliceType)self :(Size)index :: elementType |
+            withSelector: #at: addMethod: {:(arraySliceType)self :(Size)index :: elementType |
                 <pure>
-                self elements basicAt: index
+                self elements at: index
             };
-            withSelector: #basicAt:put: addMethod: {:(arraySliceType)self :(Size)index :(elementType)element :: elementType |
-                self elements basicAt: index put: element
+            withSelector: #at:put: addMethod: {:(arraySliceType)self :(Size)index :(elementType)element :: elementType |
+                self elements at: index put: element
             };
             withSelector: #first addMethod: {:(arraySliceType)self :: elementType |
                 <pure>
-                self basicAt: 0sz
+                self at: 0sz
             };
             withSelector: #second addMethod: {:(arraySliceType)self :: elementType |
                 <pure>
-                self basicAt: 1sz
+                self at: 1sz
             };
             withSelector: #last addMethod: {:(arraySliceType)self :: elementType |
                 <pure>
-                self basicAt: self size - 1sz
+                self at: self size - 1sz
+            };
+            withSelector: #until: addMethod: {:(arrayType)self :(Size)newSize :: Size |
+                <pure>
+                arraySliceType #{
+                    elements: Pointer(elementType, #generic).
+                    size: (self size min: newSize).
+                }
             };
             withSelector: #collect: addMethod: {:(arraySliceType)self :*(Type)ResultType :(elementType => ResultType)block :: SharedArraySlice(ResultType) |
                 <pure>
@@ -549,7 +561,7 @@ __BootstrapCompiler__
                 <pure>
                 let: #index with: (Size valueBox with: 0sz).                
                 while: index _ < self size do: {
-                    block(self basicAt: index _).
+                    block(self at: index _).
                 } continueWith: (index _: index _ + 1sz).
                 void
             };
@@ -558,7 +570,7 @@ __BootstrapCompiler__
                 let: #result with: (Boolean valueBox with: false).
                 let: #index with: (Size valueBox with: 0sz).                
                 while: (if: result _ not then: index _ < self size else: false) do: {
-                    if: block(self basicAt: index _) then: {
+                    if: block(self at: index _) then: {
                         void
                     } else: {
                         result _: true
@@ -571,7 +583,7 @@ __BootstrapCompiler__
                 let: #result with: (Boolean valueBox with: true).
                 let: #index with: (Size valueBox with: 0sz).                
                 while: (if: result _ then: index _ < self size else: false) do: {
-                    if: block(self basicAt: index _) then: {
+                    if: block(self at: index _) then: {
                         void
                     } else: {
                         result _: false
@@ -583,7 +595,7 @@ __BootstrapCompiler__
                 <pure>
                 let: #index with: (Size valueBox with: 0sz).                
                 while: index _ < self size do: {
-                    block(self basicAt: index _, index _).
+                    block(self at: index _, index _).
                 } continueWith: (index _: index _ + 1sz).
                 void
             };
@@ -593,7 +605,7 @@ __BootstrapCompiler__
                 let: #result with: (SharedArraySlice(elementType) allocate: resultSize).
 
                 while: index _ < resultSize do: {
-                    result basicAt: index _ put: (self basicAt: itemsToDrop + index _)
+                    result at: index _ put: (self at: itemsToDrop + index _)
                 } continueWith: (index _: index _ + 1sz).
 
                 result
@@ -606,12 +618,12 @@ __BootstrapCompiler__
                 let: #result with: (SharedArraySlice(elementType) allocate: self size + other size).
                 let: #index with: (Size valueBox with: 0sz).                
                 while: index _ < self size do: {
-                    result basicAt: index _ put: (self basicAt: index _)
+                    result at: index _ put: (self at: index _)
                 } continueWith: (index _: index _ + 1sz).
 
                 index _: 0sz.
                 while: index _ < other size do: {
-                    result basicAt: self size + index _ put: (other basicAt: index _)
+                    result at: self size + index _ put: (other at: index _)
                 } continueWith: (index _: index _ + 1sz).
 
                 result
@@ -621,6 +633,7 @@ __BootstrapCompiler__
     addBasicTypeNamed: #AnyArraySlice with: ArraySlice(AnyValue);
 
     addBasicTypeNamed: #SharedArraySlice with: {:(Type)elementType :: Type |
+        <pure>
         let: #storagePointerType with: SharedPointer(elementType).
         let: #sharedArraySliceType with: (__TypeBuilder__ newRecordTypeWithSupertype: ArraySlice(elementType) with: #{
             storage: storagePointerType
@@ -641,15 +654,15 @@ __BootstrapCompiler__
                 <pure>
                 let: #result with: (self allocate: 1sz).
                 result
-                    basicAt: 0sz put: first;
+                    at: 0sz put: first;
                     yourself
             };
             withSelector: #with:with: addMethod: {:(sharedArraySliceType)self :(elementType)first :(elementType)second :: sharedArraySliceType |
                 <pure>
                 let: #result with: (self allocate: 2sz).
                 result
-                    basicAt: 0sz put: first;
-                    basicAt: 1sz put: second;
+                    at: 0sz put: first;
+                    at: 1sz put: second;
                     yourself
             }.
 
@@ -658,6 +671,7 @@ __BootstrapCompiler__
     addBasicTypeNamed: #AnySharedArraySlice with: SharedArraySlice(AnyValue);
 
     addBasicTypeNamed: #Association with: {:(Type)key :(Type)value :: Type |
+        <pure>
         __TypeBuilder__ newRecordTypeWith: #{
             key: key.
             value: value.
@@ -666,6 +680,7 @@ __BootstrapCompiler__
     addBasicTypeNamed: #AnyAssociation with: Association(AnyValue, AnyValue);
 
     addBasicTypeNamed: #ArrayDictionary with: {:(Type)keyType :(Type)valueType :: Type |
+        <pure>
         __TypeBuilder__ newRecordTypeWith: #{
             associationList: ArraySlice(Association(keyType, valueType)).
             hashTable: ArraySlice(UInt32).
@@ -674,14 +689,60 @@ __BootstrapCompiler__
     addBasicTypeNamed: #AnyArrayDictionary with: ArrayDictionary(AnyValue, AnyValue);
 
     addBasicTypeNamed: #ArrayList with: {:(Type)elementType :: Type |
-        __TypeBuilder__ newGCClassWithSlots: #{
+        <pure>
+        let: #storageType with: SharedArraySlice(elementType).
+        let: #arrayListType with: (__TypeBuilder__ newRecordTypeWith: #{
             size: Size.
-            storage: ArraySlice(elementType)
-        }
+            storage: storageType
+        }).
+
+        arrayListType
+            withSelector: #add: addMethod: {:(arrayListType)self :(elementType)element :: Void |
+                if: self size < self storage size then: {
+                    self increaseCapacity.
+                } else: {void}.
+
+                self storage at: self size put: element.
+                void
+            };
+            withSelector: #increaseCapacity addMethod: {:(arrayListType)self :(elementType)element :: Void |
+                let: #oldCapacity with: self storage size.
+                let: #newCapacity with: (oldCapacity max: 8sz).
+                let: #oldStorage with: self storage.
+                let: #newStorage with: (storageType allocate: newCapacity).
+                let: #index with: (Size valueBox with: 0sz).
+                while: index _ < oldCapacity do: {
+                    newStorage at: index put: (oldStorage at: index) 
+                } continueWith: (index _: index _ + 1sz).
+
+                self storage: newStorage.
+                void
+            };
+            withSelector: #at: addMethod: {:(arrayListType)self :(Size)index :: elementType |
+                if: index < self size then: {
+                    self storage at: index
+                } else: {
+                    __BootstrapCompiler__ error: "Index out of bounds"
+                }
+            };
+            withSelector: #at:put: addMethod: {:(arrayListType)self :(Size)index :(elementType)element :: Void |
+                if: index < self size then: {
+                    self storage at: index put: element
+                } else: {
+                    __BootstrapCompiler__ error: "Index out of bounds"
+                }
+            };
+            withSelector: #asArraySlice addMethod: {:(arrayListType)self :: ArraySlice(elementType) |
+                <pure>
+                storage until: self size
+            }.
+
+        arrayListType
     } templated;
     addBasicTypeNamed: #AnyArrayList with: ArrayList(AnyValue);
 
     addBasicTypeNamed: #Tuple with: {:*(Size)N :(Type array: N)elementTypes :: Type |
+        <pure>
         let: #tupleSize with: elementTypes size.
         let: #tupleType with: (__TypeBuilder__ newProductTypeWith: elementTypes).
         tupleType __type__
@@ -713,6 +774,7 @@ __BootstrapCompiler__
     } templated;
 
     addBasicTypeNamed: #ValueBox with: {:(Type)elementType :: Type |
+        <pure>
         let: #valueBoxType with: (__TypeBuilder__ newRecordTypeWith: #{
             _: elementType
         }).
@@ -868,12 +930,15 @@ AnyValueTrait
         self
     }.
 
-SimpleType
-    withSelector: #"()" addMethod: {:(SimpleType)self :: self |
+Type
+    withSelector: #"()" addMethod: {:(Type)self :: self |
         self basicNew initialize; yourself
     };
-    withSelector: #"#{}:" addMethod: {:(SimpleType)self :(AnyValue)slotPairs :: self |
+    withSelector: #"#{}:" addMethod: {:(Type)self :(AnyValue)slotPairs :: self |
         (self basicNewWithNamedSlots: slotPairs) initialize; yourself
+    };
+    withSelector: #new addMethod: {:(Type)self :: self |
+        self basicNew initialize; yourself
     }.
 
 Std Reflection ProgramEntity definePublicSlots: #{

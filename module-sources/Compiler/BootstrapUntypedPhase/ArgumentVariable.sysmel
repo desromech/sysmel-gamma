@@ -154,7 +154,7 @@ Std Reflection AST MessageSendNode
             Std Reflection AST ArgumentDefinitionNode#{
                 sourcePosition: self sourcePosition.
                 nameExpression: self selector convertSelectorToArgumentName.
-                typeExpression: (self arguments basicAt: 0)
+                typeExpression: (self arguments at: 0)
             }
         } else: {
             Std Reflection AST SemanticErrorNode#{
@@ -170,7 +170,7 @@ Std Reflection AST MessageSendNode
 Std Reflection AST SequenceNode
     withSelector: #parseAsArgumentDefinitionNodes addMethod: {:(Std Reflection AST SequenceNode)self :: Std Reflection AST Node sharedArraySlice |
         if: self expressions size = 1sz & self pragmas isEmpty then: {
-            (self expressions basicAt: 0sz) parseAsArgumentDefinitionNodes
+            (self expressions at: 0sz) parseAsArgumentDefinitionNodes
         } else: {
             Std Reflection AST Node sharedArraySlice with: (Std Reflection AST SemanticErrorNode#{
                 hasCompilationError: true.

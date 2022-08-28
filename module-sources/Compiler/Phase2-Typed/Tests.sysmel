@@ -30,4 +30,5 @@ public union TestUnion definition: {
     __BootstrapCompiler__ printLine: "TestUnion body".
 }.
 
-one implementation _
+##one implementation _
+__BootstrapCompiler__ printLine: (Int32 arrayList new)
