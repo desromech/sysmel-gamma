@@ -1,7 +1,7 @@
 Boolean extend: {
     #*
     public macro method ifTrue: trueExpression ifFalse: falseExpression
-        := Std Reflection AST IfTrueIfFalseNode#{
+        := Std Reflection AST IfTrueIfFalseNode #{
             sourcePosition: __macroSelf__ sourcePosition.
             condition: __macroSelf__ selfNode _.
             trueExpression: trueExpression.

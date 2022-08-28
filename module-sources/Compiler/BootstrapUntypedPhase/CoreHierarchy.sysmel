@@ -226,14 +226,33 @@ Integer
         __BootstrapCompiler__ primitiveFailed
     }.
 
+AnyValueTrait
+    withSelector: #initialize addMethod: {:(AnyValueTrait)self :: Void |
+        void
+    };
+    withSelector: #yourself addMethod: {:(AnyValueTrait)self :: self __type__ |
+        self
+    }.
+
+Type
+    withSelector: #"()" addMethod: {:(Type)self :: self |
+        self basicNew initialize; yourself
+    };
+    withSelector: #"#{}:" addMethod: {:(Type)self :(AnyValue)slotPairs :: self |
+        (self basicNewWithNamedSlots: slotPairs) initialize; yourself
+    };
+    withSelector: #new addMethod: {:(Type)self :: self |
+        self basicNew initialize; yourself
+    }.
+
 __BootstrapCompiler__
     enterTopLevelNamespace;
 
     ## Important keywords
-    addKeywordBindingNamed: #false with: False basicNew;
-    addKeywordBindingNamed: #true with: True basicNew;
-    addKeywordBindingNamed: #nil with: Undefined basicNew;
     addKeywordBindingNamed: #void with: Void basicNew;
+    addKeywordBindingNamed: #false with: False new;
+    addKeywordBindingNamed: #true with: True new;
+    addKeywordBindingNamed: #nil with: Undefined new;
 
     ## The primitive types
     addBasicTypeNamed: #Boolean8 with: (__TypeBuilder__ newBooleanTypeWithSize: 1 alignment: 1);
@@ -393,6 +412,19 @@ Integer
             <pure>
             <primitive: #"primitiveInteger.comparison.greaterOrEqual">
             __BootstrapCompiler__ primitiveFailed
+        };
+
+        withSelector: #min: addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: primitiveIntegerType |
+            <pure>
+            if: self <= other
+                then: self
+                else: other
+        };
+        withSelector: #max: addMethod: {:(primitiveIntegerType)self :(primitiveIntegerType)other :: primitiveIntegerType |
+            <pure>
+            if: self >= other
+                then: self
+                else: other
         };
 
         withSelector: #asString addMethod: {:(Integer)self :: String |
@@ -698,14 +730,15 @@ __BootstrapCompiler__
 
         arrayListType
             withSelector: #add: addMethod: {:(arrayListType)self :(elementType)element :: Void |
-                if: self size < self storage size then: {
+                if: self size >= self storage size then: {
                     self increaseCapacity.
                 } else: {void}.
 
                 self storage at: self size put: element.
+                self size: self size + 1sz.
                 void
             };
-            withSelector: #increaseCapacity addMethod: {:(arrayListType)self :(elementType)element :: Void |
+            withSelector: #increaseCapacity addMethod: {:(arrayListType)self :: Void |
                 let: #oldCapacity with: self storage size.
                 let: #newCapacity with: (oldCapacity max: 8sz).
                 let: #oldStorage with: self storage.
@@ -920,25 +953,6 @@ Undefined
         <pure>
         <override>
         false
-    }.
-
-AnyValueTrait
-    withSelector: #initialize addMethod: {:(AnyValueTrait)self :: Void |
-        void
-    };
-    withSelector: #yourself addMethod: {:(AnyValueTrait)self :: self __type__ |
-        self
-    }.
-
-Type
-    withSelector: #"()" addMethod: {:(Type)self :: self |
-        self basicNew initialize; yourself
-    };
-    withSelector: #"#{}:" addMethod: {:(Type)self :(AnyValue)slotPairs :: self |
-        (self basicNewWithNamedSlots: slotPairs) initialize; yourself
-    };
-    withSelector: #new addMethod: {:(Type)self :: self |
-        self basicNew initialize; yourself
     }.
 
 Std Reflection ProgramEntity definePublicSlots: #{
