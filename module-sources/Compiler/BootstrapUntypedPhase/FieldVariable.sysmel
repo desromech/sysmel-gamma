@@ -13,7 +13,7 @@ Std Reflection AST FieldVariableDefinitionNode
         let: #analyzedNode with: self shallowCopy.
         let: #name with: (if: self nameExpression isNotNil
             then: (self nameExpression _ analyzeAndEvaluateNodeWith: analyzer)
-            else: (AnonymousSymbol basicNewWithNamedSlots: #{
+            else: (AnonymousSymbol#{
                 sourcePosition: self sourcePosition
             })
         ).
@@ -51,7 +51,7 @@ Std Reflection AST FieldVariableDefinitionNode
 
                 ## TODO: Add support for mutability.
                 let: #variableReferenceType with: valueType.
-                let: #fieldVariable with: (Std Reflection FieldVariable basicNewWithNamedSlots: #{
+                let: #fieldVariable with: (Std Reflection FieldVariable#{
                     name: sanitizedName.
                     valueType: valueType.
                     referenceType: variableReferenceType.

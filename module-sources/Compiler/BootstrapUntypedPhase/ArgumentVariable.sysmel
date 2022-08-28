@@ -24,7 +24,7 @@ Std Reflection ArgumentVariable
             self hasDependentTypeAccess: true
         } else: {void}.
 
-        Std Reflection AST FunctionVariableReferenceNode basicNewWithNamedSlots: #{
+        Std Reflection AST FunctionVariableReferenceNode#{
             binding: self.
             analyzedType: self referenceType
         }
@@ -32,7 +32,7 @@ Std Reflection ArgumentVariable
 
 Std Reflection AST Node
     withSelector: #parseAsArgumentDefinitionNode addMethod: {:(Std Reflection AST Node)self :: Std Reflection AST Node |
-        Std Reflection AST SemanticErrorNode basicNewWithNamedSlots: #{
+        Std Reflection AST SemanticErrorNode#{
             analyzedType: CompilationError.
             sourcePosition: self sourcePosition.
             message: "Expression cannot be interpreted as an argument definition node.".
@@ -45,7 +45,7 @@ Std Reflection AST Node
 
 Std Reflection AST ArgumentDefinitionNode __type__
     withSelector: #withName:type:at: addMethod: {:(Std Reflection AST ArgumentDefinitionNode)self :(Object)name :(Type)type :(Std Reflection AST SourcePosition)sourcePosition :: self |
-        self basicNewWithNamedSlots: #{
+        self#{
             sourcePosition: sourcePosition.
             nameExpression: (Std Reflection AST LiteralValueNode withValue: name at: sourcePosition).
             typeExpression: (Std Reflection AST LiteralValueNode withValue: type at: sourcePosition)
@@ -61,7 +61,7 @@ Std Reflection AST ArgumentDefinitionNode
 
             let: #name with: (if: self nameExpression isNotNil
                 then: (self nameExpression _ analyzeAndEvaluateNodeWith: analyzer)
-                else: (Std Reflection AnonymousSymbol basicNewWithNamedSlots: #{
+                else: (Std Reflection AnonymousSymbol#{
                     sourcePosition: self sourcePosition
                 })
             ).
@@ -86,7 +86,7 @@ Std Reflection AST ArgumentDefinitionNode
             } else: {
                 let: #argumentVariableType with: (analyzedNode computeArgumentVariableAnalysisTypeWith: analyzer).
 
-                let: #argumentVariable with: (Std Reflection ArgumentVariable basicNewWithNamedSlots: #{
+                let: #argumentVariable with: (Std Reflection ArgumentVariable#{
                     name: sanitizedName.
                     valueType: argumentVariableType.
                     referenceType: argumentVariableType.
@@ -120,7 +120,7 @@ Std Reflection AST ArgumentDefinitionNode
 
 Std Reflection AST IdentifierReferenceNode
     withSelector: #parseAsArgumentDefinitionNode addMethod: {:(Std Reflection AST IdentifierReferenceNode)self :: Std Reflection AST Node |
-        Std Reflection AST ArgumentDefinitionNode basicNewWithNamedSlots: #{
+        Std Reflection AST ArgumentDefinitionNode#{
             nameExpression: self asLiteralSymbolNode.
         }.
     }.
@@ -135,12 +135,12 @@ Std Reflection AST LiteralValueNode
 Std Reflection AST MessageSendNode
     withSelector: #parseAsArgumentDefinitionNode addMethod: {:(Std Reflection AST MessageSendNode)self :: Std Reflection AST Node |
         if: self receiver isNil & (self arguments size = 1sz) & self selector isLiteralValueNode then: {
-            Std Reflection AST ArgumentDefinitionNode basicNewWithNamedSlots: #{
+            Std Reflection AST ArgumentDefinitionNode#{
                 nameExpression: self selector convertSelectorToArgumentName.
                 typeExpression: (self arguments basicAt: 0)
             }
         } else: {
-            Std Reflection AST SemanticErrorNode basicNewWithNamedSlots: #{
+            Std Reflection AST SemanticErrorNode#{
                 analyzedType: CompilationError.
                 sourcePosition: self sourcePosition.
                 message: "Message send expression is not valid argument definition.".
@@ -154,7 +154,7 @@ Std Reflection AST SequenceNode
         if: self expressions size = 1sz & self pragmas isEmpty then: {
             (self expressions basicAt: 0sz) parseAsArgumentDefinitionNodes
         } else: {
-            Std Reflection AST Node sharedArraySlice with: (Std Reflection AST SemanticErrorNode basicNewWithNamedSlots: #{
+            Std Reflection AST Node sharedArraySlice with: (Std Reflection AST SemanticErrorNode#{
                 analyzedType: CompilationError.
                 sourcePosition: self sourcePosition.
                 message: "Sequence node is not valid arguments definitions.".

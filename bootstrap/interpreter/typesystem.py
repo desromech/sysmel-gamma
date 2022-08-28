@@ -77,7 +77,7 @@ class ValueInterface:
         raise NotImplementedError('asInteger() in %s' % repr(self.__class__))
 
     def shallowCopyValue(self):
-        return self.shalowCopy()
+        return self.shallowCopy()
 
     def asSymbolBindingWithName(self, name):
         if 'SymbolBinding' in BasicTypeEnvironment and 'MetaType' in BasicTypeEnvironment and self.getType().isSubtypeOf(getBasicTypeNamed('SymbolBinding')):
@@ -168,6 +168,9 @@ class FunctionTypeValue(TypedValue):
     def installedInMetaTypeOf(self, type):
         self.rawOwnerType = type
         self.rawOwnerTypeIsMetaType = True
+
+    def shallowCopyValue(self):
+        return self
 
     def getOwnerType(self):
         if self.rawOwnerTypeIsMetaType:
@@ -1824,7 +1827,7 @@ class BehaviorType(ProgramEntity, TypeInterface):
 
         ##  Find in the supertype.
         if self.supertype is not None:
-            return self.supertype.lookupLocalMacroSelector(selector)
+            return self.supertype.lookupMacroSelector(selector)
         return None
 
     def lookupSelector(self, selector):
@@ -1858,7 +1861,7 @@ class BehaviorType(ProgramEntity, TypeInterface):
 
         ##  Find in the supertype.
         if self.supertype is not None:
-            return self.supertype.lookupLocalMacroFallbackSelector(selector)
+            return self.supertype.lookupMacroFallbackSelector(selector)
         return None
 
     def runWithIn(self, machine, selector, arguments, receiver):

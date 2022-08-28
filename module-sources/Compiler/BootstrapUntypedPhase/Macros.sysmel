@@ -3,7 +3,7 @@ __BootstrapCompiler__
     addBindingNamed: #if:then:else: with: {:(MacroInvocationContext)macroSelf :(Std Reflection AST Node)condition :(Std Reflection AST Node)trueExpression :(Std Reflection AST Node)falseExpression :: Std Reflection AST IfTrueIfFalseNode |
         <macro>
         <messageMethod>
-        (Std Reflection AST IfTrueIfFalseNode basicNewWithNamedSlots: #{
+        (Std Reflection AST IfTrueIfFalseNode#{
             sourcePosition: macroSelf sourcePosition.
             condition: condition.
             trueExpression: trueExpression.
@@ -13,7 +13,7 @@ __BootstrapCompiler__
     addBindingNamed: #if:then: with: {:(MacroInvocationContext)macroSelf :(Std Reflection AST Node)condition :(Std Reflection AST Node)trueExpression :: Std Reflection AST IfTrueIfFalseNode |
         <macro>
         <messageMethod>
-        (Std Reflection AST IfTrueIfFalseNode basicNewWithNamedSlots: #{
+        (Std Reflection AST IfTrueIfFalseNode#{
             sourcePosition: macroSelf sourcePosition.
             condition: condition.
             trueExpression: trueExpression.
@@ -22,7 +22,7 @@ __BootstrapCompiler__
     addBindingNamed: #while:do:continueWith: with: {:(MacroInvocationContext)macroSelf :(Std Reflection AST Node)condition :(Std Reflection AST Node)bodyExpression :(Std Reflection AST Node)continueExpression :: Std Reflection AST WhileDoContinueNode |
         <macro>
         <messageMethod>
-        (Std Reflection AST WhileDoContinueNode basicNewWithNamedSlots: #{
+        (Std Reflection AST WhileDoContinueNode#{
             sourcePosition: macroSelf sourcePosition.
             condition: condition.
             bodyExpression: bodyExpression.
@@ -32,7 +32,7 @@ __BootstrapCompiler__
     addBindingNamed: #while:do: with: {:(MacroInvocationContext)macroSelf :(Std Reflection AST Node)condition :(Std Reflection AST Node)bodyExpression :: Std Reflection AST WhileDoContinueNode |
         <macro>
         <messageMethod>
-        (Std Reflection AST WhileDoContinueNode basicNewWithNamedSlots: #{
+        (Std Reflection AST WhileDoContinueNode#{
             sourcePosition: macroSelf sourcePosition.
             condition: condition.
             bodyExpression: bodyExpression.
@@ -41,7 +41,7 @@ __BootstrapCompiler__
     addBindingNamed: #let:with: with: {:(MacroInvocationContext)macroSelf :(Std Reflection AST Node)nameExpression :(Std Reflection AST Node)initialValueExpression :: Std Reflection AST LocalVariableDefinitionNode |
         <macro>
         <messageMethod>
-        (Std Reflection AST LocalVariableDefinitionNode basicNewWithNamedSlots: #{
+        (Std Reflection AST LocalVariableDefinitionNode#{
             sourcePosition: macroSelf sourcePosition.
             nameExpression: nameExpression.
             initialValueExpression: initialValueExpression.
@@ -50,7 +50,7 @@ __BootstrapCompiler__
     addBindingNamed: #let:type:with: with: {:(MacroInvocationContext)macroSelf :(Std Reflection AST Node)nameExpression :(Std Reflection AST Node)typeExpression :(Std Reflection AST Node)initialValueExpression :: Std Reflection AST LocalVariableDefinitionNode |
         <macro>
         <messageMethod>
-        (Std Reflection AST LocalVariableDefinitionNode basicNewWithNamedSlots: #{
+        (Std Reflection AST LocalVariableDefinitionNode#{
             sourcePosition: macroSelf sourcePosition.
             nameExpression: nameExpression.
             typeExpression: typeExpression;

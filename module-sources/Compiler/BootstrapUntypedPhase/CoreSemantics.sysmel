@@ -211,7 +211,7 @@ Std Reflection AST Node
         false
     };
     withSelector: #optimizeViaCompileTimeEvaluationWith: addMethod: {:(Std Reflection AST Node)self :(Std Reflection Semantic EvaluationEnvironment)environment :: Std Reflection AST Node |
-        Std Reflection AST LiteralValueNode basicNewWithNamedSlots: #{
+        Std Reflection AST LiteralValueNode#{
             analyzedType: self analyzedType _.
             value: (self evaluateNodeWith: environment).
         }
@@ -232,7 +232,7 @@ Std Reflection SourceStringPosition
 
 Std Reflection AST LiteralValueNode __type__
     withSelector: #withValue:at: addMethod: {:(Std Reflection AST LiteralValueNode __type__)self :(AnyValue)value :(Std Reflection AST SourcePosition)sourcePosition :: self |
-        self basicNewWithNamedSlots: #{
+        self#{
             sourcePosition: sourcePosition.
             value: value
         }
@@ -430,7 +430,7 @@ Std Reflection AST MessageSendNode
 
 Std Reflection AST ChainedMessageNode
     withSelector: #asMessageSendNodeWithReceiver: addMethod: {:(Std Reflection AST ChainedMessageNode)self :(Std Reflection AST Node)receiver :: Std Reflection AST Node |
-        Std Reflection AST MessageSendNode basicNewWithNamedSlots: #{
+        Std Reflection AST MessageSendNode#{
             sourcePosition: self sourcePosition.
             receiver: receiver.
             selector: self selector.
@@ -447,12 +447,12 @@ Std Reflection AST MessageChainNode
         nodeWithAnalyzedReceiver receiver analyzedType _ analyzeMessageChainNode: nodeWithAnalyzedReceiver with: analyzer
     };
     withSelector: #expandAndAnalyzeNodeWith: addMethod: {:(Std Reflection AST MessageChainNode)self :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
-        let: #receiverSymbol with: (Std Reflection MessageChainReceiverAnonymousSymbol basicNewWithNamedSlots: #{
+        let: #receiverSymbol with: (Std Reflection MessageChainReceiverAnonymousSymbol#{
             sourcePosition: self sourcePosition
         }).
-        let: #receiverVariable with: (Std Reflection AST LocalVariableDefinitionNode basicNewWithNamedSlots: #{
+        let: #receiverVariable with: (Std Reflection AST LocalVariableDefinitionNode#{
             sourcePosition: self sourcePosition.
-            nameExpression: (Std Reflection AST LiteralValueNode basicNewWithNamedSlots: #{
+            nameExpression: (Std Reflection AST LiteralValueNode#{
                 sourcePosition: self sourcePosition.
                 value: receiverSymbol
             }).
@@ -460,19 +460,19 @@ Std Reflection AST MessageChainNode
             hasDirectTypeInference: true.
         }).
 
-        let: #receiverIdentifier with: (Std Reflection AST IdentifierReferenceNode basicNewWithNamedSlots: #{
+        let: #receiverIdentifier with: (Std Reflection AST IdentifierReferenceNode#{
             sourcePosition: self sourcePosition.
             value: receiverSymbol.
         }).
 
-        let: #messageSequenceNode with: (Std Reflection AST SequenceNode basicNewWithNamedSlots: #{
+        let: #messageSequenceNode with: (Std Reflection AST SequenceNode#{
             sourcePosition: self sourcePosition.
             expressions: (self chainedMessages collect: {:(Std Reflection AST Node)node :: Std Reflection AST Node |
                 node asMessageSendNodeWithReceiver: receiverIdentifier
             })
         }).
 
-        let: #sequenceNode with: (Std Reflection AST SequenceNode basicNewWithNamedSlots: #{
+        let: #sequenceNode with: (Std Reflection AST SequenceNode#{
             sourcePosition: self sourcePosition.
             expressions: (Std Reflection AST Node sharedArraySlice with: receiverVariable with: messageSequenceNode)
         }).

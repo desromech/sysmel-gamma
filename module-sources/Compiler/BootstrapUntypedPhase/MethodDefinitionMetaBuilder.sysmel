@@ -36,7 +36,7 @@ Std MetaProgramming MethodDefinitionMetaBuilder
         self finish.
     };
     withSelector: #concretizeMetaBuilder addMethod: {:(Std MetaProgramming MethodDefinitionMetaBuilder)self :: Std Reflection AST Node |
-        (Std Reflection AST MethodDefinitionNode basicNewWithNamedSlots: #{
+        (Std Reflection AST MethodDefinitionNode#{
             sourcePosition: self metaContext sourcePosition.
             selectorExpression: self selectorExpression.
             arguments: self arguments.

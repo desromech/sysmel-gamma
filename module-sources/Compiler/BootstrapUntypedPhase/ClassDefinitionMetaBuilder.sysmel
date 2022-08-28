@@ -7,7 +7,7 @@ __BootstrapCompiler__
 
 Std MetaProgramming ClassDefinitionMetaBuilder
     withSelector: #concretizeMetaBuilder addMethod: {:(Std MetaProgramming NamespaceMetaBuilder)self :: Std Reflection AST Node |
-        (Std Reflection AST ClassDefinitionNode basicNewWithNamedSlots: #{
+        (Std Reflection AST ClassDefinitionNode#{
             sourcePosition: self metaContext sourcePosition.
             nameExpression: self nameExpression.
             supertypeExpression: self supertypeExpression.

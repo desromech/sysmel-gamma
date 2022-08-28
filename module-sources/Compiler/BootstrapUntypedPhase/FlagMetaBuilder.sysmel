@@ -11,7 +11,7 @@ __BootstrapCompiler__
         <macro>
         <messageMethod>
         (Std MetaProgramming FlagMetaBuilder withContext: macroSelf)
-            programEntityAttributes: (Std MetaProgramming ProgramEntityMetaBuilderAttributes basicNewWithNamedSlots: #{
+            programEntityAttributes: (Std MetaProgramming ProgramEntityMetaBuilderAttributes#{
                 visibility: Std Reflection ProgramEntityVisibility Public basicNew
             });
             makeInstanceNode
@@ -20,7 +20,7 @@ __BootstrapCompiler__
         <macro>
         <messageMethod>
         (Std MetaProgramming FlagMetaBuilder withContext: macroSelf)
-            programEntityAttributes: (Std MetaProgramming ProgramEntityMetaBuilderAttributes basicNewWithNamedSlots: #{
+            programEntityAttributes: (Std MetaProgramming ProgramEntityMetaBuilderAttributes#{
                 visibility: Std Reflection ProtectedVisibility basicNew
             });
             makeInstanceNode
@@ -29,7 +29,7 @@ __BootstrapCompiler__
         <macro>
         <messageMethod>
         (Std MetaProgramming FlagMetaBuilder withContext: macroSelf)
-            programEntityAttributes: (Std MetaProgramming ProgramEntityMetaBuilderAttributes basicNewWithNamedSlots: #{
+            programEntityAttributes: (Std MetaProgramming ProgramEntityMetaBuilderAttributes#{
                 visibility: Std Reflection PrivateVisibility basicNew
             });
             makeInstanceNode
@@ -38,7 +38,7 @@ __BootstrapCompiler__
         <macro>
         <messageMethod>
         (Std MetaProgramming FlagMetaBuilder withContext: macroSelf)
-            programEntityAttributes: (Std MetaProgramming ProgramEntityMetaBuilderAttributes basicNewWithNamedSlots: #{
+            programEntityAttributes: (Std MetaProgramming ProgramEntityMetaBuilderAttributes#{
                 visibility: Std Reflection InternalVisibility basicNew
             });
             makeInstanceNode

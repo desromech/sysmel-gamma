@@ -62,7 +62,7 @@ Std Reflection Semantic LexicalScope
 
 Std Reflection Semantic CleanUpScope
     withSelector: #makeChildCleanUpScope addMethod: {:(Std Reflection Semantic CleanUpScope)self :: Std Reflection Semantic CleanUpScope |
-        Std Reflection Semantic CleanUpScope basicNewWithNamedSlots: #{
+        Std Reflection Semantic CleanUpScope#{
             parent: self
         }
     }.
@@ -91,19 +91,19 @@ Std Reflection Semantic SymbolValueBinding
 
 Std Reflection Semantic EvaluationEnvironment __type__
     withSelector: #default addMethod: {:(Std Reflection Semantic EvaluationEnvironment __type__)self :: self |
-        self basicNewWithNamedSlots: #{
+        self#{
             lexicalScope: __BootstrapCompiler__ getTopLevelEnvironment makeChildLexicalScope.
             cleanUpScope: Std Reflection Semantic CleanUpScope basicNew.
         }
     };
     withSelector: #forScriptEvaluationScope: addMethod: {:(Std Reflection Semantic EvaluationEnvironment __type__)self :(Std Reflection Semantic ScriptEvaluationScope)scope :: self |
-        self basicNewWithNamedSlots: #{
+        self#{
             lexicalScope: scope.
             cleanUpScope: Std Reflection Semantic CleanUpScope basicNew.
         }
     };
     withSelector: #forLexicalScope: addMethod: {:(Std Reflection Semantic EvaluationEnvironment __type__)self :(Std Reflection Semantic LexicalScope)scope :: self |
-        self basicNewWithNamedSlots: #{
+        self#{
             lexicalScope: scope.
             cleanUpScope: Std Reflection Semantic CleanUpScope basicNew.
         }

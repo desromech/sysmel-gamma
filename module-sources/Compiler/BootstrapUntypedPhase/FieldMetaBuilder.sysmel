@@ -26,7 +26,7 @@ Std MetaProgramming FieldMetaBuilder
         void
     };
     withSelector: #concretizeMetaBuilder addMethod: {:(Std MetaProgramming LetMetaBuilder)self :: Std Reflection AST Node |
-        (Std Reflection AST FieldVariableDefinitionNode basicNewWithNamedSlots: #{
+        (Std Reflection AST FieldVariableDefinitionNode#{
             sourcePosition: self metaContext sourcePosition.
             nameExpression: self nameExpression.
             typeExpression: self typeExpression.

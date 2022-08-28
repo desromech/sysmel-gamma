@@ -13,7 +13,7 @@ Std Reflection AST LocalVariableDefinitionNode
         let: #analyzedNode with: self shallowCopy.
         let: #name with: (if: self nameExpression isNotNil
             then: (self nameExpression _ analyzeAndEvaluateNodeWith: analyzer)
-            else: (AnonymousSymbol basicNewWithNamedSlots: #{
+            else: (AnonymousSymbol#{
                 sourcePosition: self sourcePosition
             })
         ).
@@ -57,7 +57,7 @@ Std Reflection AST LocalVariableDefinitionNode
 
             ## TODO: Add support for mutability.
             let: #variableReferenceType with: valueType.
-            let: #variable with: (Std Reflection LocalVariable basicNewWithNamedSlots: #{
+            let: #variable with: (Std Reflection LocalVariable#{
                 name: sanitizedName.
                 valueType: valueType.
                 referenceType: variableReferenceType.

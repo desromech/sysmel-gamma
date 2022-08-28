@@ -75,7 +75,7 @@ Type
         }.
     };
     withSelector: #analyzeMessageSendNode:with:valueBinding: addMethod: {:(Type)self :(Std Reflection AST MessageSendNode)node :(Std Reflection Semantic ASTAnalyzer)analyzer :(Std Reflection Semantic SymbolValueBinding)binding :: Std Reflection AST Node |
-        Std Reflection AST LiteralValueNode basicNewWithNamedSlots: #{
+        Std Reflection AST LiteralValueNode#{
             sourcePosition: node sourcePosition.
             value: binding value.
             analyzedType: binding value __type__
@@ -126,7 +126,7 @@ Type
             yourself
     };
     withSelector: #analyzeIdentifierReferenceNode:with:valueBinding: addMethod: {:(Type)self :(Std Reflection AST IdentifierReferenceNode)node :(Std Reflection Semantic ASTAnalyzer)analyzer :(Std Reflection Semantic SymbolValueBinding)binding :: Std Reflection AST Node |
-        Std Reflection AST LiteralValueNode basicNewWithNamedSlots: #{
+        Std Reflection AST LiteralValueNode#{
             sourcePosition: node sourcePosition.
             analyzedType: self.
             value: binding value
@@ -168,7 +168,7 @@ Type
             node
         } else: {
             if: (self isSubtypeOf: targetType) then: {
-                Std Reflection AST UpcastConversionNode basicNewWithNamedSlots: #{
+                Std Reflection AST UpcastConversionNode#{
                     sourcePosition: node sourcePosition.
                     expression: node.
                     analyzedType: targetType
@@ -184,7 +184,7 @@ Type
             node
         } else: {
             if: self hasAnyValueFlag then: {
-                Std Reflection AST WrapAnyValueNode basicNewWithNamedSlots: #{
+                Std Reflection AST WrapAnyValueNode#{
                     sourcePosition: node sourcePosition.
                     expression: node.
                     analyzedType: self
@@ -238,7 +238,7 @@ Std Reflection SumTypeSchema
         self containsType: sourceType
     };
     withSelector: #addConstructionNodeFor:valueType:into:with: addMethod: {:(Std Reflection SumTypeSchema)self :(Std Reflection AST Node)node :(Type)sourceType :(Type)targetType :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
-        Std Reflection AST WrapValueInSumTypeNode basicNewWithNamedSlots: #{
+        Std Reflection AST WrapValueInSumTypeNode#{
             sourcePosition: node sourcePosition.
             expression: node.
             typeSelector: (self getTypeSelectorIndexFor: sourceType).
@@ -252,7 +252,7 @@ Void __type__
         if: self == fromType then: {
             node
         } else: {
-            Std Reflection AST ValueAsVoidNode basicNewWithNamedSlots: #{
+            Std Reflection AST ValueAsVoidNode#{
                 sourcePosition: node sourcePosition.
                 expression: node.
                 analyzedType: self

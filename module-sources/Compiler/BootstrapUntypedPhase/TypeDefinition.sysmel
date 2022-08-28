@@ -26,6 +26,15 @@ Type
     withSelector: #addPendingBodyExpression: addMethod: {:(Type)self :(Void => Void)bodyExpression :: Void |
         <primitive: #"type.addPendingBodyExpression">
         __BootstrapCompiler__ primitiveFailed
+    };
+    withSelector: #extend: addMacroMethod: {:(MacroInvocationContext)macroSelf :(Std Reflection AST Node)body :: Std Reflection AST Node |
+        <macro>
+        <messageMethod>
+        Std Reflection AST ProgramEntityExtensionNode#{
+            sourcePosition: macroSelf sourcePosition.
+            programEntity: macroSelf selfNode _.
+            body: body
+        }.
     }.
 
 Std Reflection AST TypeDefinitionNode
@@ -44,7 +53,7 @@ Std Reflection AST TypeDefinitionNode
         ## Check the name.
         let: #name with: (if: self nameExpression isNotNil
             then: (self nameExpression _ analyzeAndEvaluateNodeWith: analyzer)
-            else: (Std Reflection AnonymousSymbol basicNewWithNamedSlots: #{
+            else: (Std Reflection AnonymousSymbol#{
                 sourcePosition: self sourcePosition
             })
         ).
@@ -58,7 +67,7 @@ Std Reflection AST TypeDefinitionNode
 
             if: existentBinding isNil then: {
                 let: #expectedMetaType with: analyzedNode getGenericResultMetaType.
-                let: #variable with: (Std Reflection LocalVariable basicNewWithNamedSlots: #{
+                let: #variable with: (Std Reflection LocalVariable#{
                     name: sanitizedName.
                     valueType: expectedMetaType.
                     referenceType: expectedMetaType.
@@ -142,7 +151,7 @@ Std Reflection AST TypeDefinitionNode
         }.
 
         if: self bodyExpression isNotNil then: {
-            let: #typeDefinitionScope with: (Std Reflection Semantic TypeDefinitionLookupScope basicNewWithNamedSlots: #{
+            let: #typeDefinitionScope with: (Std Reflection Semantic TypeDefinitionLookupScope#{
                 parent: evaluationEnvironment lexicalScope.
                 programEntity: typeProgramEntity
             }).

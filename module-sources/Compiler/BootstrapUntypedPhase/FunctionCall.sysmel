@@ -86,7 +86,7 @@ Function
     withSelector: #"()" addMacroMethod: {:(MacroInvocationContext)macroSelf :: Std Reflection AST FunctionCallNode |
         <macro>
         <messageMethod>
-        Std Reflection AST FunctionCallNode basicNewWithNamedSlots: #{
+        Std Reflection AST FunctionCallNode#{
             sourcePosition: macroSelf sourcePosition.
             functionExpression: macroSelf selfNode _.
         }.
@@ -94,7 +94,7 @@ Function
     withSelector: #"():" addMacroMethod: {:(MacroInvocationContext)macroSelf :(Std Reflection AST Node)arguments :: Std Reflection AST FunctionCallNode |
         <macro>
         <messageMethod>
-        Std Reflection AST FunctionCallNode basicNewWithNamedSlots: #{
+        Std Reflection AST FunctionCallNode#{
             sourcePosition: macroSelf sourcePosition.
             functionExpression: macroSelf selfNode _.
             argumentsExpression: arguments.

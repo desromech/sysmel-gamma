@@ -9,7 +9,7 @@ __BootstrapCompiler__
 
 Std Reflection FunctionVariable
     withSelector: #analyzeIdentifierReferenceNode:with: addMethod: {:(Std Reflection FunctionVariable)self :(Std Reflection AST IdentifierReferenceNode)node :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
-        Std Reflection AST FunctionVariableReferenceNode basicNewWithNamedSlots: #{
+        Std Reflection AST FunctionVariableReferenceNode#{
             binding: self.
             analyzedType: self referenceType
         }

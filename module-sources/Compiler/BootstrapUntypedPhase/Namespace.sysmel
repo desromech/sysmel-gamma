@@ -55,7 +55,7 @@ Std Reflection AST NamespaceDefinitionNode
         if: hasValidOwner then: {
             let: #name with: (if: self nameExpression isNotNil
                 then: (self nameExpression _ analyzeAndEvaluateNodeWith: analyzer)
-                else: (Std Reflection AnonymousSymbol basicNewWithNamedSlots: #{
+                else: (Std Reflection AnonymousSymbol#{
                     sourcePosition: self sourcePosition
                 })
             ).
@@ -70,7 +70,7 @@ Std Reflection AST NamespaceDefinitionNode
                 analyzedType: childNamespace __type__.
 
             if: analyzedNode bodyExpression isNotNil then: {
-                let: #namespaceScope with: (Std Reflection Semantic NamespaceLookupScope basicNewWithNamedSlots: #{
+                let: #namespaceScope with: (Std Reflection Semantic NamespaceLookupScope#{
                     parent: analyzer environment lexicalScope.
                     programEntity: childNamespace
                 }).
@@ -91,7 +91,7 @@ Std Reflection AST NamespaceDefinitionNode
     };
     withSelector: #evaluateNodeWith: addMethod: {:(Std Reflection AST NamespaceDefinitionNode)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         if: self bodyExpression isNotNil then: {
-            let: #namespaceScope with: (Std Reflection Semantic NamespaceLookupScope basicNewWithNamedSlots: #{
+            let: #namespaceScope with: (Std Reflection Semantic NamespaceLookupScope#{
                 parent: evaluationEnvironment lexicalScope.
                 programEntity: self analyzedProgramEntity _
             }).

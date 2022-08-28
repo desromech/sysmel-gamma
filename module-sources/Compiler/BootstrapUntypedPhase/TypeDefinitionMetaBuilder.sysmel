@@ -22,7 +22,7 @@ Std MetaProgramming TypeDefinitionMetaBuilder
         void
     };
     withSelector: #concretizeMetaBuilder addMethod: {:(Std MetaProgramming NamespaceMetaBuilder)self :: Std Reflection AST Node |
-        (Std Reflection AST TypeDefinitionNode basicNewWithNamedSlots: #{
+        (Std Reflection AST TypeDefinitionNode#{
             sourcePosition: self metaContext sourcePosition.
             nameExpression: self nameExpression.
             supertypeExpression: self supertypeExpression.

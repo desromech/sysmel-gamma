@@ -26,14 +26,14 @@ Std Reflection AST FunctionDefinitionNode
         ## Check the name.
         let: #name with: (if: self nameExpression isNotNil
             then: (self nameExpression _ analyzeAndEvaluateNodeWith: analyzer)
-            else: (Std Reflection AnonymousSymbol basicNewWithNamedSlots: #{
+            else: (Std Reflection AnonymousSymbol#{
                 sourcePosition: self sourcePosition
             })
         ).
         let: #sanitizedName with: (name asSanitizedNameSymbolFor: self sourcePosition).
         analyzedNode analyzedName: sanitizedName.
 
-        let: #blockClosureNode with: (Std Reflection AST BlockClosureNode basicNewWithNamedSlots: #{
+        let: #blockClosureNode with: (Std Reflection AST BlockClosureNode#{
             arguments: self arguments.
             resultTypeExpression: self resultTypeExpression.
             body: self body _.
@@ -53,7 +53,7 @@ Std Reflection AST FunctionDefinitionNode
             let: #existentBinding with: (analyzer environment lexicalScope lookupSymbol: sanitizedName).
 
             if: existentBinding isNil then: {
-                let: #variable with: (Std Reflection LocalVariable basicNewWithNamedSlots: #{
+                let: #variable with: (Std Reflection LocalVariable#{
                     name: sanitizedName.
                     valueType: functionType.
                     referenceType: functionType.

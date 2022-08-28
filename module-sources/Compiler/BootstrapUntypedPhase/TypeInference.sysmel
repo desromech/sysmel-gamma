@@ -36,7 +36,7 @@ Std Reflection Semantic ASTAnalyzer
         self analyzeNodeIfNeeded: node withTypeInferenceEnvironment: Std Reflection Semantic AutoTypeInferenceEnvironment basicNew
     };
     withSelector: #analyzeNodeIfNeeded:withExpectedType: addMethod: {:(Std Reflection Semantic ASTAnalyzer)self :(Std Reflection AST Node)node :(Type)expectedType :: Std Reflection AST Node |
-        self analyzeNodeIfNeeded: node withTypeInferenceEnvironment: (Std Reflection Semantic ExpectedTypeInferenceEnvironment basicNewWithNamedSlots: #{
+        self analyzeNodeIfNeeded: node withTypeInferenceEnvironment: (Std Reflection Semantic ExpectedTypeInferenceEnvironment#{
             expectedType: expectedType
         })
     };
@@ -45,7 +45,7 @@ Std Reflection Semantic ASTAnalyzer
     };
     withSelector: #copyWithExpectedType: addMethod: {:(Std Reflection Semantic ASTAnalyzer)self :(Type)expectedType |
         self shallowCopy
-            typeInferenceEnvironment: (Std Reflection Semantic ExpectedTypeInferenceEnvironment basicNewWithNamedSlots: #{
+            typeInferenceEnvironment: (Std Reflection Semantic ExpectedTypeInferenceEnvironment#{
                 expectedType: expectedType
             });
             yourself

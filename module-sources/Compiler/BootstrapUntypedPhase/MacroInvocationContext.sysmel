@@ -9,14 +9,14 @@ __BootstrapCompiler__
 
 Std Reflection Semantic ASTAnalyzer
     withSelector: #makeMacroInvocationContextForIdentifierReferenceNode: addMethod: {:(Std Reflection Semantic ASTAnalyzer)self :(Std Reflection AST IdentifierReferenceNode)node :: MacroInvocationContext |
-        MacroInvocationContext basicNewWithNamedSlots: #{
+        MacroInvocationContext#{
             sourcePosition: node sourcePosition.
             selfType: Void.
             astAnalyzer: self
         }
     };
     withSelector: #makeMacroInvocationContextForMessageSendNode: addMethod: {:(Std Reflection Semantic ASTAnalyzer)self :(Std Reflection AST MessageSendNode)node :: MacroInvocationContext |
-        MacroInvocationContext basicNewWithNamedSlots: #{
+        MacroInvocationContext#{
             sourcePosition: node sourcePosition.
             selfNode: node receiver.
             selfType: (if: node receiver isNil then: {

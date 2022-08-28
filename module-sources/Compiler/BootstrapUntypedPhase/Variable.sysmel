@@ -57,7 +57,7 @@ Std Reflection AST VariableDefinitionNode
 
 Std Reflection Semantic LexicalScope
     withSelector: #setSymbol:variableBinding: addMethod: {:(Std Reflection Semantic LexicalScope)self :(Object)symbol :(Std Reflection Variable)variable :: Void |
-        self setSymbol: symbol binding: (Std Reflection Semantic SymbolVariableBinding basicNewWithNamedSlots: #{
+        self setSymbol: symbol binding: (Std Reflection Semantic SymbolVariableBinding#{
             variable: variable
         })
     }.

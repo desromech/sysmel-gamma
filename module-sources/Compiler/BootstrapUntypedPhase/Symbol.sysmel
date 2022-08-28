@@ -25,7 +25,7 @@ Std Reflection AnonymousSymbol
 Symbol
     withSelector: #asSanitizedNameSymbolFor: addMethod: {:(Symbol)self :(Std Reflection AST SourcePosition)sourcePosition :: Object |
         if: self = #_ then: {
-            AnonymousSymbol basicNewWithNamedSlots: #{
+            AnonymousSymbol#{
                 sourcePosition: sourcePosition
             }
         } else: {

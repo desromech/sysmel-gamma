@@ -44,12 +44,12 @@ Function
 
 Std MetaProgramming MetaBuilder __type__
     withSelector: #withContext: addMethod: {:(Std MetaProgramming MetaBuilder __type__)self :(MacroInvocationContext)context :: self |
-        self basicNewWithNamedSlots: #{
+        self#{
             metaContext: context
         }
     };
     withSelector: #constructInheritingStateFrom: addMethod: {:(Std MetaProgramming MetaBuilder __type__)self :(Std MetaProgramming MetaBuilder)otherMetaBuilder :: self |
-         self basicNewWithNamedSlots: #{
+         self#{
             metaContext: otherMetaBuilder metaContext.
             programEntityAttributes: otherMetaBuilder programEntityAttributes.
         }
@@ -90,7 +90,7 @@ Std Reflection AST MessageChainNode
 
 Std MetaProgramming MetaBuilder
     withSelector: #makeInstanceNode addMethod: {:(Std MetaProgramming MetaBuilder)self :: Std Reflection AST MetaBuilderInstanceNode |
-        Std Reflection AST MetaBuilderInstanceNode basicNewWithNamedSlots: #{
+        Std Reflection AST MetaBuilderInstanceNode#{
             sourcePosition: self metaContext sourcePosition.
             value: self.
             analyzedType: self __type__.
@@ -152,7 +152,7 @@ Std MetaProgramming MetaBuilder
         }
     };
     withSelector: #concretizeMetaBuilder addMethod: {:(Std MetaProgramming MetaBuilder)self :: Std Reflection AST Node |
-        Std Reflection AST LiteralValueNode basicNewWithNamedSlots: #{
+        Std Reflection AST LiteralValueNode#{
             sourcePosition: self metaContext sourcePosition.
             value: void.
             analyzedType: Void

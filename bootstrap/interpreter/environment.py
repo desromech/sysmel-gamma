@@ -154,6 +154,8 @@ class BootstrapCompiler(BehaviorTypedObject):
             (cls.parseErrorAt, 'parseError:at:', '(SelfType -- String -- AnyValue) => Void'),
             (cls.semanticAnalysisErrorAt, 'semanticAnalysisError:at:', '(SelfType -- String -- AnyValue) => Void'),
 
+            (cls.enqueuePendingEvaluation, 'enqueuePendingEvaluation:', '(AnyValue) => Void'),
+
             ## Target platform
             (cls.getPointerSize, 'getPointerSize', '(SelfType) => Integer'),
 
@@ -161,6 +163,10 @@ class BootstrapCompiler(BehaviorTypedObject):
             (cls.print, 'print:', '(SelfType -- AnyValue) => Void'),
             (cls.printLine, 'printLine:', '(SelfType -- AnyValue) => Void')
         ])
+
+    def enqueuePendingEvaluation(self, pendingEvaluation):
+        EvaluationMachine.getActive().addPendingEvaluation(pendingEvaluation)
+        return getVoidValue()
 
     def getEmptySourcePosition(self):
         if self.emptySourcePosition is None:

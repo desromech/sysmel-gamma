@@ -32,7 +32,7 @@ Std Reflection AST MethodDefinitionNode
 
         let: #selector with: (if: self selectorExpression isNotNil
             then: (self selectorExpression _ analyzeAndEvaluateNodeWith: analyzer)
-            else: (AnonymousSymbol basicNewWithNamedSlots: #{
+            else: (AnonymousSymbol#{
                 sourcePosition: self sourcePosition
             })
         ).
@@ -42,7 +42,7 @@ Std Reflection AST MethodDefinitionNode
             let: #implicitArguments with: (self makeImplicitArgumentsFor: ownerProgramEntity _).
             let: #allArguments with: implicitArguments -- self arguments.
 
-            let: #blockClosureNode with: (Std Reflection AST BlockClosureNode basicNewWithNamedSlots: #{
+            let: #blockClosureNode with: (Std Reflection AST BlockClosureNode#{
                 arguments: allArguments.
                 resultTypeExpression: self resultTypeExpression.
                 body: self body _.

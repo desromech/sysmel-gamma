@@ -1,14 +1,4 @@
 Function __type__
-    #*
-    withSelector: #canonicalArgumentTypes addMethod: {:(Function __type__)self :: Type arraySlice |
-        <primitive: #"functionType.getCanonicalArgumentTypes">
-        __BootstrapCompiler__ primitiveFailed
-    };
-    withSelector: #canonicalResultType addMethod: {:(Function __type__)self :: Type |
-        <primitive: #"functionType.getCanonicalResultType">
-        __BootstrapCompiler__ primitiveFailed
-    };
-    *#
     withSelector: #argumentCount addMethod: {:(Function __type__)self :: Size |
         <primitive: #"functionType.getArgumentCount">
         __BootstrapCompiler__ primitiveFailed
@@ -28,7 +18,7 @@ Function __type__
                 in: (analyzer makeMacroInvocationContextForIdentifierReferenceNode: node)
             )
         } else: {
-            Std Reflection AST LiteralValueNode basicNewWithNamedSlots: #{
+            Std Reflection AST LiteralValueNode#{
                 sourcePosition: node sourcePosition.
                 analyzedType: self.
                 value: binding value
@@ -108,7 +98,8 @@ Function
             let: #analyzedNode with: node shallowCopy.
 
             if: analyzedNode receiver isNotNil then: {
-                analyzedNode receiver: (signatureAnalyzer analyzeReceiverArgumentNode: analyzedNode receiver _ with: analyzer)
+                analyzedNode receiver: (signatureAnalyzer analyzeReceiverArgumentNode: analyzedNode receiver _ with: analyzer).
+                void
             } else: {void}.
 
             analyzedNode
@@ -120,7 +111,7 @@ Function
                 usesDynamicDispatch: node receiver _ analyzedType _ supportsDynamicDispatch & self usesDynamicDispatch.
 
             signatureAnalyzer annotateExtraSemanticAnalysisErrorsOn: analyzedNode with: analyzer
-        }.
+        }
     };
     withSelector: #run:with:in: addMethod: {:(Function)self :(AnyValue)selector :(AnyValue arraySlice)arguments :(AnyValue)receiver :: AnyValue |
         <primitive: #"object.runWithIn">

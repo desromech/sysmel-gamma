@@ -15,7 +15,7 @@ Std MetaProgramming NamespaceMetaBuilder
         void
     };
     withSelector: #concretizeMetaBuilder addMethod: {:(Std MetaProgramming NamespaceMetaBuilder)self :: Std Reflection AST Node |
-        (Std Reflection AST NamespaceDefinitionNode basicNewWithNamedSlots: #{
+        (Std Reflection AST NamespaceDefinitionNode#{
             sourcePosition: self metaContext sourcePosition.
             nameExpression: self nameExpression.
             bodyExpression: self bodyExpression.

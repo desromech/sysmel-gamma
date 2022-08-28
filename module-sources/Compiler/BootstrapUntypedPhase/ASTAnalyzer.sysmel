@@ -1,14 +1,14 @@
 Std Reflection Semantic ASTAnalyzer __type__
     withSelector: #forEnvironment: addMethod: {:(Std Reflection Semantic ASTAnalyzer __type__)self :(Std Reflection Semantic EvaluationEnvironment)environment :: self |
-        self basicNewWithNamedSlots: #{
+        self#{
             environment: environment.
             typeInferenceEnvironment: Std Reflection Semantic AutoTypeInferenceEnvironment basicNew.
         }
     };
     withSelector: #forEnvironment:withExpectedType: addMethod: {:(Std Reflection Semantic ASTAnalyzer __type__)self :(Std Reflection Semantic EvaluationEnvironment)environment :(Type)expectedType :: self |
-        self basicNewWithNamedSlots: #{
+        self#{
             environment: environment.
-            typeInferenceEnvironment: (Std Reflection Semantic ExpectedTypeInferenceEnvironment basicNewWithNamedSlots: #{
+            typeInferenceEnvironment: (Std Reflection Semantic ExpectedTypeInferenceEnvironment#{
                 expectedType: expectedType
             }).
         }
@@ -22,14 +22,14 @@ Std Reflection Semantic ASTAnalyzer __type__
 
 Std Reflection Semantic ASTAnalyzer
     withSelector: #makeSemanticAnalysisError:at: addMethod: {:(Std Reflection Semantic ASTAnalyzer)self :(String)errorMessage :(Std Reflection SourcePosition)sourcePosition :: Std Reflection AST SemanticErrorNode |
-        Std Reflection AST SemanticErrorNode basicNewWithNamedSlots: #{
+        Std Reflection AST SemanticErrorNode#{
             analyzedType: CompilationError.
             sourcePosition: sourcePosition.
             message: errorMessage.
         }.
     };
     withSelector: #makeSemanticAnalysisError:atNode: addMethod: {:(Std Reflection Semantic ASTAnalyzer)self :(String)errorMessage :(Std Reflection AST Node)node :: Std Reflection AST SemanticErrorNode |
-        Std Reflection AST SemanticErrorNode basicNewWithNamedSlots: #{
+        Std Reflection AST SemanticErrorNode#{
             analyzedType: (if: node analyzedType isNil then: CompilationError else: node analyzedType _).
             sourcePosition: node sourcePosition.
             message: errorMessage.

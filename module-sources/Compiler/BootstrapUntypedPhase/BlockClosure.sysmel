@@ -48,7 +48,7 @@ Std Reflection AST BlockClosureNode
             if: analyzedNode resultTypeExpression isNotNil then: {
                 analyzedNode analyzedResultTypeExpression: (analyzer analyzeNodeIfNeeded: analyzedNode resultTypeExpression _ withExpectedType: Type)
             } else: {
-                analyzedNode analyzedResultTypeExpression: (LiteralValueNode basicNewWithNamedSlots: #{
+                analyzedNode analyzedResultTypeExpression: (LiteralValueNode#{
                     value: Void.
                     analyzedType: Void __type__
                 }).
@@ -84,6 +84,11 @@ Std Reflection AST BlockClosureNode
             let: #analyzer with: (Std Reflection Semantic ASTAnalyzer forEnvironment: (Std Reflection Semantic EvaluationEnvironment forLexicalScope: self argumentAnalysisScope _)).
             self analyzedBody: (analyzer analyzeNodeIfNeeded: self body withExpectedType: self analyzedResultType _).
             void
+        } else: { void }
+    };
+    withSelector: #enqueuePendingBodyAnalysis addMethod: {:(Std Reflection AST BlockClosureNode)self :: Void |
+        if: self analyzedBody isNil then: {
+            __BootstrapCompiler__ enqueuePendingEvaluation: {:: Void | self ensureBodyAnalysis }
         } else: { void }
     };
     withSelector: #analyzeCompileTimeTypeConstraintsWith: addMethod: {:(Std Reflection AST BlockClosureNode)self :(Std Reflection EvaluationEnvironment)environment :: Void |
@@ -135,11 +140,13 @@ Std Reflection AST BlockClosureNode
         }.
     };
     withSelector: #evaluateNodeWith: addMethod: {:(Std Reflection AST BlockClosureNode)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
-        let: #blockClosure with: (Std Reflection BlockClosure basicNewWithNamedSlots: #{
+        let: #blockClosure with: (Std Reflection BlockClosure#{
             functionType: self analyzedType _.
             node: self.
             environment: evaluationEnvironment.
         }).
+
+        self enqueuePendingBodyAnalysis.
 
         self analyzedType _ newWithImplementation: blockClosure
     };
@@ -184,7 +191,7 @@ Std Reflection AST BlockClosureNode
 
 Std Reflection BlockClosure
     withSelector: #run:with:in: addMethod: {:(Std Reflection BlockClosure)self :(AnyValue)selector :(AnyValue arraySlice)arguments :(AnyValue)receiver :: AnyValue |
-        __BootstrapCompiler__ printLine: "TODO: BlockClosure evaluateWithArguments:".
+        __BootstrapCompiler__ printLine: "TODO: BlockClosure run:with:in:".
         __BootstrapCompiler__ printLine: selector.
         __BootstrapCompiler__ printLine: arguments.
         __BootstrapCompiler__ printLine: receiver.
