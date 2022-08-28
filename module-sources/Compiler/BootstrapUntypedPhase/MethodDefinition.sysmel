@@ -8,6 +8,8 @@ __BootstrapCompiler__
         arguments: Std Reflection AST Node sharedArraySlice.
         resultTypeExpression: Std Reflection AST Node optional.
         body: Std Reflection AST Node optional.
+        isMacro: Boolean.
+        isFallback: Boolean.
         visibility: Std Reflection ProgramEntityVisibility.
         analyzedSelector: Object optional.
         analyzedOwnerProgramEntity: Std Reflection ProgramEntity optional.
@@ -16,15 +18,22 @@ __BootstrapCompiler__
 
 Std Reflection AST MethodDefinitionNode
     withSelector: #makeImplicitArgumentsFor: addMethod: {:(Std Reflection AST MethodDefinitionNode)self :(Std Reflection ProgramEntity)programEntity :: Std Reflection AST Node sharedArraySlice |
-        let: #receiverType with: programEntity asReceiverType.
-        if: receiverType isNil then: {
-            Std Reflection AST Node sharedArraySlice basicNew
-        } else: {
+        if: self isMacro then: {
             Std Reflection AST Node sharedArraySlice with:
-                ((Std Reflection AST ArgumentDefinitionNode withName: #self type: receiverType _ at: self sourcePosition)
-                    isImplicitArgument: true;
-                    yourself)
-        }
+                    ((Std Reflection AST ArgumentDefinitionNode withName: #__macroSelf__ type: MacroInvocationContext at: self sourcePosition)
+                        isImplicitArgument: true;
+                        yourself)
+        } else: {
+            let: #receiverType with: programEntity asReceiverType.
+            if: receiverType isNil then: {
+                Std Reflection AST Node sharedArraySlice basicNew
+            } else: {
+                Std Reflection AST Node sharedArraySlice with:
+                    ((Std Reflection AST ArgumentDefinitionNode withName: #self type: receiverType _ at: self sourcePosition)
+                        isImplicitArgument: true;
+                        yourself)
+            }
+        }.
     };
     withSelector: #analyzeNodeWith: addMethod: {:(Std Reflection AST MethodDefinitionNode)self :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
         let: #ownerProgramEntity with: (analyzer environment lexicalScope lookupCurrentProgramEntity).
@@ -47,6 +56,8 @@ Std Reflection AST MethodDefinitionNode
                 resultTypeExpression: self resultTypeExpression.
                 body: self body _.
                 hasLazyBodyAnalysis: true.
+                isMacro: self isMacro.
+                isMessageMethod: true.
             }).
             analyzedNode
                 analyzedSelector: selector;
@@ -58,8 +69,17 @@ Std Reflection AST MethodDefinitionNode
             analyzer makeSemanticAnalysisError: "Methods cannot be defined in this context." at: self sourcePosition
         }.
     };
-    withSelector: #evaluateNodeWith: addMethod: {:(Std Reflection AST MethodDefinitionNode)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+    withSelector: #performEvaluationWith: addMethod: {:(Std Reflection AST MethodDefinitionNode)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         let: #blockClosure with: (self analyzedBlockClosureNode _ evaluateNodeWith: evaluationEnvironment).
-        self analyzedOwnerProgramEntity _ withSelector: self analyzedSelector _ addMethod: blockClosure.
+        let: #ownerProgramEntity with: self analyzedOwnerProgramEntity _.
+        if: self isMacro then: {
+            if: self isFallback then: {
+                ownerProgramEntity withSelector: self analyzedSelector _ addMacroFallbackMethod: blockClosure.
+            } else: {
+                ownerProgramEntity withSelector: self analyzedSelector _ addMacroMethod: blockClosure.
+            }
+        } else: {
+            ownerProgramEntity withSelector: self analyzedSelector _ addMethod: blockClosure.
+        }.
         blockClosure
     }.

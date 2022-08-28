@@ -33,7 +33,7 @@ Type
         Std Reflection AST ProgramEntityExtensionNode#{
             sourcePosition: macroSelf sourcePosition.
             programEntity: macroSelf selfNode _.
-            body: body
+            bodyExpression: body
         }.
     }.
 
@@ -116,7 +116,7 @@ Std Reflection AST TypeDefinitionNode
             analyzedNode
         }.
     };
-    withSelector: #evaluateNodeWith: addMethod: {:(Std Reflection AST TypeDefinitionNode)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+    withSelector: #performEvaluationWith: addMethod: {:(Std Reflection AST TypeDefinitionNode)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         let: #typeProgramEntity with: (if: self isAnalyzedLocalDefinition then: {
             let: #typeInstance with: self constructTypeInstance.
             if: self analyzedName isNotNil then: {

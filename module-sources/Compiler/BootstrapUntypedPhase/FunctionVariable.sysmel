@@ -10,13 +10,14 @@ __BootstrapCompiler__
 Std Reflection FunctionVariable
     withSelector: #analyzeIdentifierReferenceNode:with: addMethod: {:(Std Reflection FunctionVariable)self :(Std Reflection AST IdentifierReferenceNode)node :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
         Std Reflection AST FunctionVariableReferenceNode#{
+            sourcePosition: node sourcePosition.
             binding: self.
             analyzedType: self referenceType
         }
     }.
 
 Std Reflection AST FunctionVariableReferenceNode
-    withSelector: #evaluateNodeWith: addMethod: {:(Std Reflection AST LocalVariableReferenceNode)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+    withSelector: #performEvaluationWith: addMethod: {:(Std Reflection AST LocalVariableReferenceNode)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         (evaluationEnvironment lexicalScope lookupSymbolRecursively: self binding) _ 
             evaluateBindingWithEnvironment: evaluationEnvironment
     }.

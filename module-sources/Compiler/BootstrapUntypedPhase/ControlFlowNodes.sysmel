@@ -54,7 +54,7 @@ Std Reflection AST IfTrueIfFalseNode
 
         analyzedNode
     };
-    withSelector: #evaluateNodeWith: addMethod: {:(Std Reflection AST IfTrueIfFalseNode)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+    withSelector: #performEvaluationWith: addMethod: {:(Std Reflection AST IfTrueIfFalseNode)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         if: (self condition evaluateNodeWith: evaluationEnvironment) then: {
             if: self trueExpression isNil then: {
                 void
@@ -94,7 +94,7 @@ Std Reflection AST WhileDoContinueNode
 
         analyzedNode
     };
-    withSelector: #evaluateNodeWith: addMethod: {:(Std Reflection AST WhileDoContinueNode)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+    withSelector: #performEvaluationWith: addMethod: {:(Std Reflection AST WhileDoContinueNode)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         while: (self condition evaluateNodeWith: evaluationEnvironment) do: {
             if: self bodyExpression isNil then: {
                 void

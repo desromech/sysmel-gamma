@@ -15,6 +15,8 @@ __BootstrapCompiler__
         hasDependentArguments: Boolean.
         hasCompileTimeDefinedType: Boolean.
         hasLazyBodyAnalysis: Boolean.
+        isMacro: Boolean.
+        isMessageMethod: Boolean.
     }).
 
 Std Reflection BlockClosure
@@ -22,9 +24,25 @@ Std Reflection BlockClosure
         functionType: Function __type__ optional.
         node: Std Reflection AST BlockClosureNode optional.
         environment: Std Reflection Semantic EvaluationEnvironment.
+        isMacro: Boolean.
+        isMessageMethod: Boolean.
     }.
 
 Std Reflection AST BlockClosureNode
+    withSelector: #defaultArgumentType addMethod: {:(Std Reflection AST BlockClosureNode)self :: Type optional |
+        if: self isMacro then: {
+            Std Reflection AST Node
+        } else: {
+            nil
+        }
+    };
+    withSelector: #defaultResultType addMethod: {:(Std Reflection AST BlockClosureNode)self :: Type optional |
+        if: self isMacro then: {
+            Std Reflection AST Node
+        } else: {
+            nil
+        }
+    };
     withSelector: #analyzeNodeWith: addMethod: {:(Std Reflection AST BlockClosureNode)self :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
         let: #analyzedNode with: self shallowCopy.
 
@@ -36,7 +54,7 @@ Std Reflection AST BlockClosureNode
         analyzer withEnvironment: argumentAnalysisEnvironment do: { :: Void |
             ## Analyze the arguments.
             analyzedNode arguments: (analyzedNode arguments collect: {:argumentNode :: Std Reflection AST Node |
-                let: #analyzedArgument with: (analyzer analyzeNodeIfNeededWithCurrentExpectedType: argumentNode).
+                let: #analyzedArgument with: (argumentNode analyzeArgumentDefinitionNodeWith: analyzer withDefaultArgumentType: analyzedNode defaultArgumentType).
                 if: analyzedArgument isErrorNode then: {
                     hasError _: true
                 } else: {void}.
@@ -48,10 +66,16 @@ Std Reflection AST BlockClosureNode
             if: analyzedNode resultTypeExpression isNotNil then: {
                 analyzedNode analyzedResultTypeExpression: (analyzer analyzeNodeIfNeeded: analyzedNode resultTypeExpression _ withExpectedType: Type)
             } else: {
-                analyzedNode analyzedResultTypeExpression: (LiteralValueNode#{
-                    value: Void.
-                    analyzedType: Void __type__
-                }).
+                let: #defaultResultType with: self defaultResultType.
+                if: defaultResultType isNotNil then: {
+                    analyzedNode analyzedResultTypeExpression: (Std Reflection AST LiteralValueNode#{
+                        sourcePosition: self sourcePosition.
+                        value: defaultResultType _.
+                        analyzedType: defaultResultType _ __type__
+                    }).
+                } else: {
+                    analyzedNode analyzedResultTypeExpression: (analyzer makeSemanticAnalysisError: "Result type specification is required." at: self sourcePosition).
+                }.
             }.
 
             if: analyzedNode analyzedResultTypeExpression _ isErrorNode then: {
@@ -64,6 +88,7 @@ Std Reflection AST BlockClosureNode
         if: hasError _ then: {
             analyzedNode
                 argumentAnalysisScope: argumentAnalysisScope;
+                hasCompilationError: true.
                 analyzedType: CompilationError;
                 yourself
         } else: {
@@ -139,11 +164,13 @@ Std Reflection AST BlockClosureNode
             Function newDependentFunctionTypeWithEnvironment: environment arguments: self arguments resultType: self analyzedResultTypeExpression.
         }.
     };
-    withSelector: #evaluateNodeWith: addMethod: {:(Std Reflection AST BlockClosureNode)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+    withSelector: #performEvaluationWith: addMethod: {:(Std Reflection AST BlockClosureNode)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         let: #blockClosure with: (Std Reflection BlockClosure#{
             functionType: self analyzedType _.
             node: self.
             environment: evaluationEnvironment.
+            isMacro: self isMacro.
+            isMessageMethod: self isMessageMethod.
         }).
 
         self enqueuePendingBodyAnalysis.
@@ -201,5 +228,13 @@ Std Reflection BlockClosure
         self node _ evaluateWithEnvironment: self environment arguments: arguments
     };
     withSelector: #hasMethodFlag: addMethod: {:(Std Reflection BlockClosure)self :(Symbol)flag :: Boolean |
-        false
+        if: flag == #macro then: {
+            self isMacro
+        } else: {
+            if: flag == #messageMethod then: {
+                self isMessageMethod
+            } else: {
+                false
+            }
+        }
     }.

@@ -770,7 +770,6 @@ class TypeSchema(TypedValue):
 
     def buildPrimitiveMethodDictionary(self):
         self.methodDict[Symbol.intern('shallowCopy')] = TypeSchemaPrimitiveMethod.makeFunction(self.primitiveShallowCopy, '(SelfType => SelfType)')
-        self.methodDict[Symbol.intern('yourself')] = TypeSchemaPrimitiveMethod.makeFunction(self.primitiveYourself, '(SelfType => SelfType)')
         self.methodDict[Symbol.intern('__type__')] = TypeSchemaPrimitiveMethod.makeFunction(self.getTypeFromValue, '(SelfType => SelfType __type__)')
 
     def lookupPrimitiveWithSelector(self, selector):
@@ -1696,6 +1695,10 @@ class BehaviorType(ProgramEntity, TypeInterface):
         self.evaluatePendingSupertypeExpressions()
         while len(self.pendingTraitExpressions) > 0:
             self.addTrait(self.pendingTraitExpressions.pop(0)())
+
+    @primitiveNamed('type.doesImplementTrait')
+    def primitiveDoesImplementTrait(self, trait):
+        return getBooleanValue(trait in self.getAllTraits())
 
     @primitiveNamed('type.addPendingBodyExpression')
     def addPendingBodyExpression(self, bodyExpression):

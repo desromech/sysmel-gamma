@@ -69,7 +69,7 @@ Std Reflection AST FunctionCallNode
         analyzedNode analyzedType: signatureAnalyzer computeResultType.
         signatureAnalyzer annotateExtraSemanticAnalysisErrorsOn: analyzedNode with: analyzer.
     };
-    withSelector: #evaluateNodeWith: addMethod: {:(Std Reflection AST FunctionCallNode)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+    withSelector: #performEvaluationWith: addMethod: {:(Std Reflection AST FunctionCallNode)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         let: #function with: (self functionExpression evaluateNodeWith: evaluationEnvironment).
 
         if: self analyzedArgumentSetupExpression isNotNil then: {

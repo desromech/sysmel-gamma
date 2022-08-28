@@ -863,6 +863,9 @@ Undefined
 AnyValueTrait
     withSelector: #initialize addMethod: {:(AnyValueTrait)self :: Void |
         void
+    };
+    withSelector: #yourself addMethod: {:(AnyValueTrait)self :: self __type__ |
+        self
     }.
 
 SimpleType

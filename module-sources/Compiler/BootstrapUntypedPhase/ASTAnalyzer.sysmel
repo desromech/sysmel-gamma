@@ -22,15 +22,20 @@ Std Reflection Semantic ASTAnalyzer __type__
 
 Std Reflection Semantic ASTAnalyzer
     withSelector: #makeSemanticAnalysisError:at: addMethod: {:(Std Reflection Semantic ASTAnalyzer)self :(String)errorMessage :(Std Reflection SourcePosition)sourcePosition :: Std Reflection AST SemanticErrorNode |
+        __BootstrapCompiler__ printLine: errorMessage.
+        __BootstrapCompiler__ printLine: ("{0}: {1}" format: (sourcePosition printString, errorMessage)).
         Std Reflection AST SemanticErrorNode#{
+            hasCompilationError: true.
             analyzedType: CompilationError.
             sourcePosition: sourcePosition.
             message: errorMessage.
         }.
     };
     withSelector: #makeSemanticAnalysisError:atNode: addMethod: {:(Std Reflection Semantic ASTAnalyzer)self :(String)errorMessage :(Std Reflection AST Node)node :: Std Reflection AST SemanticErrorNode |
+        __BootstrapCompiler__ printLine: ("{0}: {1}" format: (sourcePosition printString, errorMessage)).
         Std Reflection AST SemanticErrorNode#{
             analyzedType: (if: node analyzedType isNil then: CompilationError else: node analyzedType _).
+            hasCompilationError: true.
             sourcePosition: node sourcePosition.
             message: errorMessage.
             innerNode: node

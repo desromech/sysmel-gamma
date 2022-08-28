@@ -89,7 +89,7 @@ Std Reflection AST NamespaceDefinitionNode
             analyzer makeSemanticAnalysisError: "A namespace cannot be defined in this location." at: self sourcePosition.
         }
     };
-    withSelector: #evaluateNodeWith: addMethod: {:(Std Reflection AST NamespaceDefinitionNode)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+    withSelector: #performEvaluationWith: addMethod: {:(Std Reflection AST NamespaceDefinitionNode)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         if: self bodyExpression isNotNil then: {
             let: #namespaceScope with: (Std Reflection Semantic NamespaceLookupScope#{
                 parent: evaluationEnvironment lexicalScope.

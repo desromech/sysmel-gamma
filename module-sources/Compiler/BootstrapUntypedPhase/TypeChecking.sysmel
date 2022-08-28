@@ -143,7 +143,6 @@ Type
         self
     };
     withSelector: #isSubtypeOf: addMethod: {:(Type)self :(Type)other :: Boolean |
-        <primitive: #"type.isSubtypeOf">
         if: self == other then: {
             true
         } else: {
@@ -153,6 +152,10 @@ Type
                 self supertype _ isSubtypeOf: other
             }
         }
+    };
+    withSelector: #doesImplementTrait: addMethod: {:(Type)self :(Type)traitToTest :: Boolean |
+        <primitive: #"type.doesImplementTrait">
+        __BootstrapCompiler__ primitiveFailed
     };
     withSelector: #hasTypeFlag: addMethod: {:(Type)self :(AnyValue)methodFlag :: Boolean |
         <primitive: #"type.hasTypeFlag">
@@ -174,7 +177,15 @@ Type
                     analyzedType: targetType
                 }
             } else: {
-                targetType addImplicitCoercionToNode: node fromType: self with: analyzer
+                if: (self doesImplementTrait: targetType) then: {
+                    Std Reflection AST TraitConversionNode#{
+                        sourcePosition: node sourcePosition.
+                        expression: node.
+                        analyzedType: targetType
+                    }
+                } else: {
+                    targetType addImplicitCoercionToNode: node fromType: self with: analyzer
+                }
             }
         }
     };

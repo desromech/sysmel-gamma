@@ -43,10 +43,22 @@ Std MetaProgramming MethodDefinitionMetaBuilder
             resultTypeExpression: self resultTypeExpression.
             body: self body.
             visibility: self programEntityAttributes visibility.
+            isMacro: self programEntityAttributes isMacro.
+            isFallback: self programEntityAttributes isFallback.
         })
     }.
 
 Std MetaProgramming FlagMetaBuilder
+    withSelector: #macro addMethod: {:(Std MetaProgramming FlagMetaBuilder)self :: Void |
+        <metaBuilder>
+        self programEntityAttributes isMacro: true.
+        void
+    };
+    withSelector: #fallback addMethod: {:(Std MetaProgramming FlagMetaBuilder)self :: Void |
+        <metaBuilder>
+        self programEntityAttributes isFallback: true.
+        void
+    };
     withSelector: #method addMethod: {:(Std MetaProgramming FlagMetaBuilder)self :: Void |
         <metaBuilder>
         self delegateToMetaBuilderClass: Std MetaProgramming MethodDefinitionMetaBuilder.

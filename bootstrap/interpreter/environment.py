@@ -153,6 +153,7 @@ class BootstrapCompiler(BehaviorTypedObject):
             (cls.error, 'error:', '(SelfType -- String) => Void'),
             (cls.parseErrorAt, 'parseError:at:', '(SelfType -- String -- AnyValue) => Void'),
             (cls.semanticAnalysisErrorAt, 'semanticAnalysisError:at:', '(SelfType -- String -- AnyValue) => Void'),
+            (cls.evaluationErrorAt, 'evaluationError:at:', '(SelfType -- String -- AnyValue) => Void'),
 
             (cls.enqueuePendingEvaluation, 'enqueuePendingEvaluation:', '(AnyValue) => Void'),
 
@@ -298,3 +299,6 @@ class BootstrapCompiler(BehaviorTypedObject):
 
     def semanticAnalysisErrorAt(self, errorMessage, sourcePosition):
         raise InterpreterSemanticAnalysisError(sourcePosition, errorMessage)
+
+    def evaluationErrorAt(self, errorMessage, sourcePosition):
+        raise InterpreterEvaluationError(sourcePosition, errorMessage)

@@ -81,7 +81,7 @@ Std Reflection AST LocalVariableDefinitionNode
             analyzedNode
         }.
     };
-    withSelector: #evaluateNodeWith: addMethod: {:(Std Reflection AST LocalVariableDefinitionNode)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+    withSelector: #performEvaluationWith: addMethod: {:(Std Reflection AST LocalVariableDefinitionNode)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         ## TODO: Add support for mutability.
         
         let: #initialValue with: (self initialValueExpression _ evaluateNodeWith: evaluationEnvironment).

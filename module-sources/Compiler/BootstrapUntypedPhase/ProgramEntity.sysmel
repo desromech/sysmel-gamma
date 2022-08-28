@@ -8,7 +8,7 @@ __BootstrapCompiler__
     });
     addBindingNamed: #ProgramEntityExtensionNode with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection AST Node publicSlots: #{
         programEntity: Std Reflection AST Node.
-        body: Std Reflection AST Node.
+        bodyExpression: Std Reflection AST Node optional.
     }).
 
 Std Reflection ProgramEntity
@@ -62,4 +62,32 @@ Std Reflection ProgramEntity __type__
         } else: {
             self analyzeUnboundOrDynamicMessageSendNode: node with: analyzer
         }.
+    }.
+
+Std Reflection AST ProgramEntityExtensionNode
+    withSelector: #analyzeNodeWith: addMethod: {:(Std Reflection AST ProgramEntityExtensionNode)self :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
+        let: #programEntity with: (analyzer analyzeNodeIfNeeded: self programEntity withExpectedType: Std Reflection ProgramEntity).
+        self shallowCopy
+            programEntity: programEntity;
+            analyzedType: programEntity analyzedType;
+            yourself 
+    };
+    withSelector: #performEvaluationWith: addMethod: {:(Std Reflection AST ProgramEntityExtensionNode)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+        let: #programEntity with: (self programEntity evaluateNodeWith: evaluationEnvironment).
+
+        if: self bodyExpression isNotNil then: {
+            let: #programEntityExtensionScope with: (Std Reflection Semantic ProgramEntityLookupScope#{
+                parent: evaluationEnvironment lexicalScope.
+                programEntity: programEntity
+            }).
+            let: #bodyLexicalScope with: programEntityExtensionScope makeChildLexicalScope.
+            let: #bodyEnvironment with: (evaluationEnvironment copyWithLexicalScope: bodyLexicalScope) copyWithEmptyCleanUpScope.
+
+            programEntity addPendingBodyExpression: {:: Void |
+                self bodyExpression _ analyzeAndEvaluateNodeWith: (Std Reflection Semantic ASTAnalyzer forEnvironment: bodyEnvironment withExpectedType: Void).
+                void
+            }.
+        } else: {void}.
+
+        programEntity
     }.

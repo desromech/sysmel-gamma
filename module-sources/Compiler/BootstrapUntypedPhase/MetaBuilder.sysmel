@@ -10,6 +10,8 @@ __BootstrapCompiler__
     enterNamespaceNamed: #MetaProgramming;
     addBindingNamed: #ProgramEntityMetaBuilderAttributes with: (__TypeBuilder__ newRecordTypeWith: #{
         visibility: Std Reflection ProgramEntityVisibility.
+        isMacro: Boolean.
+        isFallback: Boolean.
     });
 
     addBindingNamed: #MetaBuilder with: (__TypeBuilder__ newGCClassWithSuperclass: Object publicSlots: #{

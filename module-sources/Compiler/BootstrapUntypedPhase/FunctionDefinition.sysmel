@@ -34,6 +34,7 @@ Std Reflection AST FunctionDefinitionNode
         analyzedNode analyzedName: sanitizedName.
 
         let: #blockClosureNode with: (Std Reflection AST BlockClosureNode#{
+            sourcePosition: self sourcePosition.
             arguments: self arguments.
             resultTypeExpression: self resultTypeExpression.
             body: self body _.
@@ -103,7 +104,7 @@ Std Reflection AST FunctionDefinitionNode
             analyzedNode
         }
     };
-    withSelector: #evaluateNodeWith: addMethod: {:(Std Reflection AST FunctionDefinitionNode)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+    withSelector: #performEvaluationWith: addMethod: {:(Std Reflection AST FunctionDefinitionNode)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         let: #blockClosure with: (self analyzedBlockClosureNode _ evaluateNodeWith: evaluationEnvironment).
 
         if: self isAnalyzedLocalDefinition then: {

@@ -25,6 +25,7 @@ Std Reflection ArgumentVariable
         } else: {void}.
 
         Std Reflection AST FunctionVariableReferenceNode#{
+            sourcePosition: node sourcePosition.
             binding: self.
             analyzedType: self referenceType
         }
@@ -33,6 +34,7 @@ Std Reflection ArgumentVariable
 Std Reflection AST Node
     withSelector: #parseAsArgumentDefinitionNode addMethod: {:(Std Reflection AST Node)self :: Std Reflection AST Node |
         Std Reflection AST SemanticErrorNode#{
+            hasCompilationError: true.
             analyzedType: CompilationError.
             sourcePosition: self sourcePosition.
             message: "Expression cannot be interpreted as an argument definition node.".
@@ -53,7 +55,7 @@ Std Reflection AST ArgumentDefinitionNode __type__
     }.
 
 Std Reflection AST ArgumentDefinitionNode
-    withSelector: #analyzeNodeWith: addMethod: {:(Std Reflection AST ArgumentDefinitionNode)self :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
+    withSelector: #analyzeArgumentDefinitionNodeWith:withDefaultArgumentType: addMethod: {:(Std Reflection AST ArgumentDefinitionNode)self :(Std Reflection Semantic ASTAnalyzer)analyzer :(Type optional)defaultArgumentType :: Std Reflection AST Node |
         if: self nameExpression isNil & self typeExpression isNil then: {
             analyzer makeSemanticAnalysisError: "Argument definition node requires at least a name or a type" at: self sourcePosition
         } else: {
@@ -77,8 +79,15 @@ Std Reflection AST ArgumentDefinitionNode
             if: analyzedNode typeExpression isNotNil then: {
                 analyzedNode analyzedTypeExpression: (analyzer analyzeNodeIfNeeded: analyzedNode typeExpression _ withExpectedType: Type)
             } else: {
-                __BootstrapCompiler__ printLine: "TODO: infer or set block closure default argument type.".
-                __BootstrapCompiler__ primitiveFailed
+                if: defaultArgumentType isNotNil then: {
+                    analyzedNode analyzedTypeExpression: (Std Reflection AST LiteralValueNode #{
+                        sourcePosition: self sourcePosition.
+                        value: defaultArgumentType _.
+                        analyzedType: defaultArgumentType _ __type__.
+                    })
+                } else: {
+                    errorNode _: (analyzer makeSemanticAnalysisError: "Argument requires a type specification" at: self sourcePosition)
+                }.
             }.
 
             if: errorNode _ isNotNil then: {
@@ -121,7 +130,14 @@ Std Reflection AST ArgumentDefinitionNode
 Std Reflection AST IdentifierReferenceNode
     withSelector: #parseAsArgumentDefinitionNode addMethod: {:(Std Reflection AST IdentifierReferenceNode)self :: Std Reflection AST Node |
         Std Reflection AST ArgumentDefinitionNode#{
+            sourcePosition: self sourcePosition.
             nameExpression: self asLiteralSymbolNode.
+        }.
+    };
+    withSelector: #asLiteralSymbolNode addMethod: {:(Std Reflection AST IdentifierReferenceNode)self :: Std Reflection AST Node |
+        Std Reflection AST LiteralValueNode#{
+            sourcePosition: self sourcePosition.
+            value: self value.
         }.
     }.
 
@@ -136,11 +152,13 @@ Std Reflection AST MessageSendNode
     withSelector: #parseAsArgumentDefinitionNode addMethod: {:(Std Reflection AST MessageSendNode)self :: Std Reflection AST Node |
         if: self receiver isNil & (self arguments size = 1sz) & self selector isLiteralValueNode then: {
             Std Reflection AST ArgumentDefinitionNode#{
+                sourcePosition: self sourcePosition.
                 nameExpression: self selector convertSelectorToArgumentName.
                 typeExpression: (self arguments basicAt: 0)
             }
         } else: {
             Std Reflection AST SemanticErrorNode#{
+                hasCompilationError: true.
                 analyzedType: CompilationError.
                 sourcePosition: self sourcePosition.
                 message: "Message send expression is not valid argument definition.".
@@ -155,6 +173,7 @@ Std Reflection AST SequenceNode
             (self expressions basicAt: 0sz) parseAsArgumentDefinitionNodes
         } else: {
             Std Reflection AST Node sharedArraySlice with: (Std Reflection AST SemanticErrorNode#{
+                hasCompilationError: true.
                 analyzedType: CompilationError.
                 sourcePosition: self sourcePosition.
                 message: "Sequence node is not valid arguments definitions.".

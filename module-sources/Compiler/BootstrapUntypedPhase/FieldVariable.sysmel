@@ -84,7 +84,7 @@ Std Reflection AST FieldVariableDefinitionNode
             analyzedNode
         }
     };
-    withSelector: #evaluateNodeWith: addMethod: {:(Std Reflection AST FieldVariableDefinitionNode)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+    withSelector: #performEvaluationWith: addMethod: {:(Std Reflection AST FieldVariableDefinitionNode)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         let: #ownerProgramEntity with: self analyzedOwnerProgramEntity _.
         let: #fieldVariable with: self analyzedVariable _.
 

@@ -1,2 +1,37 @@
 Boolean extend: {
+    #*
+    public macro method ifTrue: trueExpression ifFalse: falseExpression
+        := Std Reflection AST IfTrueIfFalseNode#{
+            sourcePosition: __macroSelf__ sourcePosition.
+            condition: __macroSelf__ selfNode _.
+            trueExpression: trueExpression.
+            falseExpression: falseExpression
+        }.
+    *#
+
+    public macro method ifTrue: trueExpression ifFalse: falseExpression
+        := Std Reflection AST IfTrueIfFalseNode basicNew
+            sourcePosition: __macroSelf__ sourcePosition;
+            condition: __macroSelf__ selfNode _;
+            trueExpression: trueExpression;
+            falseExpression: falseExpression;
+            yourself.
+
+    public macro method ifFalse: falseExpression ifTrue: trueExpression
+        := Std Reflection AST IfTrueIfFalseNode basicNew
+            sourcePosition: __macroSelf__ sourcePosition;
+            condition: __macroSelf__ selfNode _;
+            trueExpression: trueExpression;
+            falseExpression: falseExpression;
+            yourself.
+}.
+
+True extend: {
+    public macro method ifTrue: trueExpression ifFalse: falseExpression := trueExpression.
+    public macro method ifFalse: falseExpression ifTrue: trueExpression := trueExpression.
+}.
+
+False extend: {
+    public macro method ifTrue: trueExpression ifFalse: falseExpression := falseExpression.
+    public macro method ifFalse: falseExpression ifTrue: trueExpression := falseExpression.
 }.

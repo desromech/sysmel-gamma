@@ -56,7 +56,8 @@ __BootstrapCompiler__
 
     addBindingNamed: #Node with: (__TypeBuilder__ newGCClassWithSuperclass: Object publicSlots: #{
         sourcePosition: Std Reflection SourcePosition.
-        analyzedType: Type optional
+        analyzedType: Type optional.
+        hasCompilationError: Boolean.
     });
     addBindingNamed: #ChainedMessageNode with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection AST Node publicSlots: #{
         selector: Std Reflection AST Node.
@@ -193,6 +194,13 @@ Std Reflection AST Node
         self
     };
     withSelector: #evaluateNodeWith: addMethod: {:(Std Reflection AST Node)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+        if: self hasCompilationError then: {
+            __BootstrapCompiler__ evaluationError: "Cannot evaluate node with compilation error." at: self sourcePosition
+        } else: {
+            self performEvaluationWith: evaluationEnvironment
+        }.
+    };
+    withSelector: #performEvaluationWith: addMethod: {:(Std Reflection AST Node)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         __BootstrapCompiler__ subclassResponsibility
     };
     withSelector: #isLiteralValueNode addMethod: {:(Std Reflection AST Node)self :: Boolean |
@@ -212,6 +220,7 @@ Std Reflection AST Node
     };
     withSelector: #optimizeViaCompileTimeEvaluationWith: addMethod: {:(Std Reflection AST Node)self :(Std Reflection Semantic EvaluationEnvironment)environment :: Std Reflection AST Node |
         Std Reflection AST LiteralValueNode#{
+            sourcePosition: self sourcePosition.
             analyzedType: self analyzedType _.
             value: (self evaluateNodeWith: environment).
         }
@@ -244,7 +253,7 @@ Std Reflection AST LiteralValueNode
             analyzedType: self value __type__;
             yourself
     };
-    withSelector: #evaluateNodeWith: addMethod: {:(Std Reflection AST LiteralValueNode)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+    withSelector: #performEvaluationWith: addMethod: {:(Std Reflection AST LiteralValueNode)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         self value
     };
     withSelector: #isLiteralValueNode addMethod: {:(Std Reflection AST LiteralValueNode)self :: Boolean |
@@ -277,7 +286,7 @@ Std Reflection AST CleanUpScopeNode
             analysisScope: cleanUpScope;
             yourself
     };
-    withSelector: #evaluateNodeWith: addMethod: {:(Type)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+    withSelector: #performEvaluationWith: addMethod: {:(Type)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         let: #result with: (self body evaluateNodeWith: evaluationEnvironment).
 
         if: self cleanUpAction isNotNil then: {
@@ -301,7 +310,7 @@ Std Reflection AST LexicalScopeNode
             analyzedType: analyzedBody analyzedType _;
             yourself
     };
-    withSelector: #evaluateNodeWith: addMethod: {:(Type)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+    withSelector: #performEvaluationWith: addMethod: {:(Type)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         self body evaluateNodeWith: evaluationEnvironment
     }.
 
@@ -324,7 +333,7 @@ Std Reflection AST SequenceNode
             analyzedType: (if: analyzedExpressions isEmpty then: Void else: analyzedExpressions last analyzedType _);
             yourself
     };
-    withSelector: #evaluateNodeWith: addMethod: {:(Type)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+    withSelector: #performEvaluationWith: addMethod: {:(Type)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         let: #result with: (AnyValue valueBox with: void).
         
         self expressions do: {:(Std Reflection AST Node)node |
@@ -360,7 +369,7 @@ Std Reflection AST IdentifierReferenceNode
             binding _ analyzeIdentifierReferenceNode: self with: analyzer
         }
     };
-    withSelector: #evaluateNodeWith: addMethod: {:(Type)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+    withSelector: #performEvaluationWith: addMethod: {:(Type)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         self binding evaluateBindingWithEnvironment: evaluationEnvironment
     }.
 
@@ -390,7 +399,7 @@ Std Reflection AST MessageSendNode
                 yourself) with: analyzer
         }.
     };
-    withSelector: #evaluateNodeWith: addMethod: {:(Std Reflection AST MessageSendNode)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+    withSelector: #performEvaluationWith: addMethod: {:(Std Reflection AST MessageSendNode)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         if: self receiver isNil then: {
             self boundMethod run: (self selector evaluateNodeWith: evaluationEnvironment) with: (self arguments collect: {:(Std Reflection AST Node)arg :: AnyValue |
                 arg evaluateNodeWith: evaluationEnvironment
@@ -488,20 +497,22 @@ Std Reflection AST ErrorNode
 Std Reflection AST ParseErrorNode
     withSelector: #analyzeNodeWith: addMethod: {:(Std Reflection AST ParseErrorNode)self :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
         self shallowCopy
+            hasCompilationError: true.
             analyzedType: CompilationError;
             yourself
     };
-    withSelector: #evaluateNodeWith: addMethod: {:(Type)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+    withSelector: #performEvaluationWith: addMethod: {:(Type)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         __BootstrapCompiler__ parseError: self message at: self sourcePosition
     }.
 
 Std Reflection AST SemanticErrorNode
     withSelector: #analyzeNodeWith: addMethod: {:(Std Reflection AST SemanticErrorNode)self :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
         self shallowCopy
+            hasCompilationError: true.
             analyzedType: CompilationError;
             yourself
     };
-    withSelector: #evaluateNodeWith: addMethod: {:(Std Reflection AST SemanticErrorNode)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+    withSelector: #performEvaluationWith: addMethod: {:(Std Reflection AST SemanticErrorNode)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         if: self innerNode isNotNil then: {
             self innerNode evaluateNodeWith: evaluationEnvironment
         } else: {void}.
