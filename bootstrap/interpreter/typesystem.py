@@ -2037,7 +2037,8 @@ class BehaviorTypedObject(TypedValue):
         pass
 
 class Trait(BehaviorType):
-    pass
+    def getMetaTypeRoot(self):
+        return getBasicTypeNamed(Symbol.intern('Trait'))
 
 class MetaType(BehaviorType):
     def __init__(self, thisType=None, name=None, supertype=None, traits=[], schema=None, methodDict={}):
@@ -2337,6 +2338,9 @@ class FunctionType(SimpleType):
         self.hasForAllArgument = False
         self.argumentCount = 0
         super().__init__(schema = TrivialTypeSchema(), supertype = getBasicTypeNamed('Function'))
+
+    def getType(self):
+        return getBasicTypeNamed('FunctionType')
 
     def newWithBootstrapImplementation(self, bootstrapImplementation):
         return FunctionTypeValue(self, bootstrapImplementation = bootstrapImplementation)

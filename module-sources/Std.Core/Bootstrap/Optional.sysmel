@@ -1,0 +1,6 @@
+##__BootstrapCompiler__ printLine: Optional __type__ supertype _ 
+
+#*
+Optional extend: {
+}.
+*#

@@ -1,16 +1,16 @@
-Function __type__
-    withSelector: #argumentCount addMethod: {:(Function __type__)self :: Size |
+FunctionType
+    withSelector: #argumentCount addMethod: {:(FunctionType)self :: Size |
         <primitive: #"functionType.getArgumentCount">
         __BootstrapCompiler__ primitiveFailed
     };
-    withSelector: #makeFunctionSignatureAnalyzer addMethod: {:(Function __type__)self :: Std Reflection Semantic FunctionSignatureAnalyzer |
+    withSelector: #makeFunctionSignatureAnalyzer addMethod: {:(FunctionType)self :: Std Reflection Semantic FunctionSignatureAnalyzer |
         <primitive: #"functionType.makeFunctionSignatureAnalyzer">
         __BootstrapCompiler__ primitiveFailed
     };
-    withSelector: #analyzeMessageSendNode:with:valueBinding: addMethod: {:(Function __type__)self :(Std Reflection AST MessageSendNode)node :(Std Reflection Semantic ASTAnalyzer)analyzer :(Std Reflection Semantic SymbolValueBinding)binding :: Std Reflection AST Node |
+    withSelector: #analyzeMessageSendNode:with:valueBinding: addMethod: {:(FunctionType)self :(Std Reflection AST MessageSendNode)node :(Std Reflection Semantic ASTAnalyzer)analyzer :(Std Reflection Semantic SymbolValueBinding)binding :: Std Reflection AST Node |
         binding value analyzeMessageSendNode: node with: analyzer
     };
-    withSelector: #analyzeIdentifierReferenceNode:with:valueBinding: addMethod: {:(Function __type__)self :(Std Reflection AST IdentifierReferenceNode)node :(Std Reflection Semantic ASTAnalyzer)analyzer :(Std Reflection Semantic SymbolValueBinding)binding :: Std Reflection AST Node |
+    withSelector: #analyzeIdentifierReferenceNode:with:valueBinding: addMethod: {:(FunctionType)self :(Std Reflection AST IdentifierReferenceNode)node :(Std Reflection Semantic ASTAnalyzer)analyzer :(Std Reflection Semantic SymbolValueBinding)binding :: Std Reflection AST Node |
         if: binding value hasMacroFlag & binding value hasMessageMethodFlag then: {
             analyzer analyzeNodeIfNeededWithCurrentExpectedType: (binding value
                 run: node value
@@ -24,12 +24,16 @@ Function __type__
                 value: binding value
             }
         }
-    };
-    withSelector: #newSimpleFunctionTypeWithArguments:resultType: addMethod: {:(Function __type__)self :(Type arraySlice)argumentTypes :(Type)resultType :: Function __type__ |
+    }.
+
+FunctionType __type__
+    withSelector: #newSimpleFunctionTypeWithArguments:resultType: addMethod: {:(FunctionType __type__)self :(Type arraySlice)argumentTypes :(Type)resultType :: self |
         <primitive: #"type.newSimpleFunctionType">
         __BootstrapCompiler__ primitiveFailed
-    };
-    withSelector: #newWithImplementation: addMethod: {:(Function __type__)self :(Std Reflection FunctionProgramEntity)implementation :: self |
+    }.
+
+FunctionType
+    withSelector: #newWithImplementation: addMethod: {:(FunctionType __type__)self :(Std Reflection FunctionProgramEntity)implementation :: self |
         <primitive: #"function.newWithImplementation">
         __BootstrapCompiler__ primitiveFailed
     }.

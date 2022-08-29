@@ -21,7 +21,7 @@ __BootstrapCompiler__
 
 Std Reflection BlockClosure
     definePublicSlots: #{
-        functionType: Function __type__ optional.
+        functionType: FunctionType optional.
         node: Std Reflection AST BlockClosureNode optional.
         environment: Std Reflection Semantic EvaluationEnvironment.
         isMacro: Boolean.
@@ -159,9 +159,9 @@ Std Reflection AST BlockClosureNode
 
             let: #resultType with: (self analyzedResultTypeExpression _ evaluateNodeWith: environment).
             self analyzedResultType: resultType.
-            Function newSimpleFunctionTypeWithArguments: argumentTypes resultType: resultType
+            FunctionType newSimpleFunctionTypeWithArguments: argumentTypes resultType: resultType
         } else: {
-            Function newDependentFunctionTypeWithEnvironment: environment arguments: self arguments resultType: self analyzedResultTypeExpression.
+            FunctionType newDependentFunctionTypeWithEnvironment: environment arguments: self arguments resultType: self analyzedResultTypeExpression.
         }.
     };
     withSelector: #performEvaluationWith: addMethod: {:(Std Reflection AST BlockClosureNode)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |

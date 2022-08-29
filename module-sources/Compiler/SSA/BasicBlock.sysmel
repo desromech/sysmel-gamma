@@ -6,7 +6,8 @@ public class BasicBlock superclass: Value; definition: {
 
     public method addInstruction: (instruction: Instruction) before: (position: Instruction optional) ::=> Void := {
         position isNil ifTrue: {
-
+            instruction previousInstruction: self lastInstruction.
+            ##lastInstruction
         } ifFalse: {
 
         }.

@@ -44,10 +44,11 @@ __BootstrapCompiler__
     addBasicTypeNamed: #Type with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection ProgramEntity slots: #{});
     addBasicTypeNamed: #SimpleType with: (__TypeBuilder__ newGCClassWithSuperclass: Type slots: #{});
     addBasicTypeNamed: #MetaType with: (__TypeBuilder__ newGCClassWithSuperclass: Type slots: #{});
+    addBasicTypeNamed: #FunctionType with: (__TypeBuilder__ newGCClassWithSuperclass: SimpleType slots: #{});
     addBasicTypeNamed: #Trait with: (__TypeBuilder__ newGCClassWithSuperclass: Type slots: #{});
 
     addBasicTypeNamed: #Tuple with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
-    addBasicTypeNamed: #Function with: (__TypeBuilder__ newGCClassWithSuperclass: SimpleType slots: #{});
+    addBasicTypeNamed: #Function with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
 
     addBasicTypeNamed: #String with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
     addBasicTypeNamed: #Symbol with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
