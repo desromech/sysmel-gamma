@@ -123,6 +123,7 @@ Type
                 analyzer analyzeNodeIfNeeded: argumentNode withExpectedType: AnyValue
             });
             usesDynamicDispatch: true;
+            analyzedType: AnyValue;
             yourself
     };
     withSelector: #analyzeIdentifierReferenceNode:with:valueBinding: addMethod: {:(Type)self :(Std Reflection AST IdentifierReferenceNode)node :(Std Reflection Semantic ASTAnalyzer)analyzer :(Std Reflection Semantic SymbolValueBinding)binding :: Std Reflection AST Node |
@@ -151,6 +152,13 @@ Type
             } else: {
                 self supertype _ isSubtypeOf: other
             }
+        }
+    };
+    withSelector: #isSubtypeOrDoesImplementTrait: addMethod: {:(Type)self :(Type)other :: Boolean |
+        if: (self isSubtypeOf: other) then: {
+            true
+        } else: {
+            self doesImplementTrait: other
         }
     };
     withSelector: #doesImplementTrait: addMethod: {:(Type)self :(Type)traitToTest :: Boolean |

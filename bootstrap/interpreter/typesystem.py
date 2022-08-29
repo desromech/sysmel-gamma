@@ -111,7 +111,10 @@ class ValueInterface:
     def isExplicitMethod(self):
         return False
 
-    def asCanonicalTypeForDependentTypeArgument(self):
+    def asCanonicalDependentArgumentPlaceholderOrValue(self):
+        raise SubclassResponsibility()
+
+    def asDependentArgumentPlaceholderOrValue(self):
         raise SubclassResponsibility()
 
     def asCanonicalTypeForDependentType(self):
@@ -146,9 +149,6 @@ class TypedValue(ValueInterface):
             return self
 
         return self.shallowCopy()
-
-    def asCanonicalTypeForDependentTypeArgument(self):
-        return getBasicTypeNamed('AnyValue')
 
 class FunctionTypeValue(TypedValue):
     def __init__(self, type, bootstrapImplementation = None, implementation = None, functionTypeSpec = None):
@@ -770,7 +770,7 @@ class TypeSchema(TypedValue):
 
     def buildPrimitiveMethodDictionary(self):
         self.methodDict[Symbol.intern('shallowCopy')] = TypeSchemaPrimitiveMethod.makeFunction(self.primitiveShallowCopy, '(SelfType => SelfType)')
-        self.methodDict[Symbol.intern('__type__')] = TypeSchemaPrimitiveMethod.makeFunction(self.getTypeFromValue, '(SelfType => SelfType __type__)')
+        self.methodDict[Symbol.intern('__basicType__')] = TypeSchemaPrimitiveMethod.makeFunction(self.getTypeFromValue, '(SelfType => SelfType __type__)')
 
     def lookupPrimitiveWithSelector(self, selector):
         self.finishPendingPrimitiveMethods()
@@ -1645,6 +1645,12 @@ class BehaviorType(ProgramEntity, TypeInterface):
         self.pendingTraitExpressions = []
         self.pendingBodyExpressions = []
 
+    def asCanonicalDependentArgumentPlaceholderOrValue(self):
+        return DependentArgumentPlaceholder(self)
+
+    def asDependentArgumentPlaceholderOrValue(self):
+        return DependentArgumentPlaceholder(self)
+
     def installImplicitTraits(self):
         if Symbol('AnyValueTrait') in BasicTypeEnvironment:
             self.traits.append(BasicTypeEnvironment[Symbol('AnyValueTrait')])
@@ -2038,10 +2044,15 @@ class MetaType(BehaviorType):
         super().__init__(name, supertype, traits, schema, methodDict)
         self.thisType = thisType
 
-    def asCanonicalTypeForDependentTypeArgument(self):
+    def asCanonicalDependentArgumentPlaceholderOrValue(self):
         if self.thisType is not None:
             return self.thisType
-        return super().asCanonicalTypeForDependentTypeArgument()
+        return super().asCanonicalDependentArgumentPlaceholderOrValue()
+
+    def asDependentArgumentPlaceholderOrValue(self):
+        if self.thisType is not None:
+            return self.thisType
+        return super().asDependentArgumentPlaceholderOrValue()
 
     def lookupLocalSelector(self, selector):
         found = self.methodDict.get(selector, None)
@@ -2071,6 +2082,19 @@ class MetaType(BehaviorType):
             return String(self.thisType.getName() + ' __type__')
         return super().getName()
 
+class DependentArgumentPlaceholder(TypedValue):
+    def __init__(self, canonicalType):
+        super().__init__()
+        self.canonicalType = canonicalType
+
+    def getSlotWithIndexAndName(self, slotIndex, slotName):
+        if slotName == 'canonicalType':
+            return self.canonicalType
+        return super().getSlotWithIndexAndName(slotIndex, slotName)
+
+    def getType(self):
+        return getBasicTypeNamed('DependentArgumentPlaceholder')
+
 class SimpleType(BehaviorType):
     pass
 
@@ -2086,7 +2110,7 @@ class AbstractFunctionTypeArgument:
             argumentType = self.typeExpression.evaluateWithEnvironment(EvaluationMachine.getActive(), environment)
 
         if self.name is not None:
-            environment.setSymbolImmutableValue(self.name, argumentType.asCanonicalTypeForDependentTypeArgument())
+            environment.setSymbolImmutableValue(self.name, argumentType.asCanonicalDependentArgumentPlaceholderOrValue())
         return argumentType
 
     def isForAllArgumentExpression(self):
@@ -2117,7 +2141,7 @@ class FunctionTypeArgumentExpression(AbstractFunctionTypeArgument):
         return False
 
     def evaluateSignatureInEnvironmentWithAnalyzedType(self, evaluationEnvironment, argumentAnalyzedType):
-        canonicalType = argumentAnalyzedType.asCanonicalTypeForDependentTypeArgument()
+        canonicalType = argumentAnalyzedType.asDependentArgumentPlaceholderOrValue()
         if self.name is not None:
             evaluationEnvironment.setSymbolValueBinding(self.name, canonicalType)
         return canonicalType

@@ -1,4 +1,4 @@
-if: false then: {
+if: true then: {
 __BootstrapCompiler__
     printLine: false;
     printLine: true;

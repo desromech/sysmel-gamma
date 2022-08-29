@@ -68,7 +68,7 @@ Std Reflection Semantic FunctionSignatureAnalyzer
                 }
             } else: {
                 let: #expectedType with: (signatureTypeOrPlaceholder get: Type).
-                analyzer analyzeNodeIfNeeded: node withExpectedType: expectedType
+                analyzer analyzeNodeIfNeeded: node withExpectedSubtypeOf: expectedType
             }).
 
             self advanceArgumentWithAnalyzedType: analyzedNode analyzedType _.
@@ -81,7 +81,7 @@ Std Reflection Semantic FunctionSignatureAnalyzer
         if: self hasPendingArguments then: {
             analyzer makeSemanticAnalysisError: "Missing required arguments." atNode: node
         } else: {
-            node
+            node attemptOptimizationViaPureCompileTimeEvaluationWith: analyzer
         }
     }.
 
@@ -134,6 +134,26 @@ Function
         __BootstrapCompiler__ primitiveFailed
     };
 
+    withSelector: #supportsCompileTimeEvaluation addMethod: {:(Function)self :: Boolean |
+        if: self hasNotInCompileTimeFlag then: {
+            false
+        } else: {
+            if: self hasPureFlag then: {
+                true
+            } else: {
+                self hasCompileTimeFlag
+            }
+        }
+    };
+
+    withSelector: #supportsPureCompileTimeEvaluation addMethod: {:(Function)self :: Boolean |
+        if: self hasNotInCompileTimeFlag then: {
+            false
+        } else: {
+            self hasPureFlag
+        }
+    };    
+
     ## Macro
     withSelector: #hasMacroFlag addMethod: {:(Function)self :: Boolean |
         self hasMethodFlag: #macro
@@ -148,6 +168,12 @@ Function
     ## Side effects
     withSelector: #hasPureFlag addMethod: {:(Function)self :: Boolean |
         self hasMethodFlag: #pure
+    };
+    withSelector: #hasCompileTimeFlag addMethod: {:(Function)self :: Boolean |
+        self hasMethodFlag: #compileTime
+    };
+    withSelector: #hasNotInCompileTimeFlag addMethod: {:(Function)self :: Boolean |
+        self hasMethodFlag: #notInCompileTime
     };
 
     ## Dispatch mode

@@ -164,6 +164,7 @@ __BootstrapCompiler__
     addBindingNamed: #ExpectedTypeInferenceEnvironment with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection Semantic TypeInferenceEnvironment publicSlots: #{
         expectedType: Type
     });
+    addBindingNamed: #ExpectedSubtypeInferenceEnvironment with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection Semantic ExpectedTypeInferenceEnvironment publicSlots: #{});
     addBindingNamed: #AutoTypeInferenceEnvironment with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection Semantic TypeInferenceEnvironment publicSlots: #{});
     addBindingNamed: #DirectAutoTypeInferenceEnvironment with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection Semantic TypeInferenceEnvironment publicSlots: #{});
     addBindingNamed: #ReferenceAutoTypeInferenceEnvironment with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection Semantic TypeInferenceEnvironment publicSlots: #{});
@@ -218,11 +219,29 @@ Std Reflection AST Node
     withSelector: #isCompileTimeDirectlyEvaluableWith: addMethod: {:(Std Reflection AST Node)self :(Std Reflection Semantic EvaluationEnvironment)environment :: Boolean |
         false
     };
+    withSelector: #isPureCompileTimeEvaluableWith: addMethod: {:(Std Reflection AST Node)self :(Std Reflection Semantic EvaluationEnvironment)environment :: Boolean |
+        false
+    };
     withSelector: #optimizeViaCompileTimeEvaluationWith: addMethod: {:(Std Reflection AST Node)self :(Std Reflection Semantic EvaluationEnvironment)environment :: Std Reflection AST Node |
         Std Reflection AST LiteralValueNode#{
             sourcePosition: self sourcePosition.
             analyzedType: self analyzedType _.
             value: (self evaluateNodeWith: environment).
+        }
+    };
+    withSelector: #attemptOptimizationViaPureCompileTimeEvaluationWith: addMethod: {:(Std Reflection AST Node)self :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
+        if: (self isPureCompileTimeEvaluableWith: analyzer environment) then: {
+            self optimizeViaPureCompileTimeEvaluationWith: analyzer environment
+        } else: {
+            self
+        }
+    };
+    withSelector: #optimizeViaPureCompileTimeEvaluationWith: addMethod: {:(Std Reflection AST Node)self :(Std Reflection Semantic EvaluationEnvironment)environment :: Std Reflection AST Node |
+        let: #value with: (self evaluateNodeWith: environment).
+        Std Reflection AST LiteralValueNode#{
+            sourcePosition: self sourcePosition.
+            analyzedType: value __basicType__.
+            value: value.
         }
     }.
     
@@ -250,7 +269,7 @@ Std Reflection AST LiteralValueNode __type__
 Std Reflection AST LiteralValueNode
     withSelector: #analyzeNodeWith: addMethod: {:(Std Reflection AST LiteralValueNode)self :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
         self shallowCopy
-            analyzedType: self value __type__;
+            analyzedType: self value __basicType__;
             yourself
     };
     withSelector: #performEvaluationWith: addMethod: {:(Std Reflection AST LiteralValueNode)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
@@ -264,7 +283,17 @@ Std Reflection AST LiteralValueNode
     };
     withSelector: #isCompileTimeDirectlyEvaluableWith: addMethod: {:(Std Reflection AST Node)self :(Std Reflection Semantic EvaluationEnvironment)environment :: Boolean |
         true
+    };
+    withSelector: #optimizeViaCompileTimeEvaluationWith: addMethod: {:(Std Reflection AST Node)self :(Std Reflection Semantic EvaluationEnvironment)environment :: Std Reflection AST Node |
+        self
+    };
+    withSelector: #isPureCompileTimeEvaluableWith: addMethod: {:(Std Reflection AST Node)self :(Std Reflection Semantic EvaluationEnvironment)environment :: Boolean |
+        true
+    };
+    withSelector: #optimizeViaPureCompileTimeEvaluationWith: addMethod: {:(Std Reflection AST Node)self :(Std Reflection Semantic EvaluationEnvironment)environment :: Std Reflection AST Node |
+        self
     }.
+
 
 Std Reflection AST CleanUpScopeNode
     withSelector: #analyzeNodeWith: addMethod: {:(Std Reflection AST CleanUpScopeNode)self :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
@@ -419,7 +448,11 @@ Std Reflection AST MessageSendNode
         }
     };
     withSelector: #hasCompileTimeEvaluableMethod addMethod: {:(Std Reflection AST MessageSendNode)self :: Boolean |
-        true
+        if: self boundMethod _ isNotNil then: {
+            self boundMethod _ supportsCompileTimeEvaluation
+        } else: {
+            false
+        }
     };
     withSelector: #isCompileTimeDirectlyEvaluableWith: addMethod: {:(Std Reflection AST MessageSendNode)self :(Std Reflection Semantic EvaluationEnvironment)environment :: Boolean |
         if: self hasCompileTimeEvaluableMethod then: {
@@ -428,6 +461,28 @@ Std Reflection AST MessageSendNode
                 else: true) then: {
                 self arguments allSatisfy: {:(Std Reflection AST Node)arg :: Boolean |
                     arg isCompileTimeDirectlyEvaluableWith: environment
+                }
+            } else: {
+                false
+            }
+        } else: {
+            false
+        }
+    };
+    withSelector: #hasPureCompileTimeEvaluableMethod addMethod: {:(Std Reflection AST MessageSendNode)self :: Boolean |
+        if: self boundMethod _ isNotNil then: {
+            self boundMethod _ supportsPureCompileTimeEvaluation
+        } else: {
+            false
+        }
+    };
+    withSelector: #isPureCompileTimeEvaluableWith: addMethod: {:(Std Reflection AST MessageSendNode)self :(Std Reflection Semantic EvaluationEnvironment)environment :: Boolean |
+        if: self hasPureCompileTimeEvaluableMethod then: {
+            if: (if: self receiver isNotNil
+                then: (self receiver _ isPureCompileTimeEvaluableWith: environment)
+                else: true) then: {
+                self arguments allSatisfy: {:(Std Reflection AST Node)arg :: Boolean |
+                    arg isPureCompileTimeEvaluableWith: environment
                 }
             } else: {
                 false

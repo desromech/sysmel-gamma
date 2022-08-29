@@ -25,6 +25,16 @@ Std Reflection Semantic ExpectedTypeInferenceEnvironment
         analyzer addImplicitCoercionTo: self expectedType node: (node asCollapsedNodeWith: analyzer).
     }.
 
+Std Reflection Semantic ExpectedSubtypeInferenceEnvironment
+    withSelector: #solveAnalyzedNodeType:with: addMethod: {:(Std Reflection Semantic ExpectedSubtypeInferenceEnvironment)self :(Std Reflection AST Node)node :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node  |
+        let: #collapsedNode with: (node asCollapsedNodeWith: analyzer).
+        if: (node analyzedType _ isSubtypeOrDoesImplementTrait: self expectedType) then: {
+            collapsedNode
+        } else: {
+            analyzer addImplicitCoercionTo: self expectedType node: collapsedNode.
+        }
+    }.
+
 Std Reflection Semantic ASTAnalyzer
     withSelector: #analyzeNodeIfNeededWithDirectAutoType: addMethod: {:(Std Reflection Semantic ASTAnalyzer)self :(Std Reflection AST Node)node :: Std Reflection AST Node |
         self analyzeNodeIfNeeded: node withTypeInferenceEnvironment: Std Reflection Semantic DirectAutoTypeInferenceEnvironment basicNew
@@ -37,6 +47,11 @@ Std Reflection Semantic ASTAnalyzer
     };
     withSelector: #analyzeNodeIfNeeded:withExpectedType: addMethod: {:(Std Reflection Semantic ASTAnalyzer)self :(Std Reflection AST Node)node :(Type)expectedType :: Std Reflection AST Node |
         self analyzeNodeIfNeeded: node withTypeInferenceEnvironment: (Std Reflection Semantic ExpectedTypeInferenceEnvironment#{
+            expectedType: expectedType
+        })
+    };
+    withSelector: #analyzeNodeIfNeeded:withExpectedSubtypeOf: addMethod: {:(Std Reflection Semantic ASTAnalyzer)self :(Std Reflection AST Node)node :(Type)expectedType :: Std Reflection AST Node |
+        self analyzeNodeIfNeeded: node withTypeInferenceEnvironment: (Std Reflection Semantic ExpectedSubtypeInferenceEnvironment#{
             expectedType: expectedType
         })
     };

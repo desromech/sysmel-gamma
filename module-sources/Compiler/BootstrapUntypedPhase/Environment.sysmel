@@ -83,10 +83,10 @@ Std Reflection Semantic SymbolValueBinding
         self value
     };
     withSelector: #analyzeMessageSendNode:with: addMethod: {:(Type)self :(Std Reflection AST MessageSendNode)node :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
-        self value __type__ analyzeMessageSendNode: node with: analyzer valueBinding: self
+        self value __basicType__ analyzeMessageSendNode: node with: analyzer valueBinding: self
     };
     withSelector: #analyzeIdentifierReferenceNode:with: addMethod: {:(Std Reflection Semantic SymbolValueBinding)self :(Std Reflection AST IdentifierReferenceNode)node :(Std Reflection Semantic ASTAnalyzer)analyzer :: Std Reflection AST Node |
-        self value __type__ analyzeIdentifierReferenceNode: node with: analyzer valueBinding: self
+        self value __basicType__ analyzeIdentifierReferenceNode: node with: analyzer valueBinding: self
     }.
 
 Std Reflection Semantic EvaluationEnvironment __type__

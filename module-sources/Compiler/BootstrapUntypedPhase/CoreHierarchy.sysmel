@@ -59,6 +59,11 @@ __BootstrapCompiler__
     enterTopLevelNamespace;
     enterNamespaceNamed: #Std;
     enterNamespaceNamed: #Reflection;
+
+    addBasicTypeNamed: #DependentArgumentPlaceholder with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{
+        canonicalType: Type
+    });
+
     addBasicTypeNamed: #TypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Object slots: #{});
     addBasicTypeNamed: #TraitTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection TypeSchema slots: #{});
     addBasicTypeNamed: #TrivialTypeSchema with: (__TypeBuilder__ newGCClassWithSuperclass: Std Reflection TypeSchema slots: #{});
@@ -93,16 +98,19 @@ AnyValue addTypeFlag: #anyValue.
 AnyValue
     withSelector: #== addMethod: {:(AnyValue)self :(AnyValue)other :: Boolean |
         <pure>
+        <compileTime>
         <primitive: #"object.comparison.identityEquals">
         __BootstrapCompiler__ primitiveFailed
     };
     withSelector: #~~ addMethod: {:(AnyValue)self :(AnyValue)other :: Boolean |
         <pure>
+        <compileTime>
         <primitive: #"object.comparison.identityNotEquals">
         __BootstrapCompiler__ primitiveFailed
     };
     withSelector: #identityHash addMethod: {:(AnyValue)self :: Size |
         <pure>
+        <compileTime>
         <primitive: #"object.comparison.identityHash">
         __BootstrapCompiler__ primitiveFailed
     }.
@@ -128,6 +136,7 @@ Object
 Boolean
     withSelector: #| addMethod: {:(Boolean)self :(Boolean)other :: Boolean |
         <pure>
+        <compileTime>
         if: self then: {
             true
         } else: {
@@ -136,6 +145,7 @@ Boolean
     };
     withSelector: #& addMethod: {:(Boolean)self :(Boolean)other :: Boolean |
         <pure>
+        <compileTime>
         if: self then: {
             other
         } else: {
@@ -143,6 +153,8 @@ Boolean
         }
     };
     withSelector: #not addMethod: {:(Boolean)self :: Boolean |
+        <pure>
+        <compileTime>
         if: self then: {
             false
         } else: {
@@ -154,74 +166,88 @@ Boolean
 Integer
     withSelector: #negated addMethod: {:(Integer)self :: Integer |
         <pure>
+        <compileTime>
         <primitive: #"integer.arithmetic.neg">
         __BootstrapCompiler__ primitiveFailed
     };
     withSelector: #+ addMethod: {:(Integer)self :(Integer)other :: Integer |
         <pure>
+        <compileTime>
         <primitive: #"integer.arithmetic.add">
         __BootstrapCompiler__ primitiveFailed
     };
     withSelector: #- addMethod: {:(Integer)self :(Integer)other :: Integer |
         <pure>
+        <compileTime>
         <primitive: #"integer.arithmetic.sub">
         __BootstrapCompiler__ primitiveFailed
     };
     withSelector: #"*" addMethod: {:(Integer)self :(Integer)other :: Integer |
         <pure>
+        <compileTime>
         <primitive: #"integer.arithmetic.mul">
         __BootstrapCompiler__ primitiveFailed
     };
     withSelector: #// addMethod: {:(Integer)self :(Integer)other :: Integer |
         <pure>
+        <compileTime>
         <primitive: #"integer.arithmetic.div">
         __BootstrapCompiler__ primitiveFailed
     };
     withSelector: #% addMethod: {:(Integer)self :(Integer)other :: Integer |
         <pure>
+        <compileTime>
         <primitive: #"integer.arithmetic.rem">
         __BootstrapCompiler__ primitiveFailed
     };
 
     withSelector: #= addMethod: {:(Integer)self :(Object)other :: Boolean |
         <pure>
+        <compileTime>
         <primitive: #"integer.comparison.equals">
         __BootstrapCompiler__ primitiveFailed
     };
     withSelector: #~= addMethod: {:(Integer)self :(Object)other :: Boolean |
         <pure>
+        <compileTime>
         <primitive: #"integer.comparison.notEquals">
         __BootstrapCompiler__ primitiveFailed
     };
     
     withSelector: #< addMethod: {:(Integer)self :(Integer)other :: Boolean |
         <pure>
+        <compileTime>
         <primitive: #"integer.comparison.lessThan">
         __BootstrapCompiler__ primitiveFailed
     };
     withSelector: #<= addMethod: {:(Integer)self :(Integer)other :: Boolean |
         <pure>
+        <compileTime>
         <primitive: #"integer.comparison.lessOrEqual">
         __BootstrapCompiler__ primitiveFailed
     };
     withSelector: #> addMethod: {:(Integer)self :(Integer)other :: Boolean |
         <pure>
+        <compileTime>
         <primitive: #"integer.comparison.greaterThan">
         __BootstrapCompiler__ primitiveFailed
     };
     withSelector: #>= addMethod: {:(Integer)self :(Integer)other :: Boolean |
         <pure>
+        <compileTime>
         <primitive: #"integer.comparison.greaterOrEqual">
         __BootstrapCompiler__ primitiveFailed
     };
 
     withSelector: #asString addMethod: {:(Integer)self :: String |
         <pure>
+        <compileTime>
         <primitive: #"integer.conversion.toString">
         __BootstrapCompiler__ primitiveFailed
     };
     withSelector: #printString addMethod: {:(Integer)self :: String |
         <pure>
+        <compileTime>
         <primitive: #"integer.conversion.toString">
         __BootstrapCompiler__ primitiveFailed
     }.
@@ -230,10 +256,24 @@ AnyValueTrait
     withSelector: #initialize addMethod: {:(AnyValueTrait)self :: Void |
         void
     };
+    withSelector: #__type__ addMethod: {:(AnyValueTrait)self :: Type |
+        <pure>
+        <compileTime>
+        self __basicType__
+    };
     withSelector: #yourself addMethod: {:(AnyValueTrait)self :: self __type__ |
+        <pure>
+        <compileTime>
         self
     }.
 
+Std Reflection DependentArgumentPlaceholder
+    withSelector: #__type__ addMethod: {:(Std Reflection DependentArgumentPlaceholder)self :: Type |
+        <pure>
+        <compileTime>
+        self canonicalType
+    }.
+ 
 Type
     withSelector: #"()" addMethod: {:(Type)self :: self |
         self basicNew initialize; yourself
@@ -445,23 +485,28 @@ __BootstrapCompiler__
     ## The polymorphic types
     addBasicTypeNamed: #Optional with: {:(Type)optionalType :: Type |
         <pure>
+        <compileTime>
         let: #sumType with: (__TypeBuilder__ newSumTypeWith: (Undefined, optionalType)).
 
         sumType
             withSelector: #isNil addMethod: {:(sumType)self :: Boolean |
                 <pure>
+                <compileTime>
                 self __typeSelector__ = 0sz
             };
             withSelector: #isNotNil addMethod: {:(sumType)self :: Boolean |
                 <pure>
+                <compileTime>
                 self __typeSelector__ ~= 0sz
             };
             withSelector: #_ addMethod: {:(sumType)self :: optionalType |
                 <pure>
+                <compileTime>
                 self get: optionalType
             };
             withSelector: #value addMethod: {:(sumType)self :: optionalType |
                 <pure>
+                <compileTime>
                 self get: optionalType
             }.
         sumType
@@ -469,10 +514,12 @@ __BootstrapCompiler__
 
     addBasicTypeNamed: #Array with: {:(Type)elementType :(Size)bounds :: Type |
         <pure>
+        <compileTime>
         let: #arrayType with: (__TypeBuilder__ newArrayTypeFor: elementType withBounds: bounds).
         arrayType
             withSelector: #asArraySlice addMethod: {:(arrayType)self :: ArraySlice(elementType) |
                 <pure>
+                <compileTime>
                 ArraySlice(elementType)#{
                     elements: self.
                     size: bounds
@@ -480,6 +527,7 @@ __BootstrapCompiler__
             };
             withSelector: #asSharedArraySlice addMethod: {:(arrayType)self :: SharedArraySlice(elementType) |
                 <pure>
+                <compileTime>
                 ## TODO: Make a shared copy if needed.
                 SharedArraySlice(elementType)#{
                     elements: self.
@@ -489,15 +537,18 @@ __BootstrapCompiler__
             };
             withSelector: #at: addMethod: {:(arrayType)self :(Size)index :: elementType |
                 <pure>
+                <compileTime>
                 <primitive: #"array.basicAt">
                 __BootstrapCompiler__ primitiveFailed
             };
             withSelector: #at:put: addMethod: {:(arrayType)self :(Size)index :(elementType)value :: elementType |
+                <compileTime>
                 <primitive: #"array.basicAtPut">
                 __BootstrapCompiler__ primitiveFailed
             };
             withSelector: #size addMethod: {:(arrayType)self :: Size |
                 <pure>
+                <compileTime>
                 bounds
             }.
         arrayType
@@ -505,26 +556,31 @@ __BootstrapCompiler__
 
     addBasicTypeNamed: #Pointer with: {:(Type)elementType :(Symbol)addressSpace :: Type |
         <pure>
+        <compileTime>
         let: #pointerType with: (__TypeBuilder__ newPointerTypeFor: elementType addressSpace: addressSpace).
 
         pointerType __type__
             withSelector: #allocate: addMethod: {:(pointerType __type__)self :(Size)count :: pointerType |
                 <pure>
+                <compileTime>
                 <primitive: #"pointer.allocateWithCount">
                 __BootstrapCompiler__ primitiveFailed
             };
             withSelector: #allocate addMethod: {:(pointerType __type__)self :: pointerType |
                 <pure>
+                <compileTime>
                 self allocate: 1
             }.
 
         pointerType
             withSelector: #at: addMethod: {:(pointerType)self :(Size)index :: elementType |
                 <pure>
+                <compileTime>
                 <primitive: #"pointer.basicAt">
                 __BootstrapCompiler__ primitiveFailed
             };
             withSelector: #at:put: addMethod: {:(pointerType)self :(Size)index :(elementType)value :: elementType |
+                <compileTime>
                 <primitive: #"pointer.basicAtPut">
                 __BootstrapCompiler__ primitiveFailed
             }.
@@ -533,11 +589,13 @@ __BootstrapCompiler__
     } templated;
     addBasicTypeNamed: #SharedPointer with: {:(Type)elementType :: Type |
         <pure>
+        <compileTime>
         Pointer(elementType, #shared)
     };
 
     addBasicTypeNamed: #ArraySlice with: {:(Type)elementType :: Type |
         <pure>
+        <compileTime>
         let: #arraySliceType with: (__TypeBuilder__ newRecordTypeWith: #{
             elements: Pointer(elementType, #generic).
             size: Size.
@@ -547,33 +605,41 @@ __BootstrapCompiler__
             addTypeFlag: #arraySlice;
             withSelector: #isEmpty addMethod: {:(arraySliceType)self :: Boolean |
                 <pure>
+                <compileTime>
                 self size = 0sz
             };
             withSelector: #isNotEmpty addMethod: {:(arraySliceType)self :: Boolean |
                 <pure>
+                <compileTime>
                 self size ~= 0sz
             };
             withSelector: #at: addMethod: {:(arraySliceType)self :(Size)index :: elementType |
                 <pure>
+                <compileTime>
                 self elements at: index
             };
             withSelector: #at:put: addMethod: {:(arraySliceType)self :(Size)index :(elementType)element :: elementType |
+                <compileTime>
                 self elements at: index put: element
             };
             withSelector: #first addMethod: {:(arraySliceType)self :: elementType |
                 <pure>
+                <compileTime>
                 self at: 0sz
             };
             withSelector: #second addMethod: {:(arraySliceType)self :: elementType |
                 <pure>
+                <compileTime>
                 self at: 1sz
             };
             withSelector: #last addMethod: {:(arraySliceType)self :: elementType |
                 <pure>
+                <compileTime>
                 self at: self size - 1sz
             };
             withSelector: #until: addMethod: {:(arrayType)self :(Size)newSize :: Size |
                 <pure>
+                <compileTime>
                 arraySliceType #{
                     elements: Pointer(elementType, #generic).
                     size: (self size min: newSize).
@@ -581,16 +647,19 @@ __BootstrapCompiler__
             };
             withSelector: #collect: addMethod: {:(arraySliceType)self :*(Type)ResultType :(elementType => ResultType)block :: SharedArraySlice(ResultType) |
                 <pure>
+                <compileTime>
                 <primitive: #"arraySlice.collect">
                 __BootstrapCompiler__ primitiveFailed
             };
             withSelector: #collectWithIndex: addMethod: {:(arraySliceType)self :*(Type)ResultType :((elementType -- Size) => ResultType)block :: SharedArraySlice(ResultType) |
                 <pure>
+                <compileTime>
                 <primitive: #"arraySlice.collectWithIndex">
                 __BootstrapCompiler__ primitiveFailed
             };
             withSelector: #do: addMethod: {:(arraySliceType)self :((elementType) => Void)block :: Void |
                 <pure>
+                <compileTime>
                 let: #index with: (Size valueBox with: 0sz).                
                 while: index _ < self size do: {
                     block(self at: index _).
@@ -599,6 +668,7 @@ __BootstrapCompiler__
             };
             withSelector: #anySatisfy: addMethod: {:(arraySliceType)self :((elementType) => Boolean)block :: Boolean |
                 <pure>
+                <compileTime>
                 let: #result with: (Boolean valueBox with: false).
                 let: #index with: (Size valueBox with: 0sz).                
                 while: (if: result _ not then: index _ < self size else: false) do: {
@@ -612,6 +682,7 @@ __BootstrapCompiler__
             };
             withSelector: #allSatisfy: addMethod: {:(arraySliceType)self :((elementType) => Boolean)block :: Boolean |
                 <pure>
+                <compileTime>
                 let: #result with: (Boolean valueBox with: true).
                 let: #index with: (Size valueBox with: 0sz).                
                 while: (if: result _ then: index _ < self size else: false) do: {
@@ -625,6 +696,7 @@ __BootstrapCompiler__
             };
             withSelector: #doWithIndex: addMethod: {:(arraySliceType)self :((elementType -- Size) => Void)block :: Void |
                 <pure>
+                <compileTime>
                 let: #index with: (Size valueBox with: 0sz).                
                 while: index _ < self size do: {
                     block(self at: index _, index _).
@@ -632,6 +704,8 @@ __BootstrapCompiler__
                 void
             };
             withSelector: #allButFirst: addMethod: {:(arraySliceType)self :(Size)itemsToDrop :: SharedArraySlice(elementType) |
+                <pure>
+                <compileTime>
                 let: #resultSize with: (if: itemsToDrop - self size then: self size - itemsToDrop else: 0).
                 let: #index with: (Size valueBox with: 0sz).                
                 let: #result with: (SharedArraySlice(elementType) allocate: resultSize).
@@ -643,10 +717,13 @@ __BootstrapCompiler__
                 result
             };
             withSelector: #allButFirst addMethod: {:(arraySliceType)self :: SharedArraySlice(elementType) |
+                <pure>
+                <compileTime>
                 self allButFirst: 1sz
             };
             withSelector: #-- addMethod: {:(arraySliceType)self :(arraySliceType)other :: SharedArraySlice(elementType) |
                 <pure>
+                <compileTime>
                 let: #result with: (SharedArraySlice(elementType) allocate: self size + other size).
                 let: #index with: (Size valueBox with: 0sz).                
                 while: index _ < self size do: {
@@ -666,6 +743,7 @@ __BootstrapCompiler__
 
     addBasicTypeNamed: #SharedArraySlice with: {:(Type)elementType :: Type |
         <pure>
+        <compileTime>
         let: #storagePointerType with: SharedPointer(elementType).
         let: #sharedArraySliceType with: (__TypeBuilder__ newRecordTypeWithSupertype: ArraySlice(elementType) with: #{
             storage: storagePointerType
@@ -675,6 +753,7 @@ __BootstrapCompiler__
         sharedArraySliceType __type__
             withSelector: #allocate: addMethod: {:(sharedArraySliceType)self :(Size)size :: sharedArraySliceType |
                 <pure>
+                <compileTime>
                 let: #storage with: (storagePointerType allocate: size).
                 sharedArraySliceType#{
                     elements: storage.
@@ -684,6 +763,7 @@ __BootstrapCompiler__
             };
             withSelector: #with: addMethod: {:(sharedArraySliceType)self :(elementType)first :: sharedArraySliceType |
                 <pure>
+                <compileTime>
                 let: #result with: (self allocate: 1sz).
                 result
                     at: 0sz put: first;
@@ -691,6 +771,7 @@ __BootstrapCompiler__
             };
             withSelector: #with:with: addMethod: {:(sharedArraySliceType)self :(elementType)first :(elementType)second :: sharedArraySliceType |
                 <pure>
+                <compileTime>
                 let: #result with: (self allocate: 2sz).
                 result
                     at: 0sz put: first;
@@ -704,6 +785,7 @@ __BootstrapCompiler__
 
     addBasicTypeNamed: #Association with: {:(Type)key :(Type)value :: Type |
         <pure>
+        <compileTime>
         __TypeBuilder__ newRecordTypeWith: #{
             key: key.
             value: value.
@@ -713,6 +795,7 @@ __BootstrapCompiler__
 
     addBasicTypeNamed: #ArrayDictionary with: {:(Type)keyType :(Type)valueType :: Type |
         <pure>
+        <compileTime>
         __TypeBuilder__ newRecordTypeWith: #{
             associationList: ArraySlice(Association(keyType, valueType)).
             hashTable: ArraySlice(UInt32).
@@ -722,6 +805,7 @@ __BootstrapCompiler__
 
     addBasicTypeNamed: #ArrayList with: {:(Type)elementType :: Type |
         <pure>
+        <compileTime>
         let: #storageType with: SharedArraySlice(elementType).
         let: #arrayListType with: (__TypeBuilder__ newRecordTypeWith: #{
             size: Size.
@@ -730,6 +814,7 @@ __BootstrapCompiler__
 
         arrayListType
             withSelector: #add: addMethod: {:(arrayListType)self :(elementType)element :: Void |
+                <compileTime>
                 if: self size >= self storage size then: {
                     self increaseCapacity.
                 } else: {void}.
@@ -739,6 +824,7 @@ __BootstrapCompiler__
                 void
             };
             withSelector: #increaseCapacity addMethod: {:(arrayListType)self :: Void |
+                <compileTime>
                 let: #oldCapacity with: self storage size.
                 let: #newCapacity with: (oldCapacity max: 8sz).
                 let: #oldStorage with: self storage.
@@ -752,6 +838,7 @@ __BootstrapCompiler__
                 void
             };
             withSelector: #at: addMethod: {:(arrayListType)self :(Size)index :: elementType |
+                <compileTime>
                 if: index < self size then: {
                     self storage at: index
                 } else: {
@@ -759,6 +846,7 @@ __BootstrapCompiler__
                 }
             };
             withSelector: #at:put: addMethod: {:(arrayListType)self :(Size)index :(elementType)element :: Void |
+                <compileTime>
                 if: index < self size then: {
                     self storage at: index put: element
                 } else: {
@@ -767,6 +855,7 @@ __BootstrapCompiler__
             };
             withSelector: #asArraySlice addMethod: {:(arrayListType)self :: ArraySlice(elementType) |
                 <pure>
+                <compileTime>
                 storage until: self size
             }.
 
@@ -776,31 +865,37 @@ __BootstrapCompiler__
 
     addBasicTypeNamed: #Tuple with: {:*(Size)N :(Type array: N)elementTypes :: Type |
         <pure>
+        <compileTime>
         let: #tupleSize with: elementTypes size.
         let: #tupleType with: (__TypeBuilder__ newProductTypeWith: elementTypes).
         tupleType __type__
             withSelector: #-- addMethod: {:(Type)self :(Type)nextType :: Type |
                 <override>
+                <compileTime>
                 __TypeBuilder__ extendTupleType: self with: nextType
             };
             withSelector: #=> addMethod: {:(Type)self :(Type)resultType :: Type |
                 <override>
+                <compileTime>
                 __TypeBuilder__ newSimpleFunctionTypeWithArguments: self resultType: resultType
             }.
 
         tupleType
             withSelector: #at: addMethod: {:(tupleType)self :(Size)elementIndex :: (elementTypes at: elementIndex) |
                 <pure>
+                <compileTime>
                 <primitive: #"tuple.accessing.at">
                 __BootstrapCompiler__ primitiveFailed
             };
             withSelector: #at:put: addMethod: {:(tupleType)self :(Size)elementIndex :(elementTypes at: elementIndex)element :: (elementTypes at: elementIndex) |
                 <pure>
+                <compileTime>
                 <primitive: #"tuple.accessing.atPut">
                 __BootstrapCompiler__ primitiveFailed
             };
             withSelector: #size addMethod: {:(tupleType)self :: Size |
                 <pure>
+                <compileTime>
                 tupleSize
             }.
         tupleType
@@ -808,6 +903,7 @@ __BootstrapCompiler__
 
     addBasicTypeNamed: #ValueBox with: {:(Type)elementType :: Type |
         <pure>
+        <compileTime>
         let: #valueBoxType with: (__TypeBuilder__ newRecordTypeWith: #{
             _: elementType
         }).
@@ -825,30 +921,36 @@ __BootstrapCompiler__
 String
     withSelector: #-- addMethod: {:(String)self :(String)other :: String |
         <pure>
+        <compileTime>
         <primitive: #"string.concat">
         __BootstrapCompiler__ primitiveFailed
     };
     withSelector: #format: addMethod: {:(String)self :(String arraySlice)parameters :: String |
         <pure>
+        <compileTime>
         <primitive: #"string.format">
         __BootstrapCompiler__ primitiveFailed
     };
     withSelector: #asSymbol addMethod: {:(String)self :: Symbol |
         <pure>
+        <compileTime>
         <primitive: #"symbol.internString">
         __BootstrapCompiler__ primitiveFailed
     };
     withSelector: #asString addMethod: {:(String)self :: String |
         <pure>
+        <compileTime>
         self
     };
     withSelector: #printString addMethod: {:(String)self :: String |
         <pure>
+        <compileTime>
         <primitive: #"string.conversion.printString">
         self
     };
     withSelector: #withoutSuffix: addMethod: {:(Symbol)self :(String)suffix :: String |
         <pure>
+        <compileTime>
         <primitive: #"string.manipulations.withoutSuffix">
         __BootstrapCompiler__ primitiveFailed
     }.
@@ -857,16 +959,19 @@ String
 Symbol
     withSelector: #asString addMethod: {:(Symbol)self :: String |
         <pure>
+        <compileTime>
         <primitive: #"symbol.conversion.toString">
         __BootstrapCompiler__ primitiveFailed
     };
     withSelector: #printString addMethod: {:(Symbol)self :: String |
         <pure>
+        <compileTime>
         <primitive: #"symbol.conversion.printString">
         __BootstrapCompiler__ primitiveFailed
     };
     withSelector: #withoutSuffix: addMethod: {:(Symbol)self :(String)suffix :: Symbol |
         <pure>
+        <compileTime>
         <primitive: #"symbol.manipulations.withoutSuffix:">
         (self asString withoutSuffix: suffix) asSymbol
     }.
@@ -875,11 +980,13 @@ Symbol
 Type
     withSelector: #-- addMethod: {:(Type)self :(Type)second :: Type |
         <pure>
+        <compileTime>
         <virtual>
         __TypeBuilder__ newPairType: self with: second
     };
     withSelector: #=> addMethod: {:(Type)self :(Type) resultType :: Type |
         <pure>
+        <compileTime>
         <virtual>
         __TypeBuilder__ newSimpleFunctionTypeWithArgument: self resultType: resultType
     }.
@@ -887,6 +994,7 @@ Type
 Void __type__
     withSelector: #=> addMethod: {:(Type)self :(Type) resultType :: Type |
         <pure>
+        <compileTime>
         <override>
         __TypeBuilder__ newSimpleFunctionTypeWithResultType: resultType
     }.
@@ -895,38 +1003,47 @@ Void __type__
 Type
     withSelector: #"[]" addMethod: {:(Type)self :: Type |
         <pure>
+        <compileTime>
         Array(self, 0)
     };
     withSelector: #"[]:" addMethod: {:(Type)self :(Size)bounds :: Type |
         <pure>
+        <compileTime>
         Array(self, bounds)
     };
     withSelector: #optional addMethod: {:(Type)self :: Type |
         <pure>
+        <compileTime>
         Optional(self)
     };
     withSelector: #array addMethod: {:(Type)self :: Type |
         <pure>
+        <compileTime>
         Array(self, 0)
     };
     withSelector: #array: addMethod: {:(Type)self :(Size)bounds :: Type |
         <pure>
+        <compileTime>
         Array(self, bounds)
     };
     withSelector: #arraySlice addMethod: {:(Type)self :: Type |
         <pure>
+        <compileTime>
         ArraySlice(self)
     };
     withSelector: #sharedArraySlice addMethod: {:(Type)self :: Type |
         <pure>
+        <compileTime>
         SharedArraySlice(self)
     };
     withSelector: #arrayList addMethod: {:(Type)self :: Type |
         <pure>
+        <compileTime>
         ArrayList(self)
     };
     withSelector: #valueBox addMethod: {:(Type)self :: Type |
         <pure>
+        <compileTime>
         ValueBox(self)
     }.
 
@@ -934,11 +1051,13 @@ Type
 AnyValue
     withSelector: #isNil addMethod: {:(Undefined)self :: Boolean |
         <pure>
+        <compileTime>
         <virtual>
         false
     };
     withSelector: #isNotNil addMethod: {:(Undefined)self :: Boolean |
         <pure>
+        <compileTime>
         <virtual>
         true
     }.
@@ -946,11 +1065,13 @@ AnyValue
 Undefined
     withSelector: #isNil addMethod: {:(Undefined)self :: Boolean |
         <pure>
+        <compileTime>
         <override>
         true
     };
     withSelector: #isNotNil addMethod: {:(Undefined)self :: Boolean |
         <pure>
+        <compileTime>
         <override>
         false
     }.

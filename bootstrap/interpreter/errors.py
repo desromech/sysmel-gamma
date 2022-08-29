@@ -2,9 +2,22 @@ class InterpreterError(Exception):
     pass
 
 class InterpreterErrorWithSourcePosition(InterpreterError):
-    def __init__(self, sourcePosition, errorMessage):
+    def __init__(self, sourcePosition, errorMessage, previousError = None):
         self.sourcePosition = sourcePosition
-        super().__init__('%s: %s' % (str(sourcePosition), errorMessage))
+        self.errorMessage = errorMessage
+        self.previousError = previousError
+
+        super().__init__(self.formatDescription())
+
+    def formatDescription(self):
+        fullDescription = '%s: %s' % (str(self.sourcePosition), self.errorMessage)
+        if self.previousError is not None:
+            fullDescription = '%s\n%s' % (str(self.previousError), fullDescription)
+        return fullDescription
+
+class InterpreterStackTraceError(InterpreterErrorWithSourcePosition):
+    def formatDescription(self):
+        return '%s\n\t%s %s.' %(str(self.previousError), self.errorMessage, self.sourcePosition)
 
 class InterpreterParseError(InterpreterErrorWithSourcePosition):
     pass

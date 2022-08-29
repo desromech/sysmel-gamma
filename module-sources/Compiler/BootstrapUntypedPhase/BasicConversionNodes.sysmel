@@ -23,6 +23,9 @@ Std Reflection AST ValueAsVoidNode
     };
     withSelector: #isCompileTimeDirectlyEvaluableWith: addMethod: {:(Std Reflection AST ValueAsVoidNode)self :(Std Reflection Semantic EvaluationEnvironment)environment :: Boolean |
         self expression isCompileTimeDirectlyEvaluableWith: environment
+    };
+    withSelector: #isPureCompileTimeEvaluableWith: addMethod: {:(Std Reflection AST ValueAsVoidNode)self :(Std Reflection Semantic EvaluationEnvironment)environment :: Boolean |
+        self expression isCompileTimeDirectlyEvaluableWith: environment
     }.
 
 Std Reflection AST WrapValueInSumTypeNode
@@ -31,31 +34,43 @@ Std Reflection AST WrapValueInSumTypeNode
     };
     withSelector: #isCompileTimeDirectlyEvaluableWith: addMethod: {:(Std Reflection AST WrapValueInSumTypeNode)self :(Std Reflection Semantic EvaluationEnvironment)environment :: Boolean |
         self expression isCompileTimeDirectlyEvaluableWith: environment
+    };
+    withSelector: #isPureCompileTimeEvaluableWith: addMethod: {:(Std Reflection AST WrapValueInSumTypeNode)self :(Std Reflection Semantic EvaluationEnvironment)environment :: Boolean |
+        self expression isCompileTimeDirectlyEvaluableWith: environment
     }.
 
 Std Reflection AST UpcastConversionNode
-    withSelector: #performEvaluationWith: addMethod: {:(Std Reflection AST WrapValueInSumTypeNode)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+    withSelector: #performEvaluationWith: addMethod: {:(Std Reflection AST UpcastConversionNode)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         ## This is a nop in the evaluator.
         self expression evaluateNodeWith: evaluationEnvironment
     };
-    withSelector: #isCompileTimeDirectlyEvaluableWith: addMethod: {:(Std Reflection AST WrapValueInSumTypeNode)self :(Std Reflection Semantic EvaluationEnvironment)environment :: Boolean |
+    withSelector: #isCompileTimeDirectlyEvaluableWith: addMethod: {:(Std Reflection AST UpcastConversionNode)self :(Std Reflection Semantic EvaluationEnvironment)environment :: Boolean |
+        self expression isCompileTimeDirectlyEvaluableWith: environment
+    };
+    withSelector: #isPureCompileTimeEvaluableWith: addMethod: {:(Std Reflection AST UpcastConversionNode)self :(Std Reflection Semantic EvaluationEnvironment)environment :: Boolean |
         self expression isCompileTimeDirectlyEvaluableWith: environment
     }.
 
 Std Reflection AST WrapAnyValueNode
-    withSelector: #performEvaluationWith: addMethod: {:(Std Reflection AST WrapValueInSumTypeNode)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+    withSelector: #performEvaluationWith: addMethod: {:(Std Reflection AST WrapAnyValueNode)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         ## This is a nop in the evaluator.
         self expression evaluateNodeWith: evaluationEnvironment
     };
-    withSelector: #isCompileTimeDirectlyEvaluableWith: addMethod: {:(Std Reflection AST WrapValueInSumTypeNode)self :(Std Reflection Semantic EvaluationEnvironment)environment :: Boolean |
+    withSelector: #isCompileTimeDirectlyEvaluableWith: addMethod: {:(Std Reflection AST WrapAnyValueNode)self :(Std Reflection Semantic EvaluationEnvironment)environment :: Boolean |
         self expression isCompileTimeDirectlyEvaluableWith: environment
+    };
+    withSelector: #isPureCompileTimeEvaluableWith: addMethod: {:(Std Reflection AST WrapAnyValueNode)self :(Std Reflection Semantic EvaluationEnvironment)environment :: Boolean |
+        self expression isPureCompileTimeEvaluableWith: environment
     }.
 
 Std Reflection AST UnwrapAnyValueNode
-    withSelector: #performEvaluationWith: addMethod: {:(Std Reflection AST WrapValueInSumTypeNode)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
+    withSelector: #performEvaluationWith: addMethod: {:(Std Reflection AST UnwrapAnyValueNode)self :(Std Reflection Semantic EvaluationEnvironment)evaluationEnvironment :: AnyValue |
         ## This is a nop in the evaluator.
         self expression evaluateNodeWith: evaluationEnvironment
     };
     withSelector: #isCompileTimeDirectlyEvaluableWith: addMethod: {:(Std Reflection AST UnwrapAnyValueNode)self :(Std Reflection Semantic EvaluationEnvironment)environment :: Boolean |
         self expression isCompileTimeDirectlyEvaluableWith: environment
+    };
+    withSelector: #isPureCompileTimeEvaluableWith: addMethod: {:(Std Reflection AST UnwrapAnyValueNode)self :(Std Reflection Semantic EvaluationEnvironment)environment :: Boolean |
+        self expression isPureCompileTimeEvaluableWith: environment
     }.

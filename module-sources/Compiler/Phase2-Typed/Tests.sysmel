@@ -1,3 +1,4 @@
+#*
 public struct TestStruct definition: {
     public field first => Int32.
     public field second => Size.
@@ -31,4 +32,6 @@ public union TestUnion definition: {
 }.
 
 ##one implementation _
+*#
+##__BootstrapCompiler__ printLine: (Int32 arrayList new add: 0i32; add: 1i32; size)
 __BootstrapCompiler__ printLine: (Int32 arrayList new)

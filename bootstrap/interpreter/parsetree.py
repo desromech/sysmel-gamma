@@ -234,6 +234,14 @@ class PTNode:
     def formatASTSelector(self):
         return self.formatAST()
 
+    def stacktraceParachute(self, closure):
+        try:
+            return closure()
+        except InterpreterErrorWithSourcePosition as previousError:
+            raise InterpreterStackTraceError(self.sourcePosition, 'Called by', previousError)
+        except Exception as catchedError:
+            raise
+
 class PTExpressionList(PTNode):
     def __init__(self, expressions):
         PTNode.__init__(self)
@@ -307,7 +315,7 @@ class PTBinaryExpression(PTNode):
         selector = self.operation.evaluateWithEnvironment(machine, environment)
         left = self.left.evaluateWithEnvironment(machine, environment)
         right = self.right.evaluateWithEnvironment(machine, environment)
-        return left.performWithArguments(machine, selector, [right])
+        return self.stacktraceParachute(lambda: left.performWithArguments(machine, selector, [right]))
 
     def convertIntoGenericASTWith(self, bootstrapCompiler):
         return bootstrapCompiler.makeASTNodeWithSlots('MessageSendNode',
@@ -339,7 +347,7 @@ class PTUnaryMessage(PTNode):
     def doEvaluateWithEnvironment(self, machine, environment):
         receiver = self.receiver.evaluateWithEnvironment(machine, environment)
         selector = self.selector.evaluateWithEnvironment(machine, environment)
-        return receiver.performWithArguments(machine, selector, [])
+        return self.stacktraceParachute(lambda: receiver.performWithArguments(machine, selector, []))
 
     def convertIntoGenericASTWith(self, bootstrapCompiler):
         return bootstrapCompiler.makeASTNodeWithSlots('MessageSendNode',
@@ -364,7 +372,7 @@ class PTChainedMessage(PTNode):
     def evaluateWithReceiverAndEnvironment(self, machine, receiver, environment):
         selector = self.selector.evaluateWithEnvironment(machine, environment)
         arguments = list(map(lambda arg: arg.evaluateWithEnvironment(machine, environment), self.arguments))
-        return receiver.performWithArguments(machine, selector, arguments)
+        return self.stacktraceParachute(lambda: receiver.performWithArguments(machine, selector, arguments))
 
     def convertIntoGenericASTWith(self, bootstrapCompiler):
         return bootstrapCompiler.makeASTNodeWithSlots('ChainedMessageNode',
@@ -426,8 +434,8 @@ class PTKeywordMessage(PTNode):
         selector = self.selector.evaluateWithEnvironment(machine, environment)
         arguments = list(map(lambda arg: arg.evaluateWithEnvironment(machine, environment), self.arguments))
         if selector == 'perform:withArguments:':
-            return receiver.performWithArguments(machine, arguments[0], list(arguments[1]))
-        return receiver.performWithArguments(machine, selector, arguments)
+            return self.stacktraceParachute(lambda: receiver.performWithArguments(machine, arguments[0], list(arguments[1])))
+        return self.stacktraceParachute(lambda: receiver.performWithArguments(machine, selector, arguments))
 
     def convertIntoGenericASTWith(self, bootstrapCompiler):
         if self.receiver is not None:
@@ -546,7 +554,7 @@ class PTCall(PTNode):
             arguments = (rawArguments,)
         else:
             arguments = ()
-        return functional.performWithArguments(machine, self.getSelector(), arguments)
+        return self.stacktraceParachute(lambda: functional.performWithArguments(machine, self.getSelector(), arguments))
 
     def convertIntoGenericASTWith(self, bootstrapCompiler):
         sourcePosition = bootstrapCompiler.convertASTSourcePosition(self.sourcePosition)
@@ -586,7 +594,7 @@ class PTSubscript(PTNode):
         indices = []
         if self.indices is not None:
             indices = [self.indices.evaluateWithEnvironment(machine, environment)]
-        return sequenceable.performWithArguments(machine, self.getSelector(), indices)
+        return self.stacktraceParachute(lambda: sequenceable.performWithArguments(machine, self.getSelector(), indices))
 
     def convertIntoGenericASTWith(self, bootstrapCompiler):
         sourcePosition = bootstrapCompiler.convertASTSourcePosition(self.sourcePosition)
@@ -618,7 +626,7 @@ class PTApplyBlock(PTNode):
     def doEvaluateWithEnvironment(self, machine, environment):
         entity = self.entity.evaluateWithEnvironment(machine, environment)
         block = self.block.evaluateWithEnvironment(machine, environment)
-        return entity.performWithArguments(machine, Symbol.intern('{}:'), [block])
+        return self.stacktraceParachute(lambda: entity.performWithArguments(machine, Symbol.intern('{}:'), [block]))
 
 class PTApplyDictionary(PTNode):
     def __init__(self, entity, dictionary):
@@ -633,7 +641,7 @@ class PTApplyDictionary(PTNode):
     def doEvaluateWithEnvironment(self, machine, environment):
         entity = self.entity.evaluateWithEnvironment(machine, environment)
         dictionary = self.dictionary.evaluateWithEnvironment(machine, environment)
-        return entity.performWithArguments(machine, Symbol.intern('#{}:'), [dictionary])
+        return self.stacktraceParachute(lambda: entity.performWithArguments(machine, Symbol.intern('#{}:'), [dictionary]))
 
 class PTApplyByteArray(PTNode):
     def __init__(self, entity, byteArray):
@@ -648,7 +656,7 @@ class PTApplyByteArray(PTNode):
     def doEvaluateWithEnvironment(self, machine, environment):
         entity = self.entity.evaluateWithEnvironment(machine, environment)
         byteArray = self.byteArray.evaluateWithEnvironment(machine, environment)
-        return entity.performWithArguments(machine, Symbol.intern('#[]:'), [byteArray])
+        return self.stacktraceParachute(lambda: entity.performWithArguments(machine, Symbol.intern('#[]:'), [byteArray]))
 
 class PTIdentifierReference(PTNode):
     def __init__(self, identifier):
